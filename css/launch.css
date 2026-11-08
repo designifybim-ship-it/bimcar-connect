@@ -1369,3 +1369,31 @@ form .btn-primary[type=submit]:hover{transform:translateY(-2px);box-shadow:0 18p
 .ad-pick-summary,[data-package-label]{gap:6px}
 #book .check:has(#b-after-hours){display:block;line-height:1.6}
 #book .check:has(#b-after-hours) input{display:inline-grid;vertical-align:-4px;margin-right:10px}
+
+/* ---------- Line up fields that sit side by side ----------
+   When a label wraps or has a hint above the box, the boxes in a row still line up.
+   (Rows that have hints UNDER their boxes keep top alignment.) */
+.form-grid:not(:has(> .f > :is(.input,select,textarea,input,.dp-field,.pills,.pw-field) ~ .hint)){align-items:end}
+.form-grid > .f{min-width:0}
+/* post editor: keep Save/Cancel visible and tidy the toolbar */
+.post-editor-grid > .stack:last-child > .row:last-child{position:sticky;bottom:-1px;background:linear-gradient(transparent,#fff 30%);padding-top:16px;margin-top:4px;z-index:2}
+.pe-toolbar .pe-layout{flex:0 1 auto;max-width:190px}
+/* post cover: never crop what was uploaded */
+.post-cover-hero img{max-height:none!important;aspect-ratio:16/9;object-fit:contain!important;box-shadow:none!important;filter:drop-shadow(0 22px 34px rgba(40,20,80,.16))}
+.post-card .post-cover img,.journal-cover.post-cover img{object-fit:contain!important;background:linear-gradient(135deg,#fff4f9,#f3eeff)}
+/* editor: cover options + photo panel */
+.pe-cover-opts{display:flex;flex-wrap:wrap;gap:8px}
+.pe-cover-opts .pills button{min-height:34px;font-size:.8rem;padding:6px 12px}
+.pe-photos{margin-top:12px;border:1px solid #ece6f3;border-radius:16px;background:#fcfaff;padding:12px;display:grid;gap:10px}
+.pe-photos-head b{display:block}.pe-photos-head span{display:block}
+.pe-ph{display:grid;grid-template-columns:72px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px;border-radius:12px;background:#fff;border:1px solid #efe9f7}
+.pe-ph>img{width:72px;height:54px;object-fit:contain;border-radius:8px;background:repeating-conic-gradient(#f1edf6 0 25%,#fff 0 50%) 0 0/12px 12px}
+.pe-ph-body{display:grid;gap:7px;min-width:0}
+.pe-ph-body .input{min-height:38px;font-size:.88rem;padding:6px 10px}
+.pe-ph-lays{display:flex;flex-wrap:wrap;gap:4px}
+.pe-ph-lays button,.pe-ph-acts button{border:1px solid #e4dcf3;background:#fff;border-radius:8px;padding:4px 9px;font:600 .74rem var(--body);color:#5b5666;cursor:pointer}
+.pe-ph-lays button.on{background:var(--brand-gradient);color:#fff;border-color:transparent}
+.pe-ph-acts{display:flex;flex-direction:column;gap:4px}
+.pe-ph-acts button{width:30px;height:28px;padding:0}
+.pe-ph-acts button:disabled{opacity:.35;cursor:default}
+.pe-ph-acts [data-ph=del]:hover{color:#c0263f;border-color:#f3c6d2}
