@@ -1,13 +1,13 @@
 /* Faded brand colour at the edges, with quiet contours that leave content clear. */
 .island-home .hero{
  background-color:#fff;
- background-image:radial-gradient(ellipse 460px 420px at -8% 34%,#FF63271A,transparent 72%),radial-gradient(ellipse 500px 440px at 108% 8%,#8A3FFD19,transparent 72%),repeating-radial-gradient(ellipse at 108% -18%,transparent 0 84px,#F4169B07 85px 86px,transparent 87px 132px);
+ background-image:radial-gradient(ellipse 460px 420px at -8% 34%,#FF63271A,transparent 72%),radial-gradient(ellipse 500px 440px at 108% 8%,#8A3FFD19,transparent 72%);
 }
 .island-home main>.section:nth-of-type(odd){
- background-image:radial-gradient(ellipse 560px 420px at -6% 18%,#FF632714,transparent 74%),radial-gradient(ellipse 600px 480px at 106% 84%,#008EFF12,transparent 74%),repeating-radial-gradient(ellipse at -16% 110%,transparent 0 76px,#8A3FFD07 77px 78px,transparent 79px 124px);
+ background-image:radial-gradient(ellipse 560px 420px at -6% 18%,#FF632714,transparent 74%),radial-gradient(ellipse 600px 480px at 106% 84%,#008EFF12,transparent 74%);
 }
 .island-home main>.section:nth-of-type(even){
- background-image:radial-gradient(ellipse 560px 440px at 104% 18%,#F4169B12,transparent 74%),radial-gradient(ellipse 540px 480px at -4% 90%,#8A3FFD12,transparent 76%),repeating-radial-gradient(ellipse at 116% -8%,transparent 0 88px,#FF632708 89px 90px,transparent 91px 140px);
+ background-image:radial-gradient(ellipse 560px 440px at 104% 18%,#F4169B12,transparent 74%),radial-gradient(ellipse 540px 480px at -4% 90%,#8A3FFD12,transparent 76%);
 }
 .island-home main>.section-tight{
  background-image:radial-gradient(ellipse at 0 100%,#FF63270B,transparent 56%),radial-gradient(ellipse at 100% 0,#8A3FFD0D,transparent 60%);
@@ -16,7 +16,7 @@ body:not(.island-home) #main{
  background-image:radial-gradient(ellipse 620px 500px at -8% 18%,#FF632710,transparent 74%),radial-gradient(ellipse 680px 560px at 108% 60%,#8A3FFD10,transparent 76%);
 }
 .page-head,.journal-index-hero,.journal-hero,.journal-related{
- background-image:radial-gradient(ellipse at 100% 0,#F4169B0E,transparent 58%),radial-gradient(ellipse at 0 100%,#008EFF0C,transparent 62%),repeating-radial-gradient(ellipse at 118% -25%,transparent 0 74px,#8A3FFD07 75px 76px,transparent 77px 124px);
+ background-image:radial-gradient(ellipse at 100% 0,#F4169B0E,transparent 58%),radial-gradient(ellipse at 0 100%,#008EFF0C,transparent 62%);
 }
 .auth-side,.band,.free{
  background-image:radial-gradient(ellipse at 0 0,#FF63270D,transparent 60%),radial-gradient(ellipse at 100% 100%,#8A3FFD0F,transparent 65%),linear-gradient(125deg,#FFF7F3,#FAF6FF 65%,#F3FAFF);

@@ -3,7 +3,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Contact | BimCar Connect</title>
 <meta name="description" content="Compare and book rental cars from local companies across Barbados.">
-<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
 <link rel="stylesheet" href="css/fonts.css">
@@ -69,7 +69,7 @@ const read=()=>{const f=form.querySelectorAll('input');return {name:f[0].value.t
 // Restore a message typed before signing in
 try{const d=JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){const f=form.querySelectorAll('input');f[0].value=d.name||'';f[1].value=d.contact||'';form.querySelector('select').value=d.topic||form.querySelector('select').value;form.querySelector('textarea').value=d.message||'';sessionStorage.removeItem(KEY);}}catch{}
 const online=!Live.failed&&!!Live.client;
-const c={email:'bimcarconnect@yahoo.com',...(Live.settings?.contact||{})};if(!String(c.email||'').trim())c.email='bimcarconnect@yahoo.com';
+const c={email:'bimcarconnect@yahoo.com',phone:'+1 (246) 230-1679',...(Live.settings?.contact||{})};if(!String(c.email||'').trim())c.email='bimcarconnect@yahoo.com';if(!String(c.phone||'').trim())c.phone='+1 (246) 230-1679';
 if(c.email||c.phone){const box=document.createElement('div');box.className='contact-direct';if(c.email){const a=document.createElement('a');a.className='btn btn-ghost btn-sm';a.href='mailto:'+c.email;a.innerHTML=A.icon('mail');a.append(c.email);box.append(a);}if(c.phone){const a=document.createElement('a');a.className='btn btn-ghost btn-sm';a.href='tel:'+String(c.phone).replace(/[^\d+]/g,'');a.innerHTML=A.icon('phone');a.append(c.phone);box.append(a);}form.before(box);}
 if(!Live.user||!online){btn.textContent=DB.contactWhatsApp?'Send on WhatsApp':'Send message';msg.innerHTML=online?'Prefer the website inbox? <a href="login.html" id="contact-login">Log in</a> and we\'ll keep your message.':'';}
 document.getElementById('contact-login')?.addEventListener('click',()=>{try{sessionStorage.setItem(KEY,JSON.stringify(read()));sessionStorage.setItem('drivebim.return',location.pathname);}catch{}});

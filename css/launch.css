@@ -1203,3 +1203,107 @@ label.f:has(.sr-select){position:relative}
 .foot-cols h4{font-size:1rem!important;letter-spacing:0!important;text-transform:none!important;margin:0 0 10px}
 .foot-cols ul{gap:7px}
 .foot-legal{gap:6px 16px}
+
+/* ======================================================================
+   New loading screen (small mark + text wordmark, nothing heavy to load)
+   ====================================================================== */
+#bimcar-arrival{background:#fff!important}
+#bimcar-arrival>:not(.ld):not(.ld-bg):not(.arrival-skip):not(#arrival-status){display:none!important}
+.ld-bg{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.ld-bg i{position:absolute;border-radius:50%;filter:blur(80px);opacity:.35}
+.ld-bg i:nth-child(1){width:46vmax;height:46vmax;left:-14vmax;top:-16vmax;background:#FF8AB8}
+.ld-bg i:nth-child(2){width:42vmax;height:42vmax;right:-14vmax;top:10vmax;background:#B98CFF}
+.ld-bg i:nth-child(3){width:40vmax;height:40vmax;left:20vmax;bottom:-22vmax;background:#7CC4FF}
+.ld{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;z-index:1}
+.ld-mark{position:relative;display:grid;place-items:center;width:112px;height:112px}
+.ld-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#FF4F5E,#F4169B,#8A3FFD,#008EFF,#FF4F5E);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));mask:radial-gradient(farthest-side,transparent calc(100% - 5px),#000 calc(100% - 4px));animation:ldSpin 1.1s linear infinite}
+.ld-mark img{width:62px;height:62px;object-fit:contain;opacity:0;transform:scale(.8);transition:opacity .25s,transform .35s cubic-bezier(.3,1.5,.5,1)}
+.ld-mark img.ok{opacity:1;transform:none}
+.ld-word{margin:6px 0 0;display:flex;flex-direction:column;align-items:center;line-height:1}
+.ld-word b{font:800 1.9rem/1 var(--display,"Poppins",sans-serif);background:linear-gradient(100deg,#FF4F5E,#F4169B 45%,#8A3FFD 75%,#008EFF);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ld-word span{margin-top:6px;font:700 .7rem/1 var(--display,"Poppins",sans-serif);letter-spacing:.42em;padding-left:.42em;color:#8A3FFD}
+.ld-bar{width:150px;height:4px;margin-top:10px;border-radius:4px;background:#efe8f8;overflow:hidden}
+.ld-bar i{display:block;width:40%;height:100%;border-radius:4px;background:linear-gradient(90deg,#FF4F5E,#F4169B,#8A3FFD,#008EFF);animation:ldBar 1.2s ease-in-out infinite}
+.ld-tag{margin:2px 0 0;font:500 .9rem/1.3 var(--body,"Poppins",sans-serif);color:#6b6474}
+@keyframes ldSpin{to{transform:rotate(360deg)}}
+@keyframes ldBar{0%{transform:translateX(-110%)}100%{transform:translateX(260%)}}
+@media (prefers-reduced-motion:reduce){.ld-ring,.ld-bar i{animation:none}}
+.adm-hero .adm-act,.adm-hero .adm-act:visited,.adm-hero .adm-act:hover,.adm-hero .adm-act span{color:#fff!important;-webkit-text-fill-color:#fff!important;text-decoration:none!important}
+.adm-hero .adm-act svg{color:#fff!important;fill:#fff!important}
+
+/* ---------- No line patterns: soft colour bubbles instead ---------- */
+.lx-backdrop .lx-waves{background-image:url(../img/ui/bubbles.svg)!important;opacity:.55!important;-webkit-mask-image:none!important;mask-image:none!important;animation:lxBubbles 30s ease-in-out infinite alternate}
+@keyframes lxBubbles{from{transform:translate3d(0,0,0) scale(1)}to{transform:translate3d(-2%,-2%,0) scale(1.04)}}
+.lx-backdrop::after,.page-head::before,.page-head::after,.ps-page::before,.rent-promo::before{display:none!important;background:none!important}
+.adm-hero::after{background-image:url(../img/ui/bubbles.svg)!important;opacity:.35!important}
+@media (max-width:640px){.lx-backdrop .lx-waves{opacity:.45!important}}
+@media (prefers-reduced-motion:reduce){.lx-backdrop .lx-waves{animation:none}}
+
+/* ---------- Admin: more room, lists easy to read ---------- */
+@media (min-width:901px){
+ .dash.admin-console{max-width:1640px;grid-template-columns:236px minmax(0,1fr);gap:26px;padding-left:24px;padding-right:24px}
+ .admin-console .side{top:88px;height:calc(100vh - 104px)}
+}
+.admin-console .dash-main{min-width:0}
+.admin-console .table-wrap{overflow-x:auto!important;-webkit-overflow-scrolling:touch}
+.admin-console table.t{min-width:860px;width:100%}
+.admin-console table.t th,.admin-console table.t td{padding:14px 16px;vertical-align:middle}
+.admin-console table.t td{font-size:.92rem}
+.admin-console table.t td:nth-last-child(1){white-space:nowrap;width:1%}
+.admin-console table.t td .btn{white-space:nowrap}
+.admin-console table.t td .st,.admin-console table.t td .badge{white-space:nowrap}
+.admin-console table.t td:has(> .small:only-child),.admin-console table.t td.small{white-space:nowrap}
+.admin-console .kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.admin-console .grid.g3{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.admin-console .dash-head{margin-bottom:18px}
+.admin-console .dash-head h1{font-size:clamp(1.6rem,2vw,2rem)}
+.adm-lists{grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:22px}
+.adm-list{display:flex;flex-direction:column;margin-top:10px}
+.adm-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #f2edf8}
+.adm-row:last-child{border-bottom:0}
+.adm-row .co-avatar{width:38px;height:38px;font-size:.78rem}
+.adm-row b{display:block;font-size:.93rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-row div>span{display:block;font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-row em{font-style:normal;font-size:.75rem;font-weight:600;padding:3px 9px;border-radius:999px;background:#f3ebff;color:#6d28d9;white-space:nowrap}
+.adm-row time{font-size:.8rem;color:var(--muted);white-space:nowrap}
+@media (max-width:600px){.adm-lists{grid-template-columns:1fr}.adm-row{grid-template-columns:34px minmax(0,1fr) auto}.adm-row time{display:none}}
+.admin-mini .stack{display:flex!important;flex-direction:column;gap:8px}
+.admin-mini .stack a{display:block}
+@media (min-width:901px){.admin-console .side a{min-height:34px;padding-top:3px;padding-bottom:3px}.admin-console .side a>svg{padding:5px}.admin-console .side .grp{padding-top:10px}}
+.foot-contact{margin:12px 0 0;font-size:.9rem;line-height:1.7}
+.foot-contact a{color:#4b4655;text-decoration:none}.foot-contact a:hover{color:#8a3ffd}
+a.social-icon{text-decoration:none}
+
+/* ======================================================================
+   Smooth app-style dashboards (company dashboard, portal, admin)
+   ====================================================================== */
+body:has(.dash){background:#f6f4fa!important}
+body:has(.dash) .lx-backdrop,body:has(.dash) .dash-main::before,body:has(.dash) .setup-banner{display:none!important}
+body:has(.dash) .site-header,body:has(.dash) .site-header.scrolled,body:has(.dash) .site-header.tucked{--header-wave-height:0px;box-shadow:0 8px 24px -18px rgba(60,30,110,.6)}
+body:has(.dash) .site-header::before{display:none}
+@media (min-width:901px){body:has(.dash) .site-header .bar{height:64px}}
+body:has(.dash) .site-footer{display:none}
+body:has(.dash) #main{background:transparent}
+.dash{padding-top:22px;padding-bottom:40px}
+@media (min-width:901px){.side{top:84px!important;height:calc(100vh - 100px)!important;background:#fff}}
+/* cards: soft, consistent, no borders fighting each other */
+.dash-main .card,.dash-main .kpi,.dash-main .table-wrap{background:#fff;border:1px solid #ece7f4!important;box-shadow:0 1px 2px rgba(40,20,80,.04),0 12px 32px -26px rgba(60,30,110,.35)!important;border-radius:20px!important}
+.dash-main .kpi{transition:transform .25s ease,box-shadow .25s ease}
+.dash-main a.kpi:hover,.dash-main .card:hover{transform:translateY(-2px);box-shadow:0 1px 2px rgba(40,20,80,.04),0 22px 40px -28px rgba(60,30,110,.45)!important}
+.dash-main .card{transition:transform .25s ease,box-shadow .25s ease}
+.dash-main .card h3{font-size:1.08rem}
+/* smooth section changes */
+#admin-app>*,#portal-app>*,.dash-main>*{animation:dashIn .4s cubic-bezier(.2,.8,.3,1) both}
+#admin-app>*:nth-child(2),#portal-app>*:nth-child(2){animation-delay:.04s}
+#admin-app>*:nth-child(3),#portal-app>*:nth-child(3){animation-delay:.08s}
+#admin-app>*:nth-child(n+4),#portal-app>*:nth-child(n+4){animation-delay:.12s}
+@keyframes dashIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.side a{transition:background .2s ease,color .2s ease,box-shadow .2s ease,transform .2s ease}
+.side a:active{transform:scale(.98)}
+/* reveal-on-scroll is not wanted inside dashboards: show everything at once */
+.dash-main .lx-reveal{opacity:1!important;transform:none!important}
+@media (prefers-reduced-motion:reduce){#admin-app>*,#portal-app>*,.dash-main>*{animation:none}}
+body:has(.dash) .site-header,body:has(.dash) .site-header.scrolled,body:has(.dash) .site-header.tucked{background:var(--brand-gradient)!important}
+.dash:not(.admin-console) .dash-main .kpi.feature{background:var(--brand-gradient)!important;border:0!important}
+.dash:not(.admin-console) .dash-main .kpi.feature *{color:#fff!important}
+body:has(.dash) .site-header .header-brand-logo{height:42px!important;width:auto!important;max-height:42px}

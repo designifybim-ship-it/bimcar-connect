@@ -97,6 +97,10 @@ S.overview=async()=>{
    ${!pending.length&&!pendingPay.length&&!open.length&&!(invoices||[]).some(i=>invStatus(i)==='overdue')?'<p class="muted">Nothing waiting. Nice work.</p>':''}
   </div></div>
  </div>
+ <div class="grid adm-lists" style="margin-top:22px">
+  <div class="card"><div class="row between"><h3 style="margin:0">Newest accounts</h3><a class="small" href="#accounts">See all</a></div><div class="adm-list">${(users||[]).slice().sort((a,b)=>String(b.created_at).localeCompare(String(a.created_at))).slice(0,6).map(u=>`<div class="adm-row"><span class="co-avatar">${esc(A.initials(u.name||u.email))}</span><div><b>${esc(u.name||u.email)}</b><span>${esc(u.email)}</span></div><em>${u.is_admin?'Admin':u.company_id?'Company':'Renter'}</em><time>${d(String(u.created_at).slice(0,10))}</time></div>`).join('')||'<p class="muted">No accounts yet.</p>'}</div></div>
+  <div class="card"><div class="row between"><h3 style="margin:0">Latest bookings</h3><a class="small" href="#bookings">See all</a></div><div class="adm-list">${B.slice().sort((a,b)=>String(b.sent||'').localeCompare(String(a.sent||''))).slice(0,6).map(b=>`<div class="adm-row"><span class="co-avatar">${esc(A.initials(b.renter||'R'))}</span><div><b>${esc(b.renter||'Renter')}</b><span>${esc((A.vehicle(b.vehicle)||{}).name||'Vehicle')} · ${esc(companyOf(b.company).name||'')}</span></div><em>${esc({request:'Request',confirmed:'Confirmed',onrent:'On rent',completed:'Returned',declined:'Declined',cancelled:'Cancelled'}[b.status]||b.status)}</em><time>${d(b.from)}</time></div>`).join('')||'<p class="muted">No bookings yet.</p>'}</div></div>
+ </div>
  <div class="grid g4 admin-mini" style="margin-top:22px">
   <div class="card"><h3 style="margin-top:0">Bookings</h3><p class="k-num" style="font-size:2rem;margin:0">${B.length}</p><p class="small muted">${B.filter(b=>b.status==='request').length} waiting for a company reply · ${B.filter(b=>['confirmed','onrent','completed'].includes(b.status)).length} confirmed</p><a class="small" href="#bookings">See all bookings</a></div>
   <div class="card"><h3 style="margin-top:0">Advertising</h3><p class="k-num" style="font-size:2rem;margin:0">${(Live.ads||[]).filter(a=>adStatus(a)==='live').length} live ad${(Live.ads||[]).filter(a=>adStatus(a)==='live').length===1?'':'s'}</p><p class="small muted">${bbd((invoices||[]).filter(i=>i.status==='sent').reduce((n,i)=>n+invTotals(i).total,0))} waiting on invoices</p><a class="small" href="#invoices">Invoices</a></div>
@@ -111,11 +115,11 @@ function checklist(){
   {key:'urls',manual:true,html:'Supabase sign-in URLs: Site URL and Redirect URLs set to your site',done:!!c.urls},
   {key:'email',manual:true,html:'Sign-up emails: turn off "Confirm email" or connect an email service',done:!!c.email},
   {key:'legal',html:'<b>Legal page</b> filled in with bimcarconnect@yahoo.com',done:true},
-  {key:'social',manual:true,html:'Social links: send Claude your Instagram, Facebook and TikTok links (or have the icons removed)',done:!!c.social},
+  {key:'social',html:'Instagram linked: @bimcarconnect246',done:true},
   {key:'clear',manual:true,html:'Clear old test data (<code>backend/CLEAR-ALL-DATA.sql</code>)',done:!!c.clear},
-  {key:'contact',html:'Add a contact email in Site settings',done:!!String(Live.settings.contact?.email||'').trim()},
+  {key:'contact',html:'Contact details: bimcarconnect@yahoo.com and +1 (246) 230-1679 (change them in Site settings)',done:true},
   {key:'company',html:'Approve your first rental company',done:DB.companies.some(x=>x.approved)},
-  {key:'publish',manual:true,html:'Publish the <code>site</code> folder on GitHub Pages',done:!!c.publish}
+  {key:'publish',html:'Site published on GitHub Pages',done:true}
  ];
 }
 
