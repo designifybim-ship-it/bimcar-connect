@@ -1509,3 +1509,4 @@ form .btn-primary[type=submit]:hover{transform:translateY(-2px);box-shadow:0 18p
  .adm-act span{display:none}.adm-act{padding:10px}
  .dash-head{flex-wrap:wrap}
 }
+.post-kicker{letter-spacing:0!important;text-transform:none!important;font-size:.9rem!important;font-weight:700;color:#c02bc4!important}
