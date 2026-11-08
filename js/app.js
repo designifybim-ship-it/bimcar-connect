@@ -651,6 +651,17 @@ function go(href){
 }
 addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove("leaving"); });
 
+/* Dashboards on phones: one tidy menu button instead of a squeezed strip, and tables become stacked cards */
+(function(){
+ const mq=matchMedia('(max-width:900px)');
+ function menu(){document.querySelectorAll('.side').forEach(side=>{let btn=side.querySelector(':scope > .side-toggle');const cur=side.querySelector('a[aria-current]');const label=((cur?.querySelector('span')||cur)?.textContent||'Menu').trim();
+  if(!btn){btn=document.createElement('button');btn.type='button';btn.className='side-toggle';btn.setAttribute('aria-expanded','false');btn.addEventListener('click',()=>{const o=side.classList.toggle('open');btn.setAttribute('aria-expanded',o);});side.prepend(btn);side.addEventListener('click',e=>{if(e.target.closest('a')&&mq.matches){side.classList.remove('open');btn.setAttribute('aria-expanded','false');}});}
+  const html=`<span>${esc(label)}</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;if(btn.innerHTML!==html)btn.innerHTML=html;});}
+ function cards(){document.querySelectorAll('.dash-main table.t').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(th=>th.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.tagName==='TD'&&!td.hasAttribute('data-label'))td.setAttribute('data-label',hs[i]||'');}));});}
+ let q=false;const run=()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;menu();cards();});};
+ if('MutationObserver' in window)new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-current']});
+ addEventListener('hashchange',run);document.addEventListener('DOMContentLoaded',run);run();
+})();
 window.App = {setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
   vehicleCard, carImg, specialCard, boosts, activeBoosts, isFeatured, partnerCard, todayISO, payInfo, payBlock, tickCountdowns, MARK, companyCard, toast, openModal, closeModal, copy, countUp, fmtDate, daysBetween, esc, go, RATE};
 function offlineNotice(){

@@ -1440,3 +1440,52 @@ form .btn-primary[type=submit]:hover{transform:translateY(-2px);box-shadow:0 18p
 .partner.has-image .media{aspect-ratio:auto!important;min-height:0!important;height:auto!important;display:block;padding:0!important}
 .partner.has-image .partner-img{position:static!important;inset:auto!important;display:block;width:100%!important;height:auto!important;min-height:0!important;max-height:440px;object-fit:contain!important;transform:none!important}
 .partner.has-image:hover .partner-img{transform:none!important}
+
+/* ======================================================================
+   Dashboards on phones
+   ====================================================================== */
+.side-toggle{display:none}
+@media (max-width:900px){
+ .dash{padding-top:14px!important}
+ .side{position:sticky!important;top:66px!important;z-index:40!important;display:block!important;height:auto!important;max-height:none!important;overflow:visible!important;padding:8px!important;border-radius:16px!important;flex-direction:column!important}
+ .side>*:not(.side-toggle){display:none!important}
+ .side.open{max-height:calc(100vh - 90px)!important;overflow:auto!important;box-shadow:0 24px 50px -20px rgba(40,20,80,.45)!important}
+ .side.open>*:not(.side-toggle):not(.co-mini){display:flex!important}
+ .side.open>.grp{display:block!important}
+ .side.open>.side-foot{display:block!important}
+ .side.open>.side-foot a{display:flex!important}
+ .side-toggle{display:flex;width:100%;align-items:center;justify-content:space-between;gap:10px;min-height:46px;padding:0 14px;border:0;border-radius:12px;background:var(--brand-gradient);color:#fff;font:700 .98rem var(--display);cursor:pointer}
+ .side-toggle svg{width:16px;height:16px;transition:transform .2s}
+ .side.open .side-toggle svg{transform:rotate(180deg)}
+ .side.open a{white-space:normal!important;height:auto!important;min-height:44px}
+ /* filter tabs: one swipeable row */
+ .dash-main .tabs{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;max-width:100%}
+ .dash-main .tabs::-webkit-scrollbar{display:none}
+ .dash-main .tabs button{flex:none;white-space:nowrap}
+ .dash-head{flex-direction:column;align-items:flex-start!important;gap:12px}
+ .dash-head .row{flex-wrap:wrap}
+ .dash-main .input[data-search],.dash-main [data-search]{max-width:none!important;width:100%}
+}
+@media (max-width:760px){
+ /* tables become stacked cards */
+ .dash-main .table-wrap{overflow:visible!important;border:0!important;box-shadow:none!important;background:transparent!important}
+ .dash-main table.t,.admin-console table.t{min-width:0!important;width:100%;border:0}
+ .dash-main table.t thead{display:none}
+ .dash-main table.t,.dash-main table.t tbody{display:block}
+ .dash-main table.t tbody tr{display:block;margin:0 0 12px;padding:14px 16px;background:#fff;border:1px solid #ece7f4;border-radius:18px;box-shadow:0 12px 28px -24px rgba(60,30,110,.4)}
+ .dash-main table.t tbody td{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:7px 0!important;border:0!important;white-space:normal!important;width:auto!important;text-align:right;font-size:.92rem}
+ .dash-main table.t tbody td::before{content:attr(data-label);flex:none;max-width:42%;text-align:left;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#9a90ad;padding-top:2px}
+ .dash-main table.t tbody td[data-label=""]::before,.dash-main table.t tbody td:first-child::before{display:none}
+ .dash-main table.t tbody td:first-child{justify-content:flex-start;text-align:left;padding-bottom:10px!important;border-bottom:1px solid #f2edf8!important;margin-bottom:4px}
+ .dash-main table.t tbody td:last-child{justify-content:flex-end;padding-top:12px!important}
+ .dash-main table.t tbody td:last-child .row{flex-wrap:wrap!important;justify-content:flex-end}
+ .dash-main table.t tbody td[colspan]{display:block;text-align:center}
+ .dash-main table.t tbody td[colspan]::before{display:none}
+ .dash-main table.t tbody tr:has(td[colspan]){padding:0;border:0;box-shadow:none;background:transparent}
+}
+@media (max-width:760px){
+ .dash-main table.t tbody td:not(:first-child):not(:last-child):not([colspan]){display:block;text-align:right;overflow:hidden}
+ .dash-main table.t tbody td:not(:first-child):not(:last-child)::before{float:left;margin-right:12px}
+ .dash-main table.t tbody td:not(:first-child):not(:last-child)>*{text-align:right}
+ .dash-main table.t tbody td:not(:first-child):not(:last-child) .row{justify-content:flex-end}
+}
