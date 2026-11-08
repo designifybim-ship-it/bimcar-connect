@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Driving in Barbados | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/journal.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap page-head">
+  <div class="crumbs"><a href="index.html">Home</a><span class="sep">/</span>Driving in Barbados</div>
+  <div class="grid g2" style="align-items:center">
+    <div><h1>Driving in Barbados</h1><p class="lede">What you need to rent, the rules that catch visitors out, and three drives worth doing.</p></div>
+    <div class="guide-car-photo"><img src="img/swift-white.jpg" width="1200" height="800" alt="Suzuki Swift compact rental car" loading="lazy"></div>
+  </div>
+</div>
+<section class="section-tight"><div class="wrap">
+  <div class="callout" data-reveal><span data-icon="info"></span><div><b>Rental levy.</b> The Barbados Revenue Authority states that the Car Rental Levy replaced the Visitor Driving Permit on 15 October 2025. It is BBD $5 per day, capped at BBD $35 per rental, and included in the daily rental fee. Ask your company to confirm the full price and driver documents. <a href="https://bra.gov.bb/News/Announcements/Car-Rental-Levy-Guide-and-Resources" target="_blank" rel="noopener noreferrer">Read the BRA guidance</a>.</div></div>
+  <div class="grid g2" style="margin-top:36px;gap:30px" data-reveal>
+    <div class="tip"><div class="ic" data-icon="doc"></div><div><h3>What to bring</h3><p class="muted">A valid driving licence and a credit or debit card for the deposit. Some companies set a minimum age, often 21 or 25, so check the listing.</p></div></div>
+    <div class="tip"><div class="ic" data-icon="road"></div><div><h3>Keep left</h3><p class="muted">Barbados drives on the left. Most cars are right-hand drive, so the gear stick and indicators may feel backwards for a day.</p></div></div>
+    <div class="tip"><div class="ic" data-icon="sun"></div><div><h3>Roundabouts</h3><p class="muted">The ABC Highway has a lot of them. Give way to traffic coming from your right and go clockwise.</p></div></div>
+    <div class="tip"><div class="ic" data-icon="car"></div><div><h3>Narrow roads, quick stops</h3><p class="muted">Country roads are narrow and often unmarked. Route taxis and buses stop suddenly to pick people up, so leave space.</p></div></div>
+    <div class="tip"><div class="ic" data-icon="fuel"></div><div><h3>Fuel</h3><p class="muted">Most stations have attendants who fill up for you. Many close in the evening outside the main towns, so fill up before heading east or north.</p></div></div>
+    <div class="tip"><div class="ic" data-icon="phone"></div><div><h3>If something goes wrong</h3><p class="muted">Call your rental company first. Police 211, ambulance 511, fire 311.</p></div></div>
+  </div>
+</div></section>
+<section class="section"><div class="wrap">
+  <div class="section-head"><div><h2>Three drives worth doing</h2><p class="muted">Use these as ideas, then allow time for your starting point, traffic and stops. <a href="blog-island-drives.html">Read our island-drive plans</a>.</p></div></div>
+  <div class="grid g3" id="routes"></div>
+  <div class="section-head" style="margin-top:56px"><div><h2 style="font-size:1.5rem">On your way</h2><p class="muted">Local businesses worth a stop.</p></div></div>
+  <div class="grid g3" id="gp"></div>
+</div></section>
+
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const R = [
+  {t:"East coast to Bathsheba", d:"Wind down through St. Joseph to the Soup Bowl and the boulders at Bathsheba. Lunch with an Atlantic view.", type:"SUV", img:"Bathsheba coastline photo"},
+  {t:"North Point and the Animal Flower Cave", d:"Up past Speightstown to St. Lucy's cliffs. Rugged, quiet, and windy in the best way.", type:"Compact", img:"North Point cliffs photo"},
+  {t:"South coast, Oistins to Crane", d:"Start with fish cakes in Oistins, stop at Miami Beach, finish on the pink sand at Crane.", type:"Sedan", img:"Crane Beach photo"}
+];
+const gAds=DB.partners.filter(p=>p.spot==="guide").slice(0,A.adLimit());document.getElementById("gp").innerHTML = gAds.map(A.partnerCard).join("") + (gAds.length>=A.adLimit()?"":`<a class="ad-slot" href="advertise.html"><span class="badge badge-grey">Available</span><h3 style="margin:0">Your business here</h3><p class="muted small" style="margin:0">Show your tour, restaurant or attraction to drivers planning their day.</p><span class="btn btn-ghost btn-sm">Advertise with us</span></a>`);
+document.getElementById("routes").innerHTML = R.map(r=>`<article class="route-card" data-reveal><div class="route-label">ISLAND DRIVE</div><div class="body"><h3>${r.t}</h3><p class="muted">${r.d}</p><a class="btn btn-ghost btn-sm" href="vehicles.html#${A.esc(r.type)}">Find a ${A.esc(r.type)} for this</a></div></article>`).join("");
+})();
+</script>
+</body></html>

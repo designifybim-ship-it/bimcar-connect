@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Create an account | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap auth">
+  <div class="auth-side">
+    <div class="on-dark" data-logo=""></div>
+    <img class="auth-people" id="side-img" src="img/people/mum-daughter.webp" width="640" height="1156" decoding="async" alt="A mother and daughter with a suitcase, the mum holding up their rental car keys">
+    <div><h2 style="font-size:clamp(2rem,3.4vw,3rem)" id="side-title">Join BimCar Connect.</h2><p id="side-text">Free for everyone. Renters save favourites and track requests. Companies get a free listing and a dashboard to manage their fleet.</p></div>
+    <ul class="auth-perks">
+      <li><span class="auth-perk-ic" data-icon="tag"></span><div><b>Always free</b><span>No booking fees for renters. Free listings for companies.</span></div></li>
+      <li><span class="auth-perk-ic" data-icon="cal"></span><div><b>Real availability</b><span>Companies keep their calendars up to date.</span></div></li>
+      <li><span class="auth-perk-ic" data-icon="chat"></span><div><b>Talk directly</b><span>Message the rental company from your account.</span></div></li>
+    </ul>
+    <a class="auth-guide" href="getting-started.html">New here? Read the step-by-step setup guide →</a>
+  </div>
+  <div class="auth-main"><div class="auth-box" style="width:min(520px,100%)">
+    <h1 style="font-size:2.4rem">Create an account</h1>
+    <p class="muted">Already have one? <a href="login.html">Log in</a></p>
+    <div class="role-pick" style="margin:22px 0">
+      <label><input type="radio" name="role" value="renter" checked><span data-icon="users"></span><b>I'm renting</b><span class="small muted">Find and book vehicles</span></label>
+      <label><input type="radio" name="role" value="company"><span data-icon="car"></span><b>I run a rental company</b><span class="small muted">List and manage my fleet</span></label>
+    </div>
+
+    <form id="renter-form" class="stack">
+      <label class="f">Full name<input class="input" required autocomplete="name"></label>
+      <label class="f">Email<input class="input" type="email" required autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></label>
+      <label class="f">Password<span class="hint">At least 12 characters</span><span class="pw-field"><input class="input" type="password" minlength="12" maxlength="128" required autocomplete="new-password"><button type="button" class="pw-toggle" data-pw-toggle aria-label="Show password" aria-pressed="false">Show</button></span></label>
+      <label class="check"><input type="checkbox" required><span>I agree to the <a href="legal.html">terms of use</a> and <a href="legal.html#privacy">privacy policy</a>.</span></label>
+      <p class="form-msg" id="r-err" role="alert" aria-live="assertive"></p>
+      <button class="btn btn-primary btn-block" type="submit">Create free account</button>
+    </form>
+
+    <form id="co-form" hidden>
+      <div class="stepper" id="stepper" style="--n:3">
+        <div class="on"><div class="bar"><i></i></div><span>Company</span></div>
+        <div><div class="bar"><i></i></div><span>Location</span></div>
+        <div><div class="bar"><i></i></div><span>Documents</span></div>
+      </div>
+      <div class="pane on" data-step="0"><div class="stack">
+        <label class="f">Company name<input class="input" id="co-name" required></label>
+        <label class="f">Your name<input class="input" required autocomplete="name"></label>
+        <div class="form-grid"><label class="f">Email<input class="input" type="email" id="co-email" required></label><label class="f">WhatsApp number<input class="input" type="tel" placeholder="+1 (246)" required></label></div>
+        <label class="f">Password<span class="hint">At least 12 characters</span><span class="pw-field"><input class="input" type="password" minlength="12" maxlength="128" required autocomplete="new-password"><button type="button" class="pw-toggle" data-pw-toggle aria-label="Show password" aria-pressed="false">Show</button></span></label>
+      </div></div>
+      <div class="pane" data-step="1"><div class="stack">
+        <label class="f">Parish<select class="input" id="parish"></select></label>
+        <label class="f">Address or landmark<input class="input" id="co-base" placeholder="e.g. Next to the Shell station, Hastings"></label>
+        <fieldset style="border:0;padding:0;margin:0"><legend class="f" style="font-weight:600;font-size:.92rem;margin-bottom:8px">Where can renters pick up?</legend><div class="stack" id="pk"></div></fieldset>
+      </div></div>
+      <div class="pane" data-step="2"><div class="stack">
+        <p class="muted small" style="margin:0">Your company must be reviewed before its cars can be published. Verify your email first, then complete company requirements and provide verification documents.</p>
+        <p class="small">Company verification is completed during review. Your company remains unpublished until approved.</p>
+        <div class="notice info"><span data-icon="image"></span><p><b>Real photos only.</b> Every vehicle must be shown in real, recent photos of the actual car. No AI-generated, AI-edited or stock images.</p></div>
+        <label class="check"><input type="checkbox" required><span>I will only upload real photos of the actual vehicles I rent out.</span></label>
+        <label class="check"><input type="checkbox" required><span>I understand BimCar Connect is a listing site only. My company holds valid insurance for every vehicle it lists, is fully responsible for its vehicles, licences, rental agreements, renters' eligibility, damage and accidents, and will indemnify BimCar Connect against claims arising from them.</span></label>
+        <label class="check"><input type="checkbox" required id="co-terms"><span>I agree to the <a href="legal.html">terms of use</a> and <a href="legal.html#privacy">privacy policy</a>. Listing is free and BimCar Connect takes no commission.</span></label>
+      </div></div>
+
+      <p id="co-err" class="form-msg" role="alert" aria-live="assertive"></p>
+      <div class="row between" style="margin-top:16px"><button type="button" class="btn btn-ghost" id="back" hidden>Back</button><span></span><button type="submit" class="btn btn-primary" id="next">Continue</button></div>
+    </form>
+  </div></div>
+</div>
+
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;
+const A=App;
+const rf=document.getElementById("renter-form"), cf=document.getElementById("co-form");
+if(Live.failed||!Live.client){document.getElementById('r-err').textContent='Sign-up is temporarily unavailable. Check your connection and use Retry above.';rf.querySelector('button[type=submit]').disabled=true;document.getElementById('next').disabled=true;return;}
+if(Live.user){location.replace(Live.user.role==='admin'?'admin.html':Live.user.company?'dashboard.html':'account.html');return;}
+const owner=new URLSearchParams(location.search).get('owner')==='1';
+if(owner){document.querySelector('.auth-box h1').textContent='Create owner account';document.querySelector('.role-pick').hidden=true;document.getElementById('side-title').textContent='Manage BimCar Connect.';document.getElementById('side-text').textContent='Register using the designated owner email and verify it to access platform management.';try{sessionStorage.setItem('drivebim.return','/admin.html');}catch{}}
+function role(r){ document.querySelector(`input[name=role][value=${r}]`).checked=true; rf.hidden = r!=="renter"; cf.hidden = r!=="company";
+  document.getElementById("side-title").textContent = r==="company" ? "Put your fleet in front of every visitor." : "Join BimCar Connect.";
+  {const si=document.getElementById("side-img");if(si){const co=r==="company";si.src=co?"img/people/key-handover.webp":"img/people/mum-daughter.webp";si.width=co?1100:640;si.height=co?767:1156;si.alt=co?"A rental company agent handing car keys to a smiling customer":"A mother and daughter with a suitcase, the mum holding up their rental car keys";si.classList.toggle("is-wide",co);}}
+}
+document.querySelectorAll("input[name=role]").forEach(i=>i.addEventListener("change",()=>role(i.value)));
+if(location.hash==="#company") role("company");
+document.getElementById("parish").innerHTML = DB.parishes.map(p=>`<option>${A.esc(p)}</option>`).join("");
+document.getElementById("pk").innerHTML = DB.pickups.map((p,i)=>`<label class="check"><input type="checkbox" value="${A.esc(p)}" ${i<1?'checked':''}><span>${A.esc(p)}</span></label>`).join("");
+
+function friendly(error){
+ const code=String(error?.code||''),msg=String(error?.message||'');
+ if(code==='weak_password'||/password/i.test(msg)&&/weak|short|characters|least/i.test(msg))return 'Choose a stronger password: at least 12 characters, mixing words, numbers or symbols.';
+ if(code==='user_already_exists'||/already registered|already exists/i.test(msg))return 'An account with this email already exists. Log in, or use Forgot password on the login page.';
+ if(/rate|too many/i.test(code+msg)||error?.status===429)return 'Too many sign-up attempts. Please wait a few minutes and try again.';
+ if(/signups? not allowed|disabled/i.test(msg))return 'New sign-ups are paused right now. Please contact BimCar Connect.';
+ if(/invalid.*email|email.*invalid/i.test(msg))return 'Enter a valid email address.';
+ return Live.error(error);
+}
+function done(email,company){
+ const box=document.querySelector('.auth-box');box.replaceChildren();box.classList.add('auth-done');
+ const icon=document.createElement('div');icon.className='auth-done-ic';icon.innerHTML=A.icon('mail');
+ const title=document.createElement('h1');title.textContent='Check your email';
+ const text=document.createElement('p');text.textContent=`We sent a verification link to ${email}. Open it to confirm your address, then sign in.${company?' Your company stays unpublished until BimCar Connect approves it.':''}`;
+ const tip=document.createElement('p');tip.className='small muted';tip.textContent='No email after a few minutes? Check your spam or promotions folder, then resend.';
+ const login=document.createElement('a');login.className='btn btn-primary';login.href='login.html?email='+encodeURIComponent(email);login.textContent='Go to login';
+ const resend=document.createElement('button');resend.className='btn btn-ghost';resend.textContent='Resend verification email';resend.type='button';
+ const status=document.createElement('p');status.className='form-msg ok';status.setAttribute('role','status');
+ resend.addEventListener('click',async()=>{resend.disabled=true;const {error}=await Live.client.auth.resend({type:'signup',email,options:{emailRedirectTo:DriveBimConfig.siteUrl+'/auth-confirm.html'}}).catch(e=>({error:e}));status.classList.toggle('ok',!error);status.textContent=error?'Unable to resend yet. Please wait a minute and try again.':'A fresh verification email is on its way.';setTimeout(()=>resend.disabled=false,60000);});
+ const actions=document.createElement('div');actions.className='row';actions.append(login,resend);
+ box.append(icon,title,text,tip,actions,status);
+}
+async function register(email,password,name,companyName,phone,companyProfile){
+ email=email.trim();
+ const result=await Live.client.auth.signUp({email,password,options:{emailRedirectTo:DriveBimConfig.siteUrl+'/auth-confirm.html',data:{name:name.trim(),company_name:companyName||null,phone:phone||null,company_profile:companyProfile||null}}});
+ if(result.error)throw result.error;
+ // Supabase hides existing accounts by returning a user with no identities.
+ if(result.data?.user&&Array.isArray(result.data.user.identities)&&!result.data.user.identities.length)throw {code:'user_already_exists'};
+ if(result.data?.session){
+  // Email confirmation is switched off in Supabase: the account is ready now.
+  await Live.reloadIdentity();
+  const next=owner&&Live.user?.role==='admin'?'admin.html':Live.user?.company?'dashboard-settings.html#requirements':'account.html';
+  try{sessionStorage.removeItem('drivebim.return');}catch{}
+  A.toast('Account created. Welcome to BimCar Connect!');setTimeout(()=>location.href=next,500);return;
+ }
+ done(email,!!companyName);
+}
+rf.addEventListener('submit',async e=>{e.preventDefault();const err=document.getElementById('r-err');err.textContent='';
+ if(!rf.reportValidity())return;
+ const button=rf.querySelector('button[type=submit]');button.disabled=true;button.classList.add('is-loading');
+ try{await register(rf.querySelector('input[type=email]').value,rf.querySelector('.pw-field input').value,rf.querySelector('input').value);}
+ catch(error){err.textContent=friendly(error);button.disabled=false;button.classList.remove('is-loading');}});
+
+let step=0; const panes=[...cf.querySelectorAll(".pane")];
+function show(){ panes.forEach((p,i)=>p.classList.toggle("on",i===step)); document.querySelectorAll("#stepper>div").forEach((d,i)=>d.classList.toggle("on",i<=step));
+  document.getElementById("back").hidden = step===0; document.getElementById("next").textContent = step===2 ? "Create free company account" : "Continue"; document.getElementById("co-err").textContent=""; }
+document.getElementById("back").addEventListener("click",()=>{ step--; show(); });
+cf.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const bad = [...panes[step].querySelectorAll("input[required],select[required]")].find(i=>!i.checkValidity());
+  if(bad){ bad.reportValidity(); return; }
+  if(step===1&&!document.querySelector('#pk input:checked')){document.getElementById('co-err').textContent='Choose at least one pickup location.';return;}
+  if(step<2){ step++; show(); return; }
+  const button=document.getElementById('next');button.disabled=true;button.classList.add('is-loading');
+  try{await register(document.getElementById('co-email').value,cf.querySelector('.pw-field input').value,cf.querySelector('input[autocomplete=name]').value,document.getElementById('co-name').value.trim(),cf.querySelector('input[type=tel]').value.trim(),{parish:document.getElementById('parish').value,base:document.getElementById('co-base').value.trim(),pickups:[...document.querySelectorAll('#pk input:checked')].map(input=>input.value)});}
+  catch(error){document.getElementById('co-err').textContent=friendly(error);button.disabled=false;button.classList.remove('is-loading');}
+});
+// Required fields are checked per step, so turn off native validation on the whole form
+cf.noValidate = true; show();
+})();
+</script>
+</body></html>

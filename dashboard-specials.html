@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Specials | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<div class="dash"><div id="dash-side"></div>
+<main class="dash-main" id="main">
+<div class="dash-head"><div><h1>Specials</h1><p class="muted" style="margin:6px 0 0">Deals show on your listings, your company page and the Specials page.</p></div><button class="btn btn-primary" id="new"><span data-icon="plus"></span>New special</button></div>
+<div class="grid g2" id="list"></div>
+
+<div class="modal" id="sm" aria-hidden="true"><div class="modal-box" role="dialog" aria-labelledby="sm-t">
+  <div class="modal-head"><h3 id="sm-t">New special</h3><button class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></div>
+  <form id="sf" class="form-grid">
+    <label class="f full">Headline<span class="hint">e.g. "Independence weekend: 3 days for the price of 2"</span><input class="input" name="title" required maxlength="70"></label>
+    <label class="f">Discount<select class="input" name="pct"><option value="10">10% off</option><option value="15">15% off</option><option value="20" selected>20% off</option><option value="25">25% off</option><option value="33">3 for 2</option><option value="0">Freebie, no price change</option></select></label>
+    <label class="f">Promo code<input class="input" name="code" required maxlength="14" style="text-transform:uppercase"></label>
+    <label class="f">Ends on<input class="input" type="date" name="ends" required></label>
+    <label class="f">Applies to<select class="input" name="vehicle" id="s-veh"><option value="">All my vehicles</option></select></label>
+    <label class="f full">Details<textarea class="input" name="desc" required maxlength="200" placeholder="Who it's for, dates, anything included"></textarea></label>
+    <div class="full row" style="justify-content:flex-end"><button class="btn btn-primary" type="submit">Post special</button></div>
+  </form>
+</div></div>
+
+</main></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const CO=A.requireCompany(); if(!CO) return;
+const _co=CO;
+const mine=()=>A.specials().filter(s=>s.company===CO);
+document.getElementById("s-veh").innerHTML += A.vehicles().filter(v=>v.company===CO).map(v=>`<option value="${A.esc(v.id)}">${A.esc(v.name)}</option>`).join("");
+function render(){
+  document.getElementById("list").innerHTML = mine().map(s=>`<div>${A.specialCard(s)}<div class="row" style="margin-top:10px"><a class="btn btn-ghost btn-sm" href="dashboard-boost.html#${A.esc(s.id)}">${A.icon('bolt')}Highlight this special</a><button class="btn btn-danger btn-sm" data-end="${A.esc(s.id)}">End special</button></div></div>`).join("")
+    || `<div class="empty" style="grid-column:1/-1"><h3>No specials running</h3><p class="muted" style="margin:0 auto 16px">A special puts a sale tag on your vehicles and lists you on the Specials page.</p><button class="btn btn-primary" onclick="document.getElementById('new').click()">Post a special</button></div>`;
+}
+document.getElementById("new").addEventListener("click",()=>{ const f=document.getElementById("sf"); f.reset(); f.elements.ends.min=A.todayISO(); f.elements.ends.value=A.addDays(A.todayISO(),21); A.openModal("sm"); });
+document.getElementById("sf").addEventListener("submit",async e=>{
+  e.preventDefault(); const f=e.target, pct=+f.elements.pct.value, btn=f.querySelector('button[type=submit]');
+  if(!f.elements.ends.value||f.elements.ends.value<A.todayISO()){A.toast("Choose an end date from today onwards");return;}
+  const code=f.elements.code.value.toUpperCase().replace(/[^A-Z0-9-]/g,"");
+  if(!code){A.toast("Add a promo code using letters and numbers");return;}
+  const sp = {id:"sp-"+Date.now().toString(36), company:CO, title:f.elements.title.value.trim(), pct, off: pct===33?"3 for 2":pct?pct+"% off":"Freebie", ends:f.elements.ends.value, code, desc:f.elements.desc.value.trim()};
+  btn.disabled=true;btn.classList.add('is-loading');
+  try{
+    await A.saveSpecials([sp,...A.specials()]);
+    const vid=f.elements.vehicle.value;
+    await A.saveVehicles(A.vehicles().map(v=> v.company===CO && (!vid||v.id===vid) ? {...v,special:sp.id} : v));
+    A.closeModal("sm"); render(); A.toast("Special posted");
+  }catch(error){A.toast(Live.error(error));}
+  finally{btn.disabled=false;btn.classList.remove('is-loading');}
+});
+document.getElementById("list").addEventListener("click",async e=>{ const b=e.target.closest("[data-end]"); if(!b) return; b.disabled=true;
+  try{ await A.saveVehicles(A.vehicles().map(v=>v.special===b.dataset.end?{...v,special:null}:v)); await A.saveSpecials(A.specials().filter(s=>s.id!==b.dataset.end)); render(); A.toast("Special ended"); }
+  catch(error){ A.toast(Live.error(error)); b.disabled=false; } });
+window.addEventListener('drivebim:data',render);
+render();
+})();
+</script>
+</body></html>

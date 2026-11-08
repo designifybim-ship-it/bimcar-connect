@@ -1,0 +1,56 @@
+/* Native, keyboard-operable advertising navigation. */
+.nav-ad-menu,.drawer-ad-menu{position:relative;min-width:0;color:var(--ink)}
+.nav-ad-menu summary,.drawer-ad-menu summary{display:flex;align-items:center;justify-content:space-between;gap:7px;list-style:none;cursor:pointer;font:600 13px/1.5 var(--body);color:var(--ink);border-radius:9px}
+.nav-ad-menu summary{padding:9px 11px;white-space:nowrap}
+.nav-ad-menu summary::-webkit-details-marker,.drawer-ad-menu summary::-webkit-details-marker{display:none}
+.nav-ad-menu summary>svg,.drawer-ad-menu summary>svg{display:block;width:11px;height:11px;max-width:11px;max-height:11px;flex:none;transition:transform .16s ease}
+[data-advertising-nav][open]>summary>svg{transform:rotate(180deg)}
+.nav-ad-menu[open]>summary,.nav-ad-menu summary:hover{background:var(--pastel-lavender,#F3EEFF)}
+.ad-dropdown-links{position:absolute;top:calc(100% + 10px);left:0;z-index:120;width:255px;max-width:calc(100vw - 40px);max-height:65dvh;overflow:auto;padding:10px;background:#fff;border:1px solid var(--line);border-radius:15px;box-shadow:0 15px 35px #39245c1a}
+.site-header .nav-links .ad-dropdown-links a{display:block;margin:0;padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.55;font-weight:500;text-decoration:none;white-space:normal;color:var(--ink)}
+.site-header .nav-links .ad-dropdown-links a:hover{background:var(--pastel-blush,#FFF0F6);color:var(--ink)}
+.nav-ad-menu summary:focus-visible,.drawer-ad-menu summary:focus-visible{outline:3px solid var(--brand-violet);outline-offset:3px}
+.drawer-ad-menu{margin-block:2px}
+.drawer-ad-menu summary{padding:12px 14px;font-size:15px}
+.drawer-ad-menu .ad-dropdown-links{position:static;width:100%;max-width:none;max-height:none;margin-block:5px 10px;padding:7px;background:var(--pastel-lavender,#F3EEFF);border:0;box-shadow:none}
+.drawer-ad-menu .ad-dropdown-links a{display:block;padding:11px 13px;border-radius:8px;color:var(--ink);font-size:13px;line-height:1.6;text-decoration:none}
+.drawer-ad-menu .ad-dropdown-links a:hover{background:#fff}
+.social-icons{display:flex;align-items:center;gap:16px;margin-top:22px;flex-wrap:wrap}
+.social-icon{display:grid;place-items:center;width:29px;height:29px;flex:none;color:var(--ink-2)}
+.social-icon>svg{display:block;width:23px;height:23px;max-width:100%;max-height:100%;fill:currentColor;flex:none}
+.social-icon:first-child{color:#E92B9D}.social-icon:nth-child(2){color:#1688ED}.social-icon:nth-child(3){color:#6F42C9}
+@media(min-width:1161px) and (max-width:1270px){.nav-ad-menu summary{font-size:12px;padding-inline:8px}.ad-dropdown-links{left:auto;right:0}}
+@media(prefers-reduced-motion:reduce){.nav-ad-menu summary>svg,.drawer-ad-menu summary>svg{transition:none}}
+
+/* Advertising opens into a clear directory with restrained brand detail. */
+.nav-ad-menu>.ad-dropdown-links,.drawer-ad-menu>.ad-dropdown-links{padding:10px;border:1px solid #E8E0EC;border-radius:16px;background:#fff;box-shadow:0 18px 45px -18px #46265345}
+.nav-ad-menu>.ad-dropdown-links{width:294px;top:calc(100% + 13px);transform-origin:38px 0}
+.nav-ad-menu>.ad-dropdown-links::before,.drawer-ad-menu>.ad-dropdown-links::before{content:"";position:absolute;inset:0 10px auto;height:3px;border-radius:0 0 3px 3px;background:var(--brand-gradient);pointer-events:none}
+.site-header .nav-links .nav-ad-menu>.ad-dropdown-links>a,.drawer-ad-menu>.ad-dropdown-links>a{display:flex;align-items:center;gap:11px;min-height:49px;margin:2px 0;padding:10px 12px;border-radius:9px;white-space:normal;font:600 13px/1.55 var(--body);color:var(--ink);background:#fff;text-decoration:none;transition:background .2s ease!important}
+.site-header .nav-links .nav-ad-menu>.ad-dropdown-links>a:hover,.site-header .nav-links .nav-ad-menu>.ad-dropdown-links>a:focus-visible,.drawer-ad-menu>.ad-dropdown-links>a:hover,.drawer-ad-menu>.ad-dropdown-links>a:focus-visible{color:var(--ink);background:linear-gradient(110deg,#FFF3ED,#F6F0FF 68%,#F0F8FF)}
+.ad-nav-icon{display:grid;place-items:center;width:29px;height:29px;flex:none;border-radius:8px;background:#EFF6FF;color:#0086D9}
+.ad-dropdown-links>a:nth-child(2) .ad-nav-icon{background:#FFF0EA;color:#E85A21}.ad-dropdown-links>a:nth-child(3) .ad-nav-icon{background:#FFF0F7;color:#DB278B}.ad-dropdown-links>a:nth-child(4) .ad-nav-icon{background:#F4EEFF;color:#8650D3}.ad-dropdown-links>a:nth-child(5) .ad-nav-icon{background:#F0F7FF;color:#007CC3}
+.ad-nav-icon>svg{display:block;width:16px;height:16px;fill:currentColor;stroke:none}
+.ad-nav-label{flex:1;min-width:0}
+.ad-nav-arrow{display:grid;place-items:center;flex:none;color:#726A7B;transition:transform .22s cubic-bezier(.2,.8,.2,1),color .2s ease!important}
+.ad-nav-arrow>svg{display:block;width:13px;height:13px;fill:currentColor;stroke:none}
+.ad-dropdown-links>a:is(:hover,:focus-visible) .ad-nav-arrow{transform:translateX(3px);color:#E85A21}
+.site-header .nav-links .nav-ad-menu>summary>svg{transition:transform .24s cubic-bezier(.2,.8,.2,1)!important}
+.site-header .nav-links .nav-ad-menu>summary:is(:hover,:focus-visible)>svg{transform:translateY(2px)}
+.site-header .nav-links .nav-ad-menu[open]>summary>svg{transform:rotate(180deg)}
+.site-header .nav-links .nav-ad-menu[open]>.ad-dropdown-links,.drawer-ad-menu[open]>.ad-dropdown-links{animation:adPanelOpen .24s cubic-bezier(.2,.8,.2,1) both!important}
+.site-header .nav-links .nav-ad-menu[open]>.ad-dropdown-links>a,.drawer-ad-menu[open]>.ad-dropdown-links>a{animation:adLinkOpen .26s cubic-bezier(.2,.8,.2,1) both!important;animation-delay:30ms!important}
+.site-header .nav-links .nav-ad-menu[open]>.ad-dropdown-links>a:nth-child(2),.drawer-ad-menu[open]>.ad-dropdown-links>a:nth-child(2){animation-delay:55ms!important}
+.site-header .nav-links .nav-ad-menu[open]>.ad-dropdown-links>a:nth-child(3),.drawer-ad-menu[open]>.ad-dropdown-links>a:nth-child(3){animation-delay:80ms!important}
+.site-header .nav-links .nav-ad-menu[open]>.ad-dropdown-links>a:nth-child(4),.drawer-ad-menu[open]>.ad-dropdown-links>a:nth-child(4){animation-delay:105ms!important}
+.site-header .nav-links .nav-ad-menu[open]>.ad-dropdown-links>a:nth-child(5),.drawer-ad-menu[open]>.ad-dropdown-links>a:nth-child(5){animation-delay:130ms!important}
+.drawer-ad-menu>summary{border-radius:9px}.drawer-ad-menu[open]>summary{background:#FFF4EF;color:var(--ink)}
+.drawer-ad-menu>.ad-dropdown-links{position:relative;margin-top:7px;margin-bottom:12px;box-shadow:none;padding:9px 5px}
+.drawer-ad-menu>.ad-dropdown-links>a{font-size:12px;padding-inline:9px;gap:9px}
+@keyframes adPanelOpen{from{opacity:0;transform:translateY(7px) scale(.98)}to{opacity:1;transform:none}}
+@keyframes adLinkOpen{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){
+ .site-header .nav-links .nav-ad-menu[open]>.ad-dropdown-links,.site-header .nav-links .nav-ad-menu[open]>.ad-dropdown-links>a,.drawer-ad-menu[open]>.ad-dropdown-links,.drawer-ad-menu[open]>.ad-dropdown-links>a{animation:none!important}
+ .site-header .nav-links .nav-ad-menu>summary>svg,.ad-nav-arrow{transition:none!important}
+ .ad-dropdown-links>a:is(:hover,:focus-visible) .ad-nav-arrow{transform:none}
+}

@@ -1,0 +1,8 @@
+/* Branded native scrollbars; the header has no decorative progress overlay. */
+html{scrollbar-width:thin;scrollbar-color:#8A3FFD #FFE3CF}
+*::-webkit-scrollbar{width:10px;height:10px}
+*::-webkit-scrollbar-track{background:#FFE3CF;border-radius:10px}
+*::-webkit-scrollbar-thumb{border:2px solid #FFE3CF;border-radius:10px;background:linear-gradient(180deg,#FF4F5E,#F4169B 35%,#8A3FFD 65%,#008EFF);background-clip:padding-box;min-height:36px}
+*::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,#FF6671,#FF28AD 35%,#9A50FF 65%,#169CFF);background-clip:padding-box}
+*::-webkit-scrollbar-corner{background:#FFE3CF}
+@media(forced-colors:active){html{scrollbar-color:auto}}

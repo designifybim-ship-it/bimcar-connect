@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Specials | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap page-head">
+  <div class="crumbs"><a href="index.html">Home</a><span class="sep">/</span>Specials</div>
+  <h1>Specials</h1>
+  <p class="lede">Deals posted by rental companies. Tap a code to copy it, then mention it in your booking request.</p>
+</div>
+<div class="wrap">
+  <div class="tabs" id="tabs" role="tablist" style="margin-bottom:24px"><button class="on" data-f="all">All deals</button><button data-f="soon">Ending soon</button><button data-f="long">Long stays</button></div>
+  <div class="deals" id="list"></div>
+  <h2 style="margin-top:64px">Vehicles on special</h2>
+  <div class="vgrid" id="vlist" style="margin-top:20px"></div>
+</div>
+
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+let F="all";
+const days = s=> Math.ceil((new Date(s.ends+"T23:59:59")-new Date())/864e5);
+function render(){
+  let list = A.specials().filter(s=>days(s)>0);
+  if(F==="soon") list = list.filter(s=>days(s)<=30).sort((a,b)=>days(a)-days(b));
+  if(F==="long") list = list.filter(s=>/long|14|week/i.test(s.title+s.desc));
+  const box=document.getElementById("list");
+  const hl=A.activeBoosts("special").map(b=>b.target); list=[...list].sort((a,b)=>hl.includes(b.id)-hl.includes(a.id));
+  box.innerHTML = list.map((s,i)=>A.specialCard(s, hl.includes(s.id)).replace('class="special"',`class="special" style="animation:rise .5s ${i*60}ms cubic-bezier(.2,.8,.2,1) both;opacity:0;transform:translateY(10px)"`)).join("") || '<div class="empty" style="grid-column:1/-1"><h3>No deals here right now</h3><p class="muted" style="margin:0 auto">Check back soon, companies post new specials every week.</p></div>';
+  document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.f===F));
+}
+document.getElementById("tabs").addEventListener("click",e=>{const b=e.target.closest("button"); if(b){F=b.dataset.f; render();}});
+render();
+document.getElementById("vlist").innerHTML = A.vehicles().filter(v=>A.specialFor(v)).map(A.vehicleCard).join("");
+})();
+</script>
+</body></html>

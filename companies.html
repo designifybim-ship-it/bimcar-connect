@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rental companies | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap page-head">
+  <div class="crumbs"><a href="index.html">Home</a><span class="sep">/</span>Rental companies</div>
+  <h1>Rental companies</h1>
+  <p class="lede">Local businesses from Speightstown to St. Philip. A verified badge means we've checked their trading licence and insurance.</p>
+</div>
+<div class="wrap">
+  <div class="row between" style="margin-bottom:22px">
+    <div class="row" id="parish-chips"></div>
+    <label class="check"><input type="checkbox" id="only-verified">Verified only</label>
+  </div>
+  <div class="grid g3" id="list"></div>
+  <div class="band dark" style="margin-top:64px" data-reveal>
+    <div style="max-width:560px;position:relative"><h2>Run a rental company?</h2><p>Listing is free, with no limits and no commission. Add your fleet in a few minutes.</p>
+    <a class="btn btn-gold" href="signup.html#company">List your company for free</a></div>
+  </div>
+</div>
+
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const listed=()=>DB.companies.filter(c=>c.approved&&A.requirementsComplete(c.id));
+const parishes = [...new Set(listed().map(c=>c.parish).filter(Boolean))].sort();
+let P = "", V = false;
+const chips = document.getElementById("parish-chips");
+function render(){
+  chips.innerHTML = ["", ...parishes].map(p=>`<button class="chip ${p===P?'on':''}" data-p="${p}">${p||"All parishes"}</button>`).join("");
+  const list = listed().filter(c=>(!P||c.parish===P)&&(!V||c.verified));
+  const box = document.getElementById("list"); box.classList.remove("refresh"); void box.offsetWidth; box.classList.add("refresh");
+  box.innerHTML = list.map((c,i)=>A.companyCard(c).replace('class="co-card"',`class="co-card" style="animation:rise .55s ${i*60}ms cubic-bezier(.22,.9,.24,1) both;opacity:0;transform:translateY(14px)"`)).join("") || (DB.companies.some(c=>c.approved)?'<div class="empty" style="grid-column:1/-1"><h3>No companies match these filters</h3><p class="muted">Try another parish or show all companies.</p></div>':'<div class="empty" style="grid-column:1/-1"><h3>Rental companies are joining soon</h3><p class="muted">Run a rental company in Barbados? List your fleet for free.</p><a class="btn btn-primary" href="signup.html#company">List your company for free</a></div>');
+}
+chips.addEventListener("click",e=>{const b=e.target.closest(".chip"); if(b){P=b.dataset.p; render();}});
+document.getElementById("only-verified").addEventListener("change",e=>{V=e.target.checked; render();});
+render();
+window.addEventListener('drivebim:data',render);
+})();
+</script>
+</body></html>

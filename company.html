@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Company | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/reviews.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap" style="padding-top:28px">
+  <div class="crumbs"><a href="index.html">Home</a><span class="sep">/</span><a href="companies.html">Rental companies</a><span class="sep">/</span><span id="crumb"></span></div>
+  <div class="co-hero" id="hero"></div>
+</div>
+<div class="wrap detail section-tight" style="padding-top:36px">
+  <div>
+    <h2>Vehicles</h2>
+    <div class="vgrid" id="fleet" style="margin-top:16px"></div>
+    <h2 style="margin-top:48px">Reviews</h2>
+    <div class="grid g2" id="revs" style="margin-top:16px;display:block"></div>
+  </div>
+  <aside class="stack" style="position:sticky;top:96px">
+    <div class="card" id="contact"></div>
+    <div id="co-specials" class="stack"></div>
+  </aside>
+</div>
+
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/reviews.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const co = A.company(decodeURIComponent(location.hash.slice(1)));
+window.onHash = ()=> location.reload();
+if(!co.id){ document.getElementById("main").innerHTML='<div class="wrap section"><div class="empty"><h1>Company not found</h1><p class="muted">This company page may have moved, or the company is not listed yet.</p><a class="btn btn-primary" href="companies.html">See all rental companies</a></div></div>'; return; }
+document.title = co.name + " | BimCar Connect"; document.getElementById("crumb").textContent = co.name;
+if(!A.requirementsComplete(co.id)){ document.getElementById("main").innerHTML='<div class="wrap section"><h1>Company listing unavailable</h1><p>This company has not completed the requirements needed to publish its fleet.</p><a class="btn btn-primary" href="vehicles.html">Find a car</a></div>'; return; }
+const fleet = A.publishedVehicles().filter(v=>v.company===co.id);
+document.getElementById("hero").innerHTML = `
+  <div class="co-cover" aria-hidden="true"></div>
+  <div class="co-id"><span class="co-avatar co-avatar-lg" aria-hidden="true">${A.esc(A.initials(co.name))}</span>
+    <div style="padding-bottom:6px"><h1 style="font-size:clamp(2rem,4vw,3rem);margin:0 0 6px">${A.esc(co.name)}</h1>
+    <div class="row"><span class="tag">${A.icon('pin')}${A.esc(co.parish)}</span>${co.since?`<span class="muted small">On BimCar Connect since ${A.esc(co.since)}</span>`:""}${co.verified?'<span class="badge badge-reef">'+A.icon('shield')+'Verified</span>':''}</div></div>
+  </div>`;
+document.getElementById("fleet").innerHTML = fleet.map(A.vehicleCard).join("") || '<p class="muted">No vehicles listed yet.</p>';
+SiteReviews.mount('#revs',co.id);
+document.getElementById("contact").innerHTML = `<h3>About</h3><p class="muted">${co.about?A.esc(co.about):"This company has not added a description yet."}</p>
+  <div class="stack small">${co.base?`<div class="tag">${A.icon('pin')}${A.esc(co.base)}</div>`:""}${co.phone?`<a class="tag" href="tel:${A.esc(String(co.phone).replace(/[^\d+]/g,''))}">${A.icon('phone')}${A.esc(co.phone)}</a>`:""}${co.email?`<a class="tag" href="mailto:${A.esc(co.email)}">${A.icon('mail')}${A.esc(co.email)}</a>`:""}</div>
+  <h4 style="margin-top:20px">General company requirements</h4><p class="small muted">Individual vehicles may have different requirements. Each car shows its own final rules.</p>${A.requirementsBlock(co.id)}
+  <h4 style="margin-top:20px">How to pay</h4>${A.payBlock(co.id)}
+  <p><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(co.parish+', Barbados')}" target="_blank" rel="noopener noreferrer">View the general pickup area on Google Maps <svg class="ext-ic" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5.5 3.5h7v7M12.5 3.5l-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg></a></p><p class="small muted">Area map only. Confirm the exact collection point with the company.</p><h4 style="margin-top:20px">Pickup spots</h4><div class="row" style="gap:6px">${(co.pickups||[]).map(p=>`<span class="badge badge-grey">${A.esc(p)}</span>`).join("")}</div>
+  ${String(co.phone||'').replace(/\D/g,'').length>=7?`<a class="btn btn-primary btn-block" style="margin-top:18px" href="https://wa.me/${String(co.phone).replace(/\D/g,'')}" target="_blank" rel="noopener">${A.icon('chat')}Message on WhatsApp</a>`:''}`;
+document.getElementById("co-specials").innerHTML = A.specials().filter(s=>s.company===co.id).map(A.specialCard).join("");
+})();
+</script>
+</body></html>

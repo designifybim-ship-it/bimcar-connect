@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Manage vehicles | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<div class="dash"><div id="dash-side"></div>
+<main class="dash-main" id="main">
+<div class="dash-head"><div><h1>Vehicles</h1><p class="muted" style="margin:6px 0 0" id="sub"></p></div><button class="btn btn-primary" id="add"><span data-icon="plus"></span>Add a vehicle</button></div>
+<div class="notice warn" id="requirements-gate" hidden style="margin-bottom:18px"><span data-icon="shield"></span><p><b>Your fleet is unpublished.</b> Complete your mandatory rental requirements before cars can appear to renters. <a href="dashboard-settings.html#requirements">Set rental requirements</a></p></div>
+<div class="row between" style="margin-bottom:16px"><div class="tabs" id="tabs"><button class="on" data-f="all">All</button><button data-f="on">Available</button><button data-f="off">Hidden or booked out</button></div><input class="input" id="q" placeholder="Search your fleet" style="max-width:260px"></div>
+<div class="table-wrap"><table class="t"><thead><tr><th>Vehicle</th><th>Type</th><th>Price per day</th><th>Pickup spots</th><th>Available</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+
+<div class="modal" id="vm" aria-hidden="true"><div class="modal-box" role="dialog" aria-labelledby="vm-title" style="width:min(760px,100%)">
+  <div class="modal-head"><h3 id="vm-title">Add a vehicle</h3><button class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></div>
+  <form id="vf" class="form-grid">
+    <label class="f full">Vehicle name<span class="hint">What renters see, e.g. "Honda Fit" or "Toyota RAV4"</span><input class="input" name="name" required></label>
+    <label class="f">Type<select class="input" name="type" id="v-type"></select></label>
+    <label class="f">Price per day (BBD)<input class="input" type="number" name="price" min="20" step="5" required></label>
+    <label class="f">Seats<input class="input" type="number" name="seats" min="2" max="30" value="5" required></label>
+    <label class="f">Transmission<select class="input" name="trans"><option>Automatic</option><option>Manual</option></select></label>
+    <label class="f">Fuel<select class="input" name="fuel"><option>Petrol</option><option>Diesel</option><option>Hybrid</option><option>Electric</option></select></label>
+    <label class="f">Special<select class="input" name="special" id="v-special"><option value="">No special</option></select></label>
+    <fieldset class="full" style="border:0;padding:0;margin:0"><legend class="f" style="font-weight:600;font-size:.92rem;margin-bottom:8px">Pickup spots</legend><div class="row" id="v-pk"></div></fieldset>
+    <fieldset class="full" style="border:0;padding:0;margin:0"><legend><h3>Vehicle features</h3></legend><p class="small muted">Select the features this car has. Add a custom feature only when it is missing below.</p><div id="vehicle-features"></div><div class="row"><label class="f" style="flex:1">Custom feature<input class="input" id="custom-feature" maxlength="100" placeholder="e.g. Wheelchair ramp"></label><button class="btn btn-ghost btn-sm" type="button" id="add-custom-feature">Add feature</button></div><div id="custom-features" class="row" style="margin-top:12px"></div></fieldset>
+    <section class="full card-flat"><h3>Requirements for this car</h3><p class="small muted">Company requirements are the defaults. Tick Override beside any rule that differs for this car. All search filters and booking checks use this car's final rules.</p><p id="vehicle-policy-status" class="small"></p><button type="button" class="btn btn-ghost btn-sm" id="vehicle-policy-reset">Use company defaults for everything</button><div id="vehicle-policy-editor"></div><label class="check"><input type="checkbox" id="vehicle-policy-confirm" required>I confirm the final requirements and payment terms for this car.</label><details class="faq" style="margin-top:12px"><summary>Preview this car's requirements</summary><div id="vehicle-policy-preview"></div></details></section>
+    <div class="full"><span class="f" style="font-weight:600;font-size:.92rem">Photos</span>
+      <label class="dropzone" id="dz" style="margin-top:6px"><input type="file" accept="image/*" multiple id="photos"><span data-icon="upload" style="display:inline-block;width:26px;height:26px"></span><br><b>Drop photos here or click to upload</b><br><span class="small muted">Landscape, at least 1200 × 800. The first photo is the cover.</span></label>
+      <div class="row" id="previews" style="margin-top:10px"></div>
+      <div class="notice warn" style="margin-top:12px"><span data-icon="image"></span><p><b>Real photos only.</b> Upload photos of this exact vehicle, taken in the last 12 months. No AI-generated, AI-edited, stock or manufacturer images. Listings that break this rule are removed.</p></div>
+      <label class="check" style="margin-top:12px" id="real-ok-wrap" hidden><input type="checkbox" id="real-ok">I confirm these are real, unedited photos of this exact vehicle.</label></div>
+    <div class="full row between" style="margin-top:6px"><label class="row small"><span class="switch"><input type="checkbox" name="available" checked><span></span></span>Show on BimCar Connect</label><button class="btn btn-primary" type="submit" id="save">Add vehicle</button></div>
+  </form>
+</div></div>
+
+<div class="modal" id="del" aria-hidden="true"><div class="modal-box" role="alertdialog" aria-labelledby="del-t" style="width:min(440px,100%)">
+  <h3 id="del-t">Remove this vehicle?</h3><p class="muted" id="del-p"></p>
+  <div class="row" style="justify-content:flex-end"><button class="btn btn-ghost" data-close>Keep it</button><button class="btn btn-danger" id="del-yes">Remove vehicle</button></div>
+</div></div>
+
+</main></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/vehicle-editor.js"></script>
+<script src="js/vehicle-availability.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const CO=A.requireCompany(); if(!CO) return;
+const _co=CO;
+const editor=VehicleEditor.create({company:CO});
+let all = A.vehicles(), F="all", Q="", editing=null, photoUrls=[];
+const mine = ()=> all.filter(v=>v.company===CO);
+document.getElementById("v-type").innerHTML = DB.types.map(t=>`<option>${A.esc(t.id)}</option>`).join("");
+document.getElementById("v-special").innerHTML += A.specials().filter(s=>s.company===CO).map(s=>`<option value="${A.esc(s.id)}">${A.esc(s.title)}</option>`).join("");
+document.getElementById("v-pk").innerHTML = DB.pickups.map(p=>`<label class="chip" style="cursor:pointer"><input type="checkbox" value="${p}" style="accent-color:var(--ultra)">${p}</label>`).join("");
+function render(){
+  const ready=A.requirementsComplete(CO)&&A.company(CO).approved!==false; document.getElementById("requirements-gate").hidden=ready;
+  let list = mine();
+  if(F==="on") list=list.filter(v=>v.available); if(F==="off") list=list.filter(v=>!v.available);
+  if(Q) list=list.filter(v=>v.name.toLowerCase().includes(Q));
+  document.getElementById("sub").textContent = `${mine().length} vehicles, ${ready?mine().filter(v=>v.available&&A.vehiclePolicyComplete(v)).length:0} showing to renters`;
+  document.getElementById("rows").innerHTML = list.map(v=>{const sp=A.specialFor(v); return `<tr data-id="${A.esc(v.id)}">
+    <td><div class="t-veh">${A.carImg(v)}<div><b>${A.esc(v.name)}</b><div class="small muted">${A.esc(v.seats)} seats, ${A.esc(v.trans.toLowerCase())}, ${A.esc(v.fuel.toLowerCase())}</div></div></div></td>
+    <td><span class="badge">${A.esc(v.type)}</span></td>
+    <td><b>${A.moneyHTML(v.price)}</b>${sp?`<div class="small" style="color:#B4184A">${sp.off}</div>`:''}</td>
+    <td class="small">${A.esc(v.pickups.join(", "))}</td>
+    <td><label class="switch"><input type="checkbox" data-toggle ${v.available&&A.vehiclePolicyComplete(v)?'checked':''} aria-label="Show ${A.esc(v.name)}"><span></span></label></td>
+    <td><div class="row" style="flex-wrap:nowrap;gap:6px"><button type="button" class="btn btn-ghost btn-sm" data-availability>Calendar</button><a class="icon-btn" href="vehicle.html#${A.esc(v.id)}" aria-label="View listing">${A.icon('eye')}</a><button class="icon-btn" data-edit aria-label="Edit">${A.icon('edit')}</button><button class="icon-btn" data-del aria-label="Remove">${A.icon('trash')}</button></div></td></tr>`;}).join("")
+    || `<tr><td colspan="6"><div class="empty"><h3>No vehicles here</h3><p class="muted" style="margin:0 auto 16px">Add your first vehicle so renters can find you.</p><button class="btn btn-primary" onclick="document.getElementById('add').click()">Add a vehicle</button></div></td></tr>`;
+}
+async function persist(){try{await A.saveVehicles(all);all=A.vehicles();render();return true;}catch(error){A.toast(Live.error(error));all=A.vehicles();render();return false;}}
+function openForm(v){
+  editing = v ? v.id : null; const f=document.getElementById("vf"); f.reset(); photoUrls=[]; const pv=document.getElementById("previews"); pv.innerHTML=""; delete pv.dataset.existing;
+  document.getElementById("real-ok-wrap").hidden=true; document.getElementById("real-ok").required=false; document.getElementById("real-ok").checked=false;
+  if(v&&v.photoUrls?.length){pv.dataset.existing="1";pv.innerHTML=v.photoUrls.map(u=>`<img src="${A.esc(u)}" alt="" style="width:110px;height:74px;object-fit:cover;border-radius:10px">`).join("")+'<span class="small muted" style="align-self:center">Current photos. Uploading new photos replaces them.</span>';}
+  document.getElementById("vm-title").textContent = v ? "Edit "+v.name : "Add a vehicle";
+  document.getElementById("save").textContent = v ? "Save changes" : "Add vehicle";
+  if(v){ ["name","type","price","seats","trans","fuel"].forEach(k=>f.elements[k].value=v[k]); f.elements.special.value=v.special||""; f.elements.available.checked=v.available&&A.vehiclePolicyComplete(v); }
+  document.querySelectorAll("#v-pk input").forEach(i=>i.checked = v ? v.pickups.includes(i.value) : i.value==="GAIA airport");
+  if(!A.requirementsComplete(CO)) f.elements.available.checked=false;
+  editor.reset(v);
+  A.openModal("vm");
+}
+document.getElementById("add").addEventListener("click",()=>openForm(null));
+document.getElementById("photos").addEventListener("change",e=>{
+  const pv=document.getElementById("previews"); if(pv.dataset.existing){pv.innerHTML="";delete pv.dataset.existing;}
+  if(e.target.files.length){document.getElementById("real-ok-wrap").hidden=false;document.getElementById("real-ok").required=true;}
+  [...e.target.files].slice(0,8).forEach(file=>{if(!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>8388608){A.toast('Use JPEG, PNG or WebP photos smaller than 8 MB.');return;}const r=new FileReader(); r.onload=()=>{ photoUrls.push(r.result); document.getElementById("previews").insertAdjacentHTML("beforeend",`<img src="${r.result}" alt="" style="width:110px;height:74px;object-fit:cover;border-radius:10px;animation:pinPop .4s both">`); }; r.readAsDataURL(file); });
+});
+const dz=document.getElementById("dz"); ["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("over");})); ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,()=>dz.classList.remove("over")));
+dz.addEventListener("drop",e=>{ e.preventDefault(); const inp=document.getElementById("photos"); inp.files=e.dataTransfer.files; inp.dispatchEvent(new Event("change")); });
+document.getElementById("vf").addEventListener("submit",async e=>{
+  e.preventDefault(); const f=e.target;
+  if(f.elements.available.checked && !editor.valid({company:CO})){ A.toast("Complete this car's requirements and confirm its final rules before publishing. Uncheck Show on BimCar Connect to save a draft."); return; }
+  const pickups=[...document.querySelectorAll("#v-pk input:checked")].map(i=>i.value);
+  if(!pickups.length){ A.toast("Pick at least one pickup spot"); return; }
+  const saveBtn=document.getElementById('save');saveBtn.disabled=true;saveBtn.classList.add('is-loading');
+  try{
+  const vehicleId=editing||'v-'+crypto.randomUUID();let uploaded=[];if(photoUrls.length){try{uploaded=await Live.uploadPhotos(CO,vehicleId,photoUrls);}catch(error){A.toast(Live.error(error));return;}}
+  const data = {name:f.elements.name.value.trim(), type:f.elements.type.value, price:+f.elements.price.value, seats:+f.elements.seats.value, trans:f.elements.trans.value, fuel:f.elements.fuel.value,
+    special:f.elements.special.value||null, ...(uploaded.length?{photoPaths:uploaded}:{}), ...editor.read(), available:f.elements.available.checked, pickups};
+  if(editing){ all = all.map(v=>v.id===editing?{...v,...data}:v); }
+  else { all = [{id:vehicleId, make:data.name.split(" ")[0], company:CO, rating:0, trips:0, ...data}, ...all]; }
+  if(await persist()){A.closeModal("vm");A.toast(editing?"Changes saved":`${data.name} added to your fleet`);}
+  }finally{saveBtn.disabled=false;saveBtn.classList.remove('is-loading');}
+});
+const rows=document.getElementById("rows"); let delId=null;
+rows.addEventListener("click",e=>{ const tr=e.target.closest("tr[data-id]"); if(!tr) return; const v=all.find(x=>x.id===tr.dataset.id);
+  if(e.target.closest("[data-availability]")) VehicleAvailability.open(v.id,()=>{all=A.vehicles();render();});
+  if(e.target.closest("[data-edit]")) openForm(v);
+  if(e.target.closest("[data-del]")){ delId=v.id; document.getElementById("del-p").textContent=`${v.name} will no longer show on BimCar Connect. Existing bookings stay in your bookings list.`; A.openModal("del"); }
+});
+rows.addEventListener("change",async e=>{ if(!e.target.matches("[data-toggle]")) return; if(e.target.checked && !A.vehiclePolicyComplete(all.find(v=>v.id===e.target.closest("tr").dataset.id))){ e.target.checked=false; A.toast("Complete rental requirements before publishing."); return; } const id=e.target.closest("tr").dataset.id; all=all.map(v=>v.id===id?{...v,available:e.target.checked}:v); A.toast(e.target.checked?"Showing to renters":"Hidden from renters"); await persist(); });
+document.getElementById("del-yes").addEventListener("click",async()=>{ const v=all.find(x=>x.id===delId); all=all.filter(x=>x.id!==delId); if(await persist()){A.closeModal("del"); A.toast(`${v.name} removed`);} });
+document.getElementById("tabs").addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return; F=b.dataset.f; document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b)); render();});
+document.getElementById("q").addEventListener("input",e=>{Q=e.target.value.toLowerCase(); render();});
+render();
+if(location.hash==="#new") setTimeout(()=>openForm(null),400);
+})();
+</script>
+</body></html>

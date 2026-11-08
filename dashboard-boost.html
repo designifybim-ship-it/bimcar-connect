@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Boost listings | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<div class="dash"><div id="dash-side"></div>
+<main class="dash-main" id="main">
+<div class="dash-head"><div><h1>Boost listings</h1><p class="muted">Get seen first by renters. Boosts are optional and your listing stays free.</p></div><a class="btn btn-primary" href="#new-boost"><span data-icon="bolt"></span>New boost</a></div>
+
+<h2 style="font-size:1.4rem">Pending payment requests</h2><div id="pending-boosts" class="stack" style="margin:18px 0 32px"></div>
+<h2 style="font-size:1.4rem">Your boosts</h2>
+<div class="grid g3" id="mine" style="margin:18px 0 44px"></div>
+
+<h2 style="font-size:1.4rem" id="new-boost">New boost</h2>
+<form id="bf" class="stack" style="margin-top:18px">
+  <div class="card"><h3>Where do you want to show up?</h3><div class="grid g3" id="types" style="margin-top:16px"></div></div>
+  <div class="card"><h3>What and for how long?</h3>
+    <div class="form-grid" style="margin-top:16px">
+      <label class="f" id="target-lbl">Vehicle<select class="input" id="target"></select></label>
+      <label class="f">Start on<input class="input" type="date" id="start" required></label>
+      <fieldset class="full" style="border:0;padding:0;margin:0"><legend class="f">How long</legend><div class="row" id="weeks"></div></fieldset>
+    </div>
+  </div>
+  <div class="card row between"><div><div class="muted small">Total</div><div class="price-num" id="total"></div><div class="small muted" id="when"></div></div><button class="btn btn-gold" type="submit"><span data-icon="bolt"></span>Pay for boost on WhatsApp</button></div>
+  <p class="small muted" style="margin:0">Boosted vehicles and specials are labelled "Featured" so renters know they're paid placements. Arrange payment with BimCar Connect on WhatsApp. Your request stays pending until payment is confirmed; opening WhatsApp does not activate a boost.</p>
+</form>
+
+</main></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const CO=A.requireCompany(); if(!CO) return;
+const _co=CO;
+let B=A.boosts(), W=1;
+const myV=A.publishedVehicles().filter(v=>v.company===CO), myS=A.specials().filter(s=>s.company===CO);
+const tName=id=>(DB.boostTypes.find(t=>t.id===id)||{}).name;
+const label=b=> b.type==="special" ? (myS.find(s=>s.id===b.target)||A.specials().find(s=>s.id===b.target)||{title:"Special"}).title : (A.vehicle(b.target)||{name:"Vehicle"}).name;
+function paymentMessage(request){
+ const selected=label(request),companyName=A.user()?.newCompany||A.company(CO).name;
+ return `Hi BimCar Connect, I would like to pay for a boost.\nReference: ${request.id}\nCompany: ${companyName}\n${request.type==='special'?'Special':'Vehicle'}: ${selected}\nPlacement: ${tName(request.type)}\nDates: ${request.start} to ${request.end} (${request.weeks} week${request.weeks===1?'':'s'})\nTotal: BBD $${request.amount}\nPlease send payment instructions.`;
+}
+function whatsAppURL(request){return 'https://wa.me/'+DB.boostWhatsApp+'?text='+encodeURIComponent(paymentMessage(request));}
+function renderPending(){const pending=A.store.get('boostRequests',[]).filter(r=>r.company===CO&&r.status==='pending');document.getElementById('pending-boosts').innerHTML=pending.length?pending.map(r=>`<div class="card row between"><div><b>${A.esc(label(r))}</b><p class="small muted" style="margin:4px 0">${A.esc(tName(r.type))} · ${A.fmtDate(r.start)} to ${A.fmtDate(r.end)} · ${A.moneyHTML(r.amount)} · Awaiting payment confirmation</p><span class="small">${A.esc(r.id)}</span></div><a class="btn btn-ghost btn-sm" href="${whatsAppURL(r)}" target="_blank" rel="noopener">Continue on WhatsApp</a></div>`).join(''):'<p class="muted small">No pending boost payments.</p>';}
+function render(){ renderPending();
+  const t=A.todayISO(), mine=B.filter(b=>b.company===CO).sort((a,b)=>b.end.localeCompare(a.end));
+  document.getElementById("mine").innerHTML = mine.map(b=>{
+    const total=A.daysBetween(b.start,b.end), left=Math.max(0,Math.round((new Date(b.end)-new Date(t))/864e5)), live=b.start<=t&&b.end>=t, done=b.end<t;
+    return `<div class="boost-card"><div class="head"><span class="ic">${A.icon((DB.boostTypes.find(x=>x.id===b.type)||{}).icon||'bolt')}</span><div style="min-width:0"><b style="display:block">${A.esc(label(b))}</b><span class="small muted">${tName(b.type)}</span></div></div>
+      <div class="row between small"><span class="st ${live?'st-ok':done?'st-done':'st-req'}">${live?'Live':done?'Finished':'Starts '+A.fmtDate(b.start)}</span><span class="muted">${A.fmtDate(b.start)} to ${A.fmtDate(b.end)}</span></div>
+      <div class="progress"><i data-w="${done?100:live?Math.round((total-left)/total*100):0}"></i></div>
+      <div class="row between small"><span class="muted">${total} day${total===1?"":"s"} in total</span>${live||!done?`<span class="muted">${left} days left</span>`:`<button class="link-btn" data-again="${A.esc(b.id)}">Boost again</button>`}</div></div>`;}).join("")
+    || `<div class="empty" style="grid-column:1/-1"><h3>No boosts yet</h3><p class="muted">A boost puts your vehicle or special in front of more renters for a week or more.</p></div>`;
+  setTimeout(()=>document.querySelectorAll("#mine .progress i").forEach(i=>i.style.width=i.dataset.w+"%"),120);
+}
+document.getElementById("types").innerHTML = DB.boostTypes.map((t,i)=>`<label class="pkg"><input type="radio" name="type" value="${A.esc(t.id)}" ${i===0?'checked':''}><span class="ic" style="width:48px;height:48px;border-radius:14px;background:${['var(--orange-100)','var(--blue-50)','var(--green-100)'][i]};display:grid;place-items:center">${A.icon(t.icon)}</span><b>${A.esc(t.name)}</b><span class="small muted">${A.esc(t.desc)}</span><div class="row between"><b>${A.moneyHTML(t.price)}</b><span class="small muted">per week</span></div></label>`).join("");
+document.getElementById("weeks").innerHTML = [1,2,4].map(w=>`<button type="button" class="chip ${w===1?'on':''}" data-w="${w}">${w} week${w>1?'s':''}</button>`).join("");
+const f=document.getElementById("bf"), tg=document.getElementById("target"), st=document.getElementById("start");
+st.value=A.todayISO(); st.min=A.todayISO();
+const type=()=>f.querySelector("input[name=type]:checked").value;
+function targets(){
+  const isS=type()==="special";
+  document.getElementById("target-lbl").firstChild.textContent = isS ? "Special" : "Vehicle";
+  tg.innerHTML = isS ? (myS.length?myS.map(s=>`<option value="${A.esc(s.id)}">${A.esc(s.title)}</option>`).join(""):'<option value="">Post a special first</option>') : (myV.length?myV.map(v=>`<option value="${A.esc(v.id)}">${A.esc(v.name)}</option>`).join(""):'<option value="">Publish a vehicle first</option>');
+  total();
+}
+function total(){ const t=DB.boostTypes.find(x=>x.id===type()); if(!st.value)return; const endISO=A.addDays(st.value,W*7-1);
+  document.getElementById("total").innerHTML = `${A.moneyHTML(t.price*W)} <small>for ${W} week${W>1?'s':''}</small>`;
+  document.getElementById("when").textContent = `Runs ${A.fmtDate(st.value)} to ${A.fmtDate(endISO)}`; }
+f.addEventListener("change",e=>{ if(e.target.name==="type") targets(); else total(); });
+document.getElementById("weeks").addEventListener("click",e=>{ const b=e.target.closest("[data-w]"); if(!b) return; W=+b.dataset.w; document.querySelectorAll("#weeks .chip").forEach(c=>c.classList.toggle("on",c===b)); total(); });
+document.getElementById("mine").addEventListener("click",e=>{ const b=e.target.closest("[data-again]"); if(!b) return; const o=B.find(x=>x.id===b.dataset.again); f.querySelector(`input[value=${o.type}]`).checked=true; targets(); tg.value=o.target; document.getElementById("new-boost").scrollIntoView({behavior:"smooth"}); });
+f.addEventListener("submit",async e=>{ e.preventDefault(); if(!tg.value){ A.toast(type()==="special"?"Post a special first, then highlight it":"Publish a vehicle first, then boost it"); return; }
+  if(!st.value||st.value<A.todayISO()){ A.toast("Choose a start date from today onwards"); return; }
+  const t=DB.boostTypes.find(x=>x.id===type()), end=A.addDays(st.value,W*7-1);
+  if(t.id!=="special" && !A.vehiclePolicyComplete(A.vehicle(tg.value))){A.toast("Complete this vehicle's requirements before requesting a boost.");return;}
+  const existing=A.store.get('boostRequests',[]).find(r=>r.company===CO&&r.target===tg.value&&r.type===t.id&&r.start===st.value&&r.weeks===W&&r.status==='pending');
+  const request=existing||{id:'BR-'+crypto.randomUUID().slice(0,8).toUpperCase(),company:CO,target:tg.value,type:t.id,start:st.value,end,weeks:W,amount:t.price*W,status:'pending',createdAt:new Date().toISOString()};
+  const popup=window.open('about:blank','_blank');if(popup)popup.opener=null;try{if(!existing)await Live.createBoostRequest(request);renderPending();if(popup)popup.location=whatsAppURL(request);else location.href=whatsAppURL(request);A.toast('Boost request saved. Complete the message in WhatsApp to arrange payment.');}catch(error){popup?.close();A.toast(Live.error(error));} });
+function prefill(){ const h=location.hash.slice(1); if(h.startsWith("sp-")){ f.querySelector("input[value=special]").checked=true; targets(); tg.value=h; } else if(A.vehicle(h)){ targets(); tg.value=h; } }
+window.onHash=prefill;
+targets(); render(); prefill();
+})();
+</script>
+</body></html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Log in | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap auth">
+  <div class="auth-side">
+    <div class="on-dark" data-logo=""></div>
+    <img class="auth-people" id="side-img" src="img/people/woman-keys.webp" width="720" height="1001" decoding="async" alt="A smiling woman pointing at the car keys in her hand">
+    <div><h2 style="font-size:clamp(2rem,3.4vw,3rem)">Welcome back.</h2><p>Companies manage their fleet, bookings and specials here. Renters keep track of their trips, messages and favourites.</p></div>
+    <ul class="auth-perks">
+      <li><span class="auth-perk-ic" data-icon="car"></span><div><b>Rental companies</b><span>Update cars, prices, specials and booking requests.</span></div></li>
+      <li><span class="auth-perk-ic" data-icon="chat"></span><div><b>Renters</b><span>See your requests and chat directly with the company.</span></div></li>
+      <li><span class="auth-perk-ic" data-icon="shield"></span><div><b>Private and secure</b><span>Your password is never shared with anyone.</span></div></li>
+    </ul>
+  </div>
+  <div class="auth-main"><div class="auth-box">
+    <h1 style="font-size:2.4rem">Log in</h1>
+    <p class="muted">New here? <a href="signup.html">Create a free account</a></p>
+    <form id="lf" class="stack" style="margin-top:22px" novalidate>
+      <label class="f">Email<input class="input" type="email" id="em" required autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false"></label>
+      <label class="f">Password<span class="pw-field"><input class="input" type="password" id="pw" required autocomplete="current-password"><button type="button" class="pw-toggle" data-pw-toggle aria-label="Show password" aria-pressed="false">Show</button></span></label>
+      <div class="row between small"><span class="muted">Use the email you signed up with</span><button type="button" class="link-btn" id="forgot">Forgot password?</button></div>
+      <p id="err" class="form-msg" role="alert" aria-live="assertive"></p>
+      <p id="note" class="form-msg ok" role="status" aria-live="polite"></p>
+      <button class="btn btn-primary btn-block" type="submit" id="login-btn"><span class="btn-label">Log in</span></button>
+      <button class="btn btn-ghost btn-block" type="button" id="resend" hidden>Resend verification email</button>
+    </form>
+  </div></div>
+</div>
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;
+const A=App, form=document.getElementById('lf'), error=document.getElementById('err'), note=document.getElementById('note');
+const emailInput=document.getElementById('em'), pwInput=document.getElementById('pw'), button=document.getElementById('login-btn'), resend=document.getElementById('resend'), forgot=document.getElementById('forgot');
+const say=(text,ok)=>{error.textContent=ok?'':text;note.textContent=ok?text:'';};
+if(Live.failed||!Live.client){say('Sign-in is temporarily unavailable. Check your connection and use Retry above.');button.disabled=true;forgot.disabled=true;return;}
+function destination(){
+ let saved='';try{saved=sessionStorage.getItem('drivebim.return')||'';sessionStorage.removeItem('drivebim.return');}catch{}
+ const page=saved.split('/').pop().split(/[?#]/)[0];
+ const allowed=!/^(login|signup|reset-password|auth-confirm)\.html$/.test(page);
+ if(saved&&saved.startsWith('/')&&!saved.startsWith('//')&&allowed){
+  if(page==='admin.html'&&Live.user?.role!=='admin')return Live.user?.company?'dashboard.html':'account.html';
+  if(/^dashboard/.test(page)&&!Live.user?.company)return Live.user?.role==='admin'?'admin.html':'account.html';
+  if(page==='account.html'&&(Live.user?.company||Live.user?.role==='admin'))return Live.user.role==='admin'?'admin.html':'dashboard.html';
+  return saved;
+ }
+ return Live.user?.role==='admin'?'admin.html':Live.user?.company?'dashboard.html':'account.html';
+}
+// Already signed in: go straight to the right place.
+if(Live.user){location.replace(destination());return;}
+const params=new URLSearchParams(location.search);
+if(params.get('email'))emailInput.value=params.get('email');
+if(params.get('reset')==='done')say('Password updated. Sign in with your new password.',true);
+function busy(on,label){button.disabled=on;button.classList.toggle('is-loading',on);button.querySelector('.btn-label').textContent=label||'Log in';}
+form.addEventListener('submit',async e=>{
+ e.preventDefault();say('');resend.hidden=true;
+ const email=emailInput.value.trim(), password=pwInput.value;
+ if(!email||!emailInput.checkValidity()){say('Enter a valid email address.');emailInput.focus();return;}
+ if(!password){say('Enter your password.');pwInput.focus();return;}
+ busy(true,'Signing in…');
+ try{
+  const result=await Live.client.auth.signInWithPassword({email,password});
+  if(result.error)throw result.error;
+  await Live.reloadIdentity();
+  if(!Live.user){const confirmed=result.data?.user?.email_confirmed_at;if(!confirmed)throw Object.assign(new Error('unconfirmed'),{code:'email_not_confirmed'});throw new Error('profile');}
+  busy(true,'Signed in');
+  location.href=destination();
+ }catch(err){
+  const code=String(err?.code||''),msg=String(err?.message||'');
+  if(code==='email_not_confirmed'||/not confirmed/i.test(msg)){say('Please verify your email first. Open the link we sent you, or resend it below.');resend.hidden=false;}
+  else if(code==='invalid_credentials'||/invalid login/i.test(msg))say('That email and password don\'t match. Check them, or use Forgot password.');
+  else if(/rate|too many/i.test(code+msg)||err?.status===429)say('Too many attempts. Please wait a minute and try again.');
+  else if(/fetch|network|load failed/i.test(msg))say('Connection problem. Check your internet and try again.');
+  else say('Unable to sign in right now. Please try again.');
+  busy(false);
+ }
+});
+resend.addEventListener('click',async()=>{
+ const email=emailInput.value.trim();if(!email)return;resend.disabled=true;
+ const {error:err}=await Live.client.auth.resend({type:'signup',email,options:{emailRedirectTo:DriveBimConfig.siteUrl+'/auth-confirm.html'}}).catch(e=>({error:e}));
+ say(err?'Unable to resend yet. Please wait a minute and try again.':'A new verification email is on its way. Check your inbox and spam folder.',!err);
+ setTimeout(()=>resend.disabled=false,60000);
+});
+forgot.addEventListener('click',async()=>{
+ const email=emailInput.value.trim();
+ if(!email||!emailInput.checkValidity()){say('Enter your email above, then tap Forgot password.');emailInput.focus();return;}
+ forgot.disabled=true;
+ try{const {error:err}=await Live.client.auth.resetPasswordForEmail(email,{redirectTo:DriveBimConfig.siteUrl+'/reset-password.html'});if(err)throw err;say('If that email has an account, a password-reset link is on its way. Check your inbox and spam folder.',true);}
+ catch(err){say(/rate|too many/i.test(String(err?.message))?'Too many requests. Please wait a minute and try again.':'Unable to send a reset link right now. Please try again shortly.');}
+ finally{setTimeout(()=>forgot.disabled=false,20000);}
+});
+})();
+</script>
+</body></html>

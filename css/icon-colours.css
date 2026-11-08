@@ -1,0 +1,53 @@
+/* Poster-inspired icon medallions; text, inline specs and control states stay independent. */
+:root{
+ --icon-orange:linear-gradient(145deg,#FF792F 0%,#FF6327 40%,#FF4F5E 100%);
+ --icon-blue:linear-gradient(145deg,#D934C6 0%,#8A3FFD 48%,#376CEB 100%);
+ --icon-rose:linear-gradient(145deg,#FF4F5E 0%,#F4169B 100%);
+}
+.ic{display:grid;place-items:center;width:48px;height:48px;flex:none}
+.ic,.step .num,.company-emblem,.sponsor-icon,.social-icon,.chat-brand-icon,.ad-nav-icon,.island-route-tag .route-pin,
+.island-home .hero .perk .ic,.island-home .hero .perk:nth-child(n) .ic,
+.island-home .trust .t>span[data-icon],#booking-chat .chat-brand-icon{
+ background:var(--icon-gradient,var(--icon-orange))!important;
+ color:#fff!important;
+ border-radius:50%!important;
+ border-color:transparent;
+ box-shadow:none;
+ isolation:isolate;
+}
+.ic>svg,.step .num>svg,.company-emblem>svg,.sponsor-icon>svg,.social-icon>svg,.chat-brand-icon>svg,.ad-nav-icon>svg,
+.island-route-tag .route-pin>svg,.island-home .hero .perk .ic>svg,
+.island-home .trust .t>span[data-icon]>svg,#booking-chat .chat-brand-icon>svg{
+ display:block;flex:none;max-width:70%;max-height:70%;color:#fff!important;fill:currentColor;
+}
+.ic>svg{width:24px;height:24px}
+.ic>.solid-icon,.step .num>.solid-icon,.company-emblem>.solid-icon,.sponsor-icon>.solid-icon,
+.social-icon>.solid-icon,.chat-brand-icon>.solid-icon,.ad-nav-icon>svg{stroke:none}
+.island-home .hero .perk:nth-child(3n+2) .ic,
+.island-home .trust .t:nth-child(3n+2)>span[data-icon],
+.fix-list li:nth-child(3n+2) .ic,.step:nth-child(3n+2) .num,
+.promo li:nth-child(3n+2) .ic,.card:nth-child(3n+2) .ic,
+.co-card:nth-child(3n+2) .company-emblem,.partner:nth-of-type(3n+2) .sponsor-icon,
+.social-icon:nth-child(3n+2),.help>.ic,#booking-chat .chat-brand-icon,
+.ad-dropdown-links>a:nth-child(3n+2) .ad-nav-icon{--icon-gradient:var(--icon-blue)}
+.island-home .hero .perk:nth-child(3n) .ic,
+.island-home .trust .t:nth-child(3n)>span[data-icon],
+.fix-list li:nth-child(3n) .ic,.step:nth-child(3n) .num,
+.promo li:nth-child(3n) .ic,.card:nth-child(3n) .ic,
+.co-card:nth-child(3n) .company-emblem,.partner:nth-of-type(3n) .sponsor-icon,
+.social-icon:nth-child(3n),.ad-dropdown-links>a:nth-child(3n) .ad-nav-icon{--icon-gradient:var(--icon-rose)}
+.partner .sponsor-icon{display:grid;place-items:center;width:80px;height:80px;flex:none}
+.partner .sponsor-icon>svg{width:42px;height:42px;opacity:1}
+.social-icons .social-icon{width:38px;height:38px}
+.social-icons .social-icon>svg{width:21px;height:21px}
+.island-route-tag .route-pin{width:36px;height:36px;min-width:36px;min-height:36px}
+.island-home .trust .t>span[data-icon],.island-home .hero .perk .ic{border:0}
+/* Honour users' system colours rather than forcing decorative brand fills. */
+@media(forced-colors:active){
+ .ic,.step .num,.company-emblem,.sponsor-icon,.social-icon,.chat-brand-icon,.ad-nav-icon,.island-route-tag .route-pin,
+ .island-home .hero .perk .ic,.island-home .hero .perk:nth-child(n) .ic,
+ .island-home .trust .t>span[data-icon],#booking-chat .chat-brand-icon{background:Canvas!important;color:CanvasText!important;border:1px solid CanvasText}
+ .ic>svg,.step .num>svg,.company-emblem>svg,.sponsor-icon>svg,.social-icon>svg,.chat-brand-icon>svg,.ad-nav-icon>svg,
+ .island-route-tag .route-pin>svg,.island-home .hero .perk .ic>svg,
+ .island-home .trust .t>span[data-icon]>svg,#booking-chat .chat-brand-icon>svg{color:CanvasText!important}
+}

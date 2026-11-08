@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bookings | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<div class="dash"><div id="dash-side"></div>
+<main class="dash-main" id="main">
+<div class="dash-head"><div><h1>Bookings</h1><p class="muted" style="margin:6px 0 0">Accept requests, then mark cars as picked up and returned.</p></div><div class="row"><a class="btn btn-ghost" href="dashboard-settings.html#payment"><span data-icon="card"></span>Payment settings</a><a class="btn btn-primary" href="dashboard-operations.html#schedule"><span data-icon="cal"></span>Fleet schedule</a></div></div>
+<div class="tabs" id="tabs" style="margin-bottom:16px"></div>
+<div class="table-wrap"><table class="t"><thead><tr><th>Booking</th><th>Renter</th><th>Vehicle</th><th>Dates</th><th>Pickup</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+
+</main></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const CO=A.requireCompany(); if(!CO) return;
+const _co=CO;
+let B = A.store.get("coBookings", DB.bookings), F="request";
+const ST = {cancelled:["Cancelled","st-no"],request:["New request","st-req"],confirmed:["Confirmed","st-ok"],onrent:["On rent","st-on"],completed:["Returned","st-done"],declined:["Declined","st-no"]};
+const NEXT = {request:[["confirmed","Accept","btn-primary"],["declined","Decline","btn-ghost"]], confirmed:[["onrent","Mark picked up","btn-primary"]], onrent:[["completed","Mark returned","btn-primary"]]};
+const MSG = {confirmed:"Booking accepted. The renter can now see how to pay you.", declined:"Request declined", onrent:"Marked as picked up", completed:"Marked as returned"};
+function render(){
+  B=A.store.get('coBookings',[]);
+  const own=B.filter(b=>b.company===CO).sort((a,b)=>String(b.sent||"").localeCompare(String(a.sent||"")));
+  const tabs=[["request","New requests"],["confirmed","Confirmed"],["onrent","On rent"],["completed","Returned"],["declined","Declined"],["cancelled","Cancelled"],["all","All"]];
+  document.getElementById("tabs").innerHTML = tabs.map(([k,t])=>`<button class="${F===k?'on':''}" data-f="${k}">${t}<span class="count">${k==="all"?own.length:own.filter(b=>b.status===k).length}</span></button>`).join("");
+  const list = F==="all"?own:own.filter(b=>b.status===F);
+  document.getElementById("rows").innerHTML = list.map(b=>{const v=A.vehicle(b.vehicle)||{name:"Removed vehicle"}; const s=ST[b.status]||[b.status,"st-req"];
+    return `<tr data-id="${A.esc(b.id)}" style="animation:rise .35s both;opacity:0;transform:translateY(6px)"><td><b title="${A.esc(b.id)}">${A.esc(String(b.id).slice(0,11))}</b>${b.sent?`<div class="small muted">${A.fmtDate(String(b.sent).slice(0,10))}</div>`:""}</td><td>${A.esc(b.renter||"Renter")}${b.initialMessage?`<div class="booking-message-preview">${A.esc(b.initialMessage)}</div>`:""}${b.contact?`<div class="small muted">via ${A.esc(b.contact)}</div>`:""}${b.requirementsAccepted?`<div class="small">Driver age: ${b.driverAge??"not supplied"}${b.licenceYears!==null&&b.licenceYears!==undefined?` · Licence: ${b.licenceYears} years`:""}</div><details style="margin-top:8px;min-width:200px"><summary class="small">Accepted rental requirements</summary>${A.requirementsBlock(v.company,b.requirementsSnapshot,b.paymentSnapshot)}<p class="small muted">Self-declared; check documents before confirming.</p></details>`:'<div class="small muted">Driver eligibility not supplied</div>'}</td><td>${A.esc(v.name)}</td><td>${A.fmtDate(b.from)} to ${A.fmtDate(b.to)}<div class="small muted">${A.daysBetween(b.from,b.to)} days</div></td><td class="small">${A.esc(b.pickup||"")}</td><td><b>${A.moneyHTML(b.total)||"—"}</b></td><td><span class="st ${s[1]}">${s[0]}</span></td>
+    <td><div class="row" style="flex-wrap:nowrap;gap:6px"><button class="btn btn-ghost btn-sm" data-chat="${A.esc(b.id)}">Chat</button>${b.status==='confirmed'||b.status==='onrent'?`<a class="btn btn-ghost btn-sm" href="dashboard-operations.html?handover=${encodeURIComponent(b.id)}&kind=${b.status==='confirmed'?'pickup':'return'}#handovers" title="Record mileage, fuel and damage">Checklist</a>`:''}${(NEXT[b.status]||[]).map(([to,t,c])=>`<button class="btn ${c} btn-sm" data-to="${to}">${t}</button>`).join("")}</div></td></tr>`;}).join("")
+    || `<tr><td colspan="8"><div class="empty"><h3>Nothing here</h3><p class="muted" style="margin:0 auto">Bookings in this stage will show up here.</p></div></td></tr>`;
+}
+document.getElementById("tabs").addEventListener("click",e=>{const b=e.target.closest("button"); if(b){F=b.dataset.f; render();}});
+document.getElementById("rows").addEventListener("click",async e=>{const btn=e.target.closest("[data-to]"); if(!btn) return; const id=btn.closest("tr").dataset.id;
+  const request=B.find(b=>b.id===id), car=request&&A.vehicle(request.vehicle);
+  if(btn.dataset.to==='confirmed'&&request&&request.from<A.todayISO()){A.toast('The pickup date for this request has passed. Decline it, or chat with the renter about new dates.');return;}
+  if(btn.dataset.to==='confirmed'&&car&&!A.vehicleAvailable({...car,available:true},request.from,request.to,id)){A.toast('This car is unavailable for those dates. Resolve the calendar conflict before accepting.');return;}
+  btn.disabled=true;try{await Live.changeBooking(id,btn.dataset.to);B=A.store.get('coBookings',[]);A.toast(MSG[btn.dataset.to]);render();}catch(error){A.toast(Live.error(error));btn.disabled=false;}});
+render();
+Live.refreshUnread().catch(()=>{});
+window.addEventListener('drivebim:data',render);
+})();
+</script>
+</body></html>

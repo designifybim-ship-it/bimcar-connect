@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<div class="dash"><div id="dash-side"></div>
+<main class="dash-main" id="main">
+<div id="status-note"></div>
+<div class="dash-head"><div><p class="muted" style="margin:0 0 4px" id="date"></p><h1 id="greet">Welcome</h1></div>
+  <div class="row"><a class="btn btn-ghost" href="dashboard-operations.html"><span data-icon="sun"></span>Today's pick-ups & returns</a><a class="btn btn-ghost" href="dashboard-specials.html"><span data-icon="tag"></span>Post a special</a><a class="btn btn-primary" href="dashboard-vehicles.html#new"><span data-icon="plus"></span>Add a vehicle</a></div></div>
+<div class="kpis" id="kpis">
+  <a class="kpi feature" href="dashboard-bookings.html"><div class="k-label">New booking requests</div><div class="k-num" id="k-req">0</div><div class="k-delta" id="k-req-d">Waiting for your reply</div></a>
+  <a class="kpi" href="dashboard-bookings.html"><div class="k-label">Upcoming pickups</div><div class="k-num" id="k-up">0</div><div class="k-delta" id="k-up-d">Confirmed rentals ahead</div></a>
+  <a class="kpi" href="dashboard-vehicles.html"><div class="k-label">Cars showing to renters</div><div class="k-num" id="k-cars">0</div><div class="k-delta" id="k-cars-d">of 0 in your fleet</div></a>
+  <a class="kpi" href="dashboard-bookings.html"><div class="k-label">Booked this month (<span data-currency-label>BBD</span>)</div><div class="k-num" id="k-rev">0</div><div class="k-delta" id="k-rev-d">Confirmed, on rent and returned</div></a>
+</div>
+<div class="grid dash-row" style="grid-template-columns:1.6fr 1fr;margin-top:22px" id="row2">
+  <div class="card"><div class="row between"><h3 style="margin:0">Booking requests, last 14 days</h3><span class="small muted" id="chart-total"></span></div><div class="bars" id="bars" role="img" aria-label="Booking requests per day for the last 14 days"></div><div class="bar-labels" id="bl"></div></div>
+  <div class="card"><div class="row between"><h3 style="margin:0">New requests</h3><a class="small" href="dashboard-bookings.html">All bookings</a></div><div id="reqs"></div></div>
+</div>
+<div class="grid g3" style="margin-top:22px">
+  <div class="card"><div class="row between"><h3 style="margin:0">Upcoming pickups</h3><a class="small" href="dashboard-bookings.html">All</a></div><div id="pickups"></div></div>
+  <div class="card"><div class="row between"><h3 style="margin:0">Boosts</h3><a class="small" href="dashboard-boost.html">Manage</a></div><div id="design"></div></div>
+  <div class="card"><div class="row between"><h3 style="margin:0">Required: get ready to go live <a class="small" style="font-weight:500;margin-left:6px" href="getting-started.html#companies">Setup guide</a></h3><span class="small muted" id="prog-label"></span></div><div class="progress" style="margin:12px 0 16px"><i id="prog"></i></div><div class="stack checklist" id="checklist"></div></div>
+</div>
+</main></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;
+const A=App, CO=A.requireCompany(); if(!CO) return;
+const u=A.user();
+const h=new Date().getHours();
+document.getElementById("greet").textContent=(h<12?"Good morning":h<17?"Good afternoon":"Good evening")+", "+(u.name||"there").split(" ")[0];
+document.getElementById("date").textContent=new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+const empty=(text,link,label)=>`<div class="mini-empty"><p class="muted">${text}</p>${link?`<a class="btn btn-ghost btn-sm" href="${link}">${label}</a>`:''}</div>`;
+const when=b=>`<div class="when"><b>${A.parseDay(b.from)}</b><span>${A.fmtDate(b.from,{month:"short"})}</span></div>`;
+let first=true;
+function setNum(id,value,pre){const el=document.getElementById(id);if(first){el.dataset.count=value;if(pre)el.dataset.pre=pre;A.countUp(el);}else el.textContent=(pre||'')+Math.round(value).toLocaleString('en-US');}
+function render(){
+ const c=A.company(CO), today=A.todayISO(), month=today.slice(0,7);
+ const cars=A.vehicles().filter(v=>v.company===CO);
+ const showing=cars.filter(v=>v.available&&A.vehiclePolicyComplete(v)&&c.approved);
+ const B=A.store.get("coBookings",[]).filter(b=>b.company===CO);
+ const reqs=B.filter(b=>b.status==="request").sort((a,b)=>a.from.localeCompare(b.from));
+ const upcoming=B.filter(b=>(b.status==="confirmed"&&b.from>=today)||b.status==="onrent").sort((a,b)=>a.from.localeCompare(b.from));
+ const booked=B.filter(b=>["confirmed","onrent","completed"].includes(b.status)&&String(b.from).slice(0,7)===month).reduce((n,b)=>n+(Number(b.total)||0),0);
+ const usd=A.cur()==='USD';
+ setNum('k-req',reqs.length);setNum('k-up',upcoming.length);setNum('k-cars',showing.length);setNum('k-rev',usd?booked/A.RATE:booked,'$');
+ document.getElementById('k-req-d').textContent=reqs.length?'Reply soon to win the booking':'You\'re all caught up';
+ document.getElementById('k-up-d').textContent=upcoming[0]?'Next: '+A.fmtDate(upcoming[0].from,{weekday:'short',day:'numeric',month:'short'}):'No confirmed rentals yet';
+ document.getElementById('k-cars-d').textContent=`of ${cars.length} in your fleet`;
+ // Requests per day, last 14 days
+ const days=[...Array(14)].map((_,i)=>A.addDays(today,i-13));
+ const counts=days.map(d=>B.filter(b=>String(b.sent||'').slice(0,10)===d||(!b.sent&&b.from===d)).length), mx=Math.max(1,...counts), total=counts.reduce((a,b)=>a+b,0);
+ document.getElementById('chart-total').textContent=total?`${total} request${total===1?'':'s'}`:'No requests yet';
+ document.getElementById("bars").innerHTML=counts.map((v,i)=>`<div class="${v?'hi':'zero'}" data-v="${v} request${v===1?'':'s'} · ${A.fmtDate(days[i],{day:'numeric',month:'short'})}" style="height:${v?Math.max(8,v/mx*100):4}%;animation-delay:${i*45}ms"></div>`).join("");
+ document.getElementById("bl").innerHTML=days.map((d,i)=>`<span>${i%2?'':A.parseDay(d)}</span>`).join("");
+ document.getElementById("reqs").innerHTML=reqs.length?reqs.slice(0,5).map(b=>{const v=A.vehicle(b.vehicle)||{name:"Removed vehicle"};return `<div class="list-item">${when(b)}<div style="flex:1;min-width:0"><b>${A.esc(b.renter||'Renter')}</b><div class="small muted">${A.esc(v.name)}, ${A.daysBetween(b.from,b.to)} days</div></div><a class="btn btn-gold btn-sm" href="dashboard-bookings.html">Review</a></div>`;}).join(""):empty("No new requests. You're all caught up.");
+ document.getElementById("pickups").innerHTML=upcoming.length?upcoming.slice(0,5).map(b=>{const v=A.vehicle(b.vehicle)||{name:"Removed vehicle"};return `<div class="list-item">${when(b)}<div style="min-width:0"><b>${A.esc(v.name)}</b><div class="small muted">${A.esc(b.renter||'Renter')}, ${A.esc(b.pickup||'')}</div></div>${b.status==='onrent'?'<span class="st st-on">On rent</span>':''}</div>`;}).join(""):empty("Confirmed rentals will show here.");
+ const live=A.activeBoosts().filter(b=>b.company===CO);
+ document.getElementById("design").innerHTML=(live.length?live.map(b=>{const v=A.vehicle(b.target);const left=Math.max(0,Math.round((new Date(b.end)-new Date(today))/864e5));return `<div class="list-item"><span class="badge badge-gold">${A.icon('bolt')}Live</span><div style="flex:1;min-width:0"><b>${A.esc(v?v.name:"Special")}</b><div class="small muted">${A.esc((DB.boostTypes.find(t=>t.id===b.type)||{}).name||'Boost')}, ${left} days left</div></div></div>`;}).join(""):'<p class="muted" style="margin:10px 0 0">No boosts running. Boosted vehicles get seen first and are labelled Featured.</p>')+`<a class="btn btn-ghost btn-sm" style="margin-top:14px" href="dashboard-boost.html">${A.icon('bolt')}Boost a vehicle</a>`;
+ // Real setup checklist
+ const items=A.companySetupSteps(CO).map(st=>[st.title,st.done,st.href]);
+ const doneN=items.filter(i=>i[1]).length;
+ document.getElementById("checklist").innerHTML=doneN===items.length?`<div class="all-set"><span class="tick" aria-hidden="true">${A.icon('check')}</span><div><b>You're all set</b><p class="small muted">Your company is live and renters can book your cars. Keep your calendar and prices up to date.</p></div></div>`:items.map(([t,d,href])=>`<a class="check-item${d?' done':''}" href="${href}"><span class="tick" aria-hidden="true">${d?A.icon('check'):''}</span><span>${t}</span><span class="sr">${d?'(done)':'(to do)'}</span></a>`).join("");
+ document.getElementById('prog-label').textContent=`${doneN} of ${items.length}`;
+ requestAnimationFrame(()=>document.getElementById("prog").style.width=(doneN/items.length*100)+"%");
+ document.getElementById('status-note').innerHTML=!c.approved?`<div class="notice info dash-status">${A.icon('shield')}<p><b>Your company is awaiting approval.</b> Set up your requirements and vehicles now. Your cars go live as soon as BimCar Connect approves your company. Questions? <a href="contact.html">Contact us</a>.</p></div>`:(!showing.length?`<div class="notice warn dash-status">${A.icon('info')}<p><b>You're approved, but no cars are showing yet.</b> Add a vehicle, finish its requirements and switch on <i>Show on BimCar Connect</i>.</p></div>`:'');
+ first=false;
+}
+render();
+window.addEventListener('drivebim:data',render);
+window.addEventListener('bimcar:currency-change',render);
+})();
+</script>
+</body></html>

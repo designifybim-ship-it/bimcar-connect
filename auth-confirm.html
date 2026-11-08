@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Verify email | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body>
+<script src="js/experience.js"></script><div id="site-header"></div><main id="main" class="wrap section verify-page">
+<div class="verify-card" id="verify-card" data-state="checking">
+  <div class="verify-burst" aria-hidden="true"></div>
+  <div class="verify-badge" id="verify-ic" aria-hidden="true"><span class="spinner"></span></div>
+  <p class="verify-kicker" id="verify-kicker">Email verification</p>
+  <h1 id="verify-title">Checking your link…</h1>
+  <p class="verify-text" id="verify-status" role="status">One moment while we confirm your email address.</p>
+  <div class="verify-actions" id="verify-actions"></div>
+  <form class="verify-resend" id="verify-resend" hidden novalidate>
+    <label class="f">Your email<input class="input" type="email" id="resend-email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required placeholder="you@example.com"></label>
+    <button class="btn btn-primary btn-block" type="submit" id="resend-btn">Send me a new link</button>
+    <p class="form-msg" id="resend-msg" role="status" aria-live="polite"></p>
+  </form>
+  <p class="verify-foot small muted" id="verify-foot"></p>
+</div>
+</main><div id="site-footer"></div><script src="js/data.js"></script><script src="vendor/supabase-2.119.0.js"></script><script src="js/live-config.js"></script><script src="js/live.js"></script><script src="js/app.js"></script><script src="js/chat.js"></script><script>(async()=>{
+const params=new URLSearchParams(location.hash.slice(1)+'&'+location.search.slice(1));
+const linkError=params.get('error_code')||params.get('error_description')||params.get('error');
+const hadToken=params.has('access_token')||params.has('code');
+history.replaceState(null,'',location.pathname);
+await Live.ready;
+const A=App, card=document.getElementById('verify-card'), ic=document.getElementById('verify-ic'), title=document.getElementById('verify-title'), text=document.getElementById('verify-status'), kicker=document.getElementById('verify-kicker'), actions=document.getElementById('verify-actions'), foot=document.getElementById('verify-foot'), resend=document.getElementById('verify-resend');
+const btn=(href,label,cls)=>`<a class="btn ${cls||'btn-primary'}" href="${href}">${label}</a>`;
+function state(name){card.dataset.state=name;}
+if(Live.user){
+ state('ok');
+ const first=(Live.user.name||'').split(' ')[0];
+ kicker.textContent='All set';
+ title.textContent=hadToken?'Your email is verified!':'You\'re signed in';
+ ic.innerHTML=A.icon('check');
+ if(Live.user.role==='admin'){
+  text.textContent=`Welcome${first?', '+first:''}. Your admin account is active.`;
+  actions.innerHTML=btn('admin.html','Open admin')+btn('index.html','Go to the homepage','btn-ghost');
+ }else if(Live.user.company){
+  text.textContent=`Welcome${first?', '+first:''}! You're signed in. Next, add your rental requirements and your first car. Your company goes live once BimCar Connect approves it.`;
+  actions.innerHTML=btn('dashboard-settings.html#requirements','Set up my company')+btn('dashboard.html','Open my dashboard','btn-ghost');
+ }else{
+  text.textContent=`Welcome to BimCar Connect${first?', '+first:''}! You're signed in and ready to book.`;
+  actions.innerHTML=btn('vehicles.html','Find a car')+btn('account.html','My trips','btn-ghost');
+  let n=6;foot.textContent=`Taking you to the cars in ${n} seconds…`;
+  const t=setInterval(()=>{n--;if(n<=0){clearInterval(t);location.href='vehicles.html';}else foot.textContent=`Taking you to the cars in ${n} seconds…`;},1000);
+  actions.addEventListener('click',()=>clearInterval(t));
+ }
+ if(hadToken)A.toast('Email verified. Welcome aboard!');
+}else if(linkError){
+ state('expired');
+ kicker.textContent='Link problem';
+ title.textContent='This link has expired';
+ ic.innerHTML=A.icon('info');
+ text.textContent='Verification links work once and expire after a while. Your email may already be verified, so try logging in first. If that doesn\'t work, get a fresh link below.';
+ actions.innerHTML=btn('login.html','Try logging in');
+ resend.hidden=false;
+ foot.textContent='Tip: open the newest email we send, and use the link within an hour.';
+}else{
+ state('idle');
+ kicker.textContent='Email verification';
+ title.textContent=Live.failed?'We couldn\'t reach the sign-in service':'Already verified?';
+ ic.innerHTML=A.icon('mail');
+ text.textContent=Live.failed?'Please check your connection and try again in a moment.':'If you\'ve already clicked your verification link, just log in. Need a new link? Enter your email below.';
+ actions.innerHTML=btn('login.html','Log in');
+ resend.hidden=!!Live.failed;
+}
+resend.addEventListener('submit',async e=>{
+ e.preventDefault();const input=document.getElementById('resend-email'),msg=document.getElementById('resend-msg'),b=document.getElementById('resend-btn');
+ if(!input.value.trim()||!input.checkValidity()){msg.classList.remove('ok');msg.textContent='Enter the email you signed up with.';input.focus();return;}
+ b.disabled=true;b.classList.add('is-loading');
+ const {error}=await Live.client.auth.resend({type:'signup',email:input.value.trim(),options:{emailRedirectTo:DriveBimConfig.siteUrl+'/auth-confirm.html'}}).catch(err=>({error:err}));
+ b.classList.remove('is-loading');
+ msg.classList.toggle('ok',!error);
+ msg.textContent=error?(/rate|too many|seconds/i.test(String(error.message))?'Please wait a minute before asking for another link.':'We couldn\'t send a link right now. If your email is already verified, just log in.'):'Done! Check your inbox (and spam) for a new link from BimCar Connect.';
+ setTimeout(()=>b.disabled=false,error?5000:60000);
+});
+})();</script></body></html>

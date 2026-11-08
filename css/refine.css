@@ -1,0 +1,235 @@
+/* BimCar Connect refinement: human-scale type, confident surfaces and flat controls. */
+body{font-size:17px;line-height:1.7}
+p{line-height:1.8}.lede{font-size:1.1rem;line-height:1.85}
+h1,h2,h3,h4{letter-spacing:normal;font-weight:700}
+.island-kicker,.journal-category,.journal-cover>span,.arrival-coordinates,.island-coordinate,.booking-title,.badge,.tag,.k-label,.logo-sub,.route-label,.article-meta,.sponsor,.demo-banner{letter-spacing:normal!important;text-transform:none}
+.island-kicker{font-size:12px;line-height:1.7}.journal-category{font-size:12px}.journal-cover>span{font-size:11px;line-height:1.7}.arrival-coordinates,.island-coordinate{font-size:11px}.island-home .hero .lede{font-size:17px;line-height:1.9}.island-home .hero .perk b{font-size:12px}.island-home .hero .perk span{font-size:11px}.island-home .search-card .f{font-size:12px}.island-home .search-card .input{font-size:14px}.island-home .trust .t b{font-size:12px}.island-home .trust .t span{font-size:11px}.island-home .problem .lede{font-size:16px}.island-home .fix-list b{font-size:14px}.island-home .fix-list span{font-size:13px}.island-home .promo p,.island-home .step p,.journal-card-copy>p{font-size:14px;line-height:1.85}.island-home .promo ul{font-size:13px}.article-body{font-size:16px}.article-tip{font-size:14px}.article-toc a{font-size:13px}.article-meta{font-size:12px}.f{font-size:14px}.small{font-size:.88rem}
+/* Text is neutral on light surfaces; headings carry the four-colour identity. */
+.text-gradient,main h1,main h2,main h3,main h4,.site-footer h4{color:#8A3FFD}
+@supports (background-clip:text){
+ main h1,main h2,main h3,main h4,.site-footer h4,.text-gradient{background:var(--heading-gradient);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+ main :is(h1,h2,h3,h4) a,main :is(h1,h2,h3,h4) .blue,.hero h1 .blue,.island-home .hero h1 .blue,.island-word{background:var(--heading-gradient);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+ .chat-sidebar h2,.chat-sidebar h3,.phone-story h2,.phone-story h3{background:none;color:inherit;-webkit-text-fill-color:currentColor}
+}
+/* Legacy dark-texture sections now use light tints, so ordinary copy stays legible. */
+.sec-blue,.sec-orange,.sec-navy,.sec-blue-dark,.sec-mint,.island-home .sec-blue,.island-home .sec-orange,.island-home .sec-navy,.help,.island-home .help,.free,.band,.band.dark,.auth-side{color:var(--ink)}
+.sec-navy::before{display:none}.sec-navy .muted,.island-home .sec-navy .muted,.sec-blue .center-head p,.sec-blue .section-head p,.help p,.island-home .help p,.band p,.free p,.auth-side p{color:var(--muted)}
+.sec-blue .arrow-link{color:var(--brand-ocean)}.island-home .sec-navy .island-kicker{color:var(--muted)}
+.help,.island-home .help{border:1px solid var(--line)}.help h3,.island-home .help h3{color:#8A3FFD}.help>.ic{border-color:#E5D9E9;background:#FCE7EF;color:#A32361}.help p{font-size:15px;line-height:1.85;max-width:65ch}.help>div{min-width:0;flex:1 1 350px}.help .btn{color:#fff}.help .btn-ghost{color:var(--brand-ocean)}
+.free,.band,.band.dark,.auth-side{background:linear-gradient(125deg,var(--pastel-blush),var(--pastel-lavender) 70%,var(--pastel-sky));border:1px solid var(--line)}.free-item{background:#FFFFFFBA;border-color:var(--line)}.free-item .big{color:#A82B47}.auth-side .ph.dark{background:#fff;border-color:var(--line);color:var(--muted)}
+.lede,.muted,.journal-category,.island-kicker,.island-coordinate,.arrival-coordinates,.article-meta,.journal-cover>span,.vcard .co,.co-card .row .small{color:var(--muted)}.journal-cover>span{color:#fff}.booking-title,.booking-title svg{color:#fff}.island-word::after{display:none}
+/* Flat, asymmetric corners make actions recognisable without a glow. */
+.btn{border-radius:16px 7px 16px 7px;min-height:46px;padding:12px 21px;font-size:14px;line-height:1.45;box-shadow:none!important;transition:background .18s ease,border-color .18s ease,transform .18s ease}
+.btn-primary,.btn-gold{background:var(--brand-action);color:#fff;border-color:transparent;box-shadow:none!important}
+.btn-primary:hover,.btn-gold:hover{background:linear-gradient(115deg,#FF6671,#FF28AD 35%,#9A50FF 65%,#169CFF);color:white;transform:translateY(-1px);box-shadow:none!important}
+.btn-ghost,.btn-outline{border-color:#CAD9EC;background:#fff;color:#155CB0}.btn-ghost:hover,.btn-outline:hover{background:#EDF5FF;border-color:#8FACD3;color:#114984;box-shadow:none!important}
+.btn:active{transform:translateY(0)}.btn:focus-visible{outline:3px solid #8E155F;outline-offset:3px;box-shadow:none!important}.btn .ripple{display:none!important}.btn-sm{font-size:13px;min-height:40px;padding:10px 15px}.btn:disabled{transform:none;opacity:.6}.site-header .btn{border-radius:14px 6px 14px 6px!important}.island-home .search-card .btn{min-height:48px;font-size:14px}.arrival-skip{box-shadow:none;border-radius:16px 7px 16px 7px;font-size:14px}.arrival-skip:hover{background:#F8F1FD;box-shadow:none}.arrow-link{font-size:14px;letter-spacing:normal}.message-launcher{box-shadow:none}.message-launcher:hover{box-shadow:none}
+/* Real car photographs sit in softer, intentionally asymmetric frames. */
+.vcard{border:1px solid #E6DDED;border-radius:22px 22px 38px 22px;padding:12px;box-shadow:0 9px 28px -20px #44235936;overflow:hidden;transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
+.vcard:hover{border-color:#C7A9E3;box-shadow:0 15px 36px -25px #44235955;transform:translateY(-3px)}
+.vcard .media{position:relative;aspect-ratio:16/10;border-radius:28px 11px 42px 11px;overflow:hidden;background:#fff;isolation:isolate}.vcard .car-img{position:absolute;inset:0;width:100%;height:100%;min-height:0;border-radius:inherit;background:transparent;aspect-ratio:auto}.vcard .car-img img{width:100%;height:100%;object-fit:contain}.vcard .car-img::after{display:none}.vcard-body{padding:21px 8px 11px;gap:13px}.vcard .top h3{font-size:17px;line-height:1.4}.vcard .co{font-size:13px;line-height:1.7}.vcard .specs .tag{font-size:12px;line-height:1.7}.vcard .price{gap:14px;align-items:center;padding-top:18px}.vcard .price .btn{font-size:12px;padding:10px 14px}.vcard .flags{left:14px;top:14px;right:58px;gap:7px}.vcard .badge{font-size:11px;line-height:1.5}.vcard .fav{top:12px;right:12px;border-radius:12px;box-shadow:none;border:1px solid #E9DFF1}.vcard.unavailable,.vcard.unavailable:hover{background:#F0F1F3;border-color:#CBD0D8;transform:none;box-shadow:none}.vcard.unavailable .media,.vcard.unavailable .car-img{background:#E3E6E9}.vcard.unavailable .price .btn{background:#E0E4E9;color:#344154;border-color:#BBC3CE}.gallery .main{border-radius:30px 12px 38px 12px}.gallery .thumb{border-radius:14px 6px 14px 6px}.guide-car-photo img,.island-home .car-hero img{border-radius:0}
+/* Registered businesses have their own identity without competing with vehicle photos. */
+.co-card{border-radius:24px 12px 24px 12px;padding:25px;gap:18px;background:linear-gradient(145deg,#fff,var(--pastel-sky));border-color:var(--line);box-shadow:0 8px 26px -20px #44235938}.co-card .top{align-items:flex-start;gap:16px}.co-card .top>div{min-width:0}.co-card .ph.round{border-radius:18px 8px 18px 8px;background:#F5EDFC;border:1px solid #E5D6F0}.co-card h3{font-size:17px;line-height:1.45;margin-bottom:9px}.co-card .tag{font-size:12px;line-height:1.7}.co-card .row{gap:10px 14px}.co-card .row .small{font-size:12px}.co-card .pk{gap:8px}.co-card .pk .badge{font-size:11px;line-height:1.6;white-space:normal}.co-card:hover{transform:translateY(-3px);box-shadow:0 15px 32px -24px #44235945}.new-rental-card{position:relative}.new-rental-label{align-self:flex-start;padding:6px 10px;border-radius:9px 4px 9px 4px;background:#F5E8F2;color:#85125C;font-size:11px;font-weight:600}
+#popular,#new-rentals{gap:26px}#popular>.vcard,#new-rentals>.co-card{min-width:0}
+/* Sponsored placements are premium, clearly labelled, and visually separate from listings. */
+.partner{position:relative;min-width:0;border:2px solid transparent;border-radius:24px 12px 38px 12px;background:linear-gradient(#fff,#fff) padding-box,var(--brand-gradient) border-box;box-shadow:0 14px 34px -25px #6B2C7D55;overflow:hidden;transition:transform .22s ease,box-shadow .22s ease}.partner:hover{transform:translateY(-3px);box-shadow:0 18px 40px -27px #6B2C7D66}.partner .media{position:relative;min-height:170px;background:radial-gradient(ellipse at 90% 10%,#FFDCE8,transparent 60%),linear-gradient(140deg,var(--pastel-lavender),var(--pastel-blush));border-radius:0 0 38px 0;overflow:hidden}.partner .media .ph{aspect-ratio:16/10;border:0;border-radius:0;background:transparent}.partner .media img{width:100%;height:100%;min-height:170px;object-fit:cover}.partner .sponsor{position:absolute;left:14px;top:14px;display:inline-flex;align-items:center;gap:7px;padding:7px 10px;background:#F4169B;color:#fff;border:1px solid #ffffff55;border-radius:10px 4px 10px 4px;font-size:11px;font-weight:600;letter-spacing:normal;line-height:1.5;z-index:2}.partner .sponsor::before{content:"✦";font-size:12px;line-height:1}.partner .body{padding:24px 21px 25px;gap:12px;min-width:0}.partner .body>.small{font-size:12px;font-weight:600;color:#85125C}.partner h3{font-size:18px;line-height:1.4}.partner p{font-size:14px;line-height:1.85;margin-bottom:10px}.partner .btn{font-size:12px;padding:10px 14px;margin-top:auto}.ad-slot{border-radius:24px 12px 38px 12px;border:1.5px dashed #AD81CA;background:linear-gradient(145deg,var(--pastel-blush),var(--pastel-lavender));padding:24px;gap:15px}.ad-slot h3{font-size:19px;line-height:1.4}.ad-slot .small{font-size:13px;line-height:1.8}.ad-slot .badge{letter-spacing:normal}.sponsored-heading{display:flex;align-items:center;gap:10px}.sponsored-heading svg{flex:none;width:24px;height:24px}.sponsored-section .section-head h2{margin-bottom:14px}.sponsored-section .section-head p{font-size:15px;line-height:1.8}
+/* New filled glyphs inherit colour; form/status icons remain legible. */
+.solid-icon{fill:currentColor;stroke:none}.perk .ic,.fix-list .ic,.promise .ic,.help>.ic{border-radius:15px 6px 15px 6px}.perk .ic svg,.fix-list .ic svg,.promise .ic svg{width:21px;height:21px}
+@media(max-width:1080px){#popular,#new-rentals{gap:22px}.partner .body{padding:21px}.vcard-body{padding-inline:6px}.co-card{padding:22px}}
+@media(max-width:760px){.journal-cover>span{font-size:12px}.journal-card-copy>p,.island-home .promo p,.island-home .step p{font-size:15px}.partner .media{min-height:190px}.co-card .top{gap:14px}.article-body{font-size:16px}.island-home .hero .perk b{font-size:12px}.island-home .hero .perk span{font-size:11px}}
+@media(max-width:640px){body{font-size:16px}.island-home .hero .lede{font-size:16px}.island-home .search-card .f{font-size:13px}.island-home .search-card .input{font-size:15px}.island-home .hero .perk b{font-size:11px}.island-home .hero .perk span{font-size:10px}.island-home .trust .t b{font-size:12px}.island-home .trust .t span{font-size:11px}.island-kicker,.journal-category{font-size:11px}.journal-cover>span{font-size:11px}.island-coordinate{font-size:10px}.btn{font-size:14px;min-height:46px}.btn-sm{font-size:13px}.vcard .price .btn{font-size:13px}.vcard .top h3{font-size:17px}.vcard .co{font-size:13px}.vcard .specs .tag{font-size:12px}.co-card{padding:23px}.partner p{font-size:15px}.partner h3{font-size:20px}.sponsored-section .section-head p{font-size:15px}.island-home .fix-list b{font-size:14px}.island-home .fix-list span{font-size:13px}.f{font-size:14px}.article-tip{font-size:14px}.article-toc a{font-size:13px}}
+@media(max-width:360px){.island-home .perks{grid-template-columns:minmax(0,1fr);gap:14px}.island-home .perk,.island-home .perk+.perk{padding:0;border-left:0;display:grid;grid-template-columns:34px minmax(0,1fr);gap:0 12px}.island-home .perk .ic{grid-row:1/3;margin:0}.island-home .perk b{font-size:12px}.island-home .perk span{font-size:11px}.vcard .price{flex-direction:column;align-items:flex-start}.vcard .price .btn{width:100%}.co-card .top{flex-wrap:wrap}.arrival-coordinates{font-size:10px}}
+@media(prefers-reduced-motion:reduce){.btn,.partner,.vcard,.co-card{transition:none}.btn:hover,.partner:hover,.vcard:hover,.co-card:hover{transform:none}}
+.footer-guide-btn{border:1px solid var(--line);background:#fff;color:var(--brand-purple);padding:11px 15px;border-radius:14px 5px;font:600 14px var(--body);margin:0 0 16px;cursor:pointer}.company-emblem{display:grid;place-items:center;width:58px;height:58px;border-radius:18px 6px;flex:none;background:var(--brand-action);color:#fff}.company-emblem svg{width:28px;height:28px}.partner-visual{height:180px;min-height:180px;display:flex;align-items:center;justify-content:center;background:var(--brand-gradient);color:white;position:relative;overflow:hidden}.sponsor-icon svg{width:72px;height:72px;opacity:.9}.sponsor-category{position:absolute;left:22px;right:22px;bottom:18px;font-size:14px;font-weight:600;line-height:1.5}.partner .sponsor{font-size:11px;letter-spacing:0}.new-rentals-section{background:linear-gradient(120deg,var(--pastel-blush),var(--pastel-lavender) 65%,var(--pastel-sky))}.co-card .row{gap:14px}.phone-story{margin-inline:auto}.review-write h3,.review-write p{color:var(--ink)}
+
+/* Preserve semantic heading gradients after legacy white-title rules. */
+@supports (background-clip:text){
+ main .sec-blue h2,main .sec-navy h2,main .sec-blue-dark h2,main .free h2,main .free h3,main .band h2,main .auth-side h2,main .help h3,.island-home .help h3{color:transparent;-webkit-text-fill-color:transparent;background-image:var(--heading-gradient);background-clip:text;-webkit-background-clip:text}
+}
+@media(forced-colors:active){main h1,main h2,main h3,main h4,.site-footer h4,.text-gradient,main :is(h1,h2,h3,h4) a,main :is(h1,h2,h3,h4) .blue,.hero h1 .blue,.island-home .hero h1 .blue,.island-word{background:none!important;color:CanvasText!important;-webkit-text-fill-color:CanvasText!important}}
+/* Links remain readable body text; colour is carried by icons and heading gradients. */
+main a:not(.btn):not(.journal-cover),main .arrow-link,main .link-btn,main .blue{color:var(--ink)}
+.site-footer a:not(.btn),.foot-notice a,.footer-guide-btn{color:var(--ink-2)}
+
+/* The supplied logo colours are vivid; long-form text stays neutral. */
+.btn-primary,.btn-gold,.booking-title,#message-launcher,#booking-chat #chat-send,.phone-message,.phone-message p,#booking-chat .chat-message p,.journal-cover{ text-shadow:0 1px 1px #48124A33 }
+.island-home .trust,.promise,.fleet-section .promise{background:var(--pastel-lavender)}.promise .ic{background:var(--pastel-blush);color:var(--brand-pink)}
+.island-home .search-card .input{background:#FBF8FF}.foot-notice{background:var(--pastel-blush)}.foot-base{border-top-color:#E7DDF0}
+
+/* Image frames own their dimensions; photos cannot enlarge an intrinsic grid track. */
+.car-img{display:block;position:relative;width:100%;min-width:0;min-height:0;aspect-ratio:16/10;overflow:hidden}
+.car-img>img,.vcard .car-img>img{position:absolute;inset:0;display:block;width:100%;height:100%;min-width:0;min-height:0;max-width:100%;max-height:100%;padding:10px;box-sizing:border-box;object-fit:contain;object-position:center;transform:none;animation:none;mix-blend-mode:normal}
+.vcard:hover .car-img>img{transform:none}
+.gallery .main,.gallery .thumb{position:relative;min-width:0;min-height:0;overflow:hidden}
+.gallery .main>.car-img,.gallery .thumb>.car-img,.gallery .main>.ph,.gallery .thumb>.ph{position:absolute;inset:0;width:100%;height:100%;min-height:0;aspect-ratio:auto}
+.gallery .main .car-img>img{animation:none;transform:none}
+.gallery .thumb .car-img>img,.t-veh .car-img>img{padding:4px}
+.t-veh .car-img{width:72px;height:48px;aspect-ratio:auto;flex:none}
+.island-home .home-art.car-hero{position:relative;display:block;width:100%;min-height:0;aspect-ratio:3/2;padding:0;overflow:hidden}
+.island-home .home-art.car-hero>img{position:absolute;inset:0;display:block;width:100%;height:100%;max-width:100%;max-height:none;padding:12px;box-sizing:border-box;object-fit:contain;object-position:center;mix-blend-mode:normal;transform:none}
+.guide-car-photo{position:relative;display:block;width:100%;aspect-ratio:3/2;max-height:300px;overflow:hidden}
+.guide-car-photo>img{position:absolute;inset:0;display:block;width:100%;height:100%;max-height:none;object-fit:contain;object-position:center}
+/* Give every generated SVG a safe intrinsic size, including icons without a component rule. */
+.solid-icon{display:block;width:1em;height:1em;max-width:100%;max-height:100%;flex:none}
+:where([data-icon]){display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+.ic,.step .num,.company-emblem{min-width:0;flex-shrink:0;line-height:1}
+.ic>.solid-icon,.step .num>.solid-icon,.company-emblem>.solid-icon{display:block;max-width:70%;max-height:70%;margin:0;flex:none}
+.perk,.step,.fix-list li,.promise,.help,.co-card .top{min-width:0}
+.step>div,.fix-list li>div,.promise>div,.help>div,.trust .t>div{min-width:0;overflow-wrap:anywhere}
+.vcard .top{flex-wrap:wrap}.vcard .top h3{flex:1 1 140px;min-width:0}.vcard .rating{flex:none;max-width:100%;overflow-wrap:anywhere}
+.vcard .rating svg,.tag svg,.badge svg{flex:none;max-width:1.2em;max-height:1.2em}
+@media(max-width:360px){.island-home .perk .ic{width:32px;height:32px}.island-home .perk .ic>.solid-icon{max-width:70%;max-height:70%}}
+
+/* White photo surfaces blend with the supplied white-background vehicle photographs. */
+.vcard,.vcard .media,.vcard .car-img,.gallery .main,.gallery .thumb,.gallery .car-img,.t-veh .car-img,.guide-car-photo{background:#fff}
+.vcard.unavailable .media,.vcard.unavailable .car-img{background:#fff;opacity:1;filter:grayscale(1)}
+.island-home .hero,.island-home .hero-grid,.island-home .hero-media,.island-home .home-art.car-hero{background:#fff}
+.island-home .home-art.car-hero{border-radius:28px 12px 38px 12px}
+.car-img>img,.vcard .car-img>img{padding:16px;object-fit:contain;object-position:center}
+.gallery .main .car-img>img{padding:24px}.gallery .thumb .car-img>img,.t-veh .car-img>img{padding:5px}
+.island-home .home-art.car-hero>img{padding:18px;object-fit:contain;border-radius:inherit}
+.guide-car-photo{background:#fff;border-radius:24px 10px}.guide-car-photo>img{padding:12px;box-sizing:border-box}
+/* One bold Poppins weight for headings and navigation, including component shorthands. */
+main :is(h1,h2,h3,h4),.site-footer h4,.tour-dialog h2,#booking-chat :is(h2,h3),.phone-story :is(h2,h3){font-weight:700}
+.site-header .nav-links>a,.site-header .nav-links summary,.drawer-panel a.dl,.drawer-ad-menu summary{font-weight:700}
+
+.booking-title,.phone-demo-header strong,.ad-plan-label{font-weight:700}
+
+/* White header identity; footer and arrival artwork keep their original colours. */
+:root{--brand-tangerine:#FF6327}
+.site-header,.site-header.scrolled,.site-header.tucked{--header-wave-height:30px;background:var(--brand-gradient)}
+.site-header .header-brand-logo{filter:brightness(0) invert(1)}
+.site-header .nav-links{padding:4px;border-radius:8px;background:#2613344D}
+.site-header .nav-links>a,.site-header .nav-ad-menu>summary{color:#fff;background:transparent}
+.site-header .nav-links>a:hover,.site-header .nav-ad-menu>summary:hover,.site-header .nav-ad-menu[open]>summary,.site-header .nav-links>a[aria-current="page"],.site-header .nav-ad-menu>summary[aria-current="page"]{color:#fff;background:transparent}
+.site-header .nav-links .ad-dropdown-links a{color:var(--ink);background:transparent}
+.site-header .nav-links .ad-dropdown-links a:hover{color:var(--ink);background:var(--pastel-blush)}
+.site-header .cur-toggle{background:#26133466}
+.site-header .cur-toggle button{color:#fff}
+.site-header .cur-toggle button.on{background:#fff;color:#46265D}
+.site-header .btn,.site-header .btn:hover{background:#fff;color:#46265D;border-color:#fff}
+.site-header .menu-btn{background:#fff;color:#46265D}
+.site-header :is(a,button,summary):focus-visible{outline:3px solid #fff;outline-offset:3px}
+.site-header .ad-dropdown-links a:focus-visible{outline-color:var(--brand-violet)}
+/* One continuous gradient is masked into the existing wave, avoiding a colour seam. */
+@supports (mask-image:linear-gradient(#000,#000)){
+ .site-header,.site-header.scrolled,.site-header.tucked{background:transparent}
+ .site-header::before{content:"";position:absolute;inset:0 0 calc(-1 * var(--header-wave-height));pointer-events:none;background:var(--brand-gradient);mask-image:linear-gradient(#000,#000),url('../img/ui/header-wave-mask.svg');mask-size:100% calc(100% - var(--header-wave-height) + 1px),100% var(--header-wave-height);mask-position:top,bottom;mask-repeat:no-repeat}
+ .site-header .header-wave{visibility:hidden}
+}
+/* Tangerine appears only in small decorative details, never the main gradient. */
+.island-kicker>span{color:var(--brand-tangerine)}
+.route-pin{background:var(--brand-tangerine);box-shadow:0 0 0 6px #FF632714}
+.site-footer .social-icon:first-child{color:var(--brand-tangerine)}
+@media(max-width:640px){.site-header,.site-header.scrolled,.site-header.tucked{--header-wave-height:22px}}
+
+/* Page landmarks receive focus after the loader, without drawing a page-sized ring. */
+#main[tabindex="-1"]:focus{outline:none;border-radius:0}
+/* Text rolls over on hover; selection uses a small road-marker dot, never a pill or underline. */
+.site-header .nav-links>a,.site-header .nav-ad-menu>summary{position:relative;border-radius:0;padding-block:10px}
+.site-header .nav-label{display:inline-block;position:relative;overflow:hidden;vertical-align:middle;line-height:1.55}
+.site-header .nav-label>span{display:block;transition:transform .34s cubic-bezier(.2,.8,.2,1)!important}
+.site-header .nav-label>span+span{position:absolute;inset:100% 0 auto;color:#FFE0D3}
+.site-header :is(a,summary):is(:hover,:focus-visible)>.nav-label>span{transform:translateY(-100%)}
+.site-header .nav-links>a[aria-current="page"]::before,.site-header .nav-ad-menu>summary[aria-current="page"]::before{content:"";position:absolute;width:5px;height:5px;border-radius:50%;background:var(--brand-tangerine);top:2px;left:calc(50% - 2.5px);box-shadow:0 0 0 2px #FFFFFFC9}
+.site-header .nav-ad-menu>summary>svg{transition:transform .25s ease!important}
+.site-header .nav-ad-menu[open]>summary .nav-label>span{transform:translateY(-100%)}
+.site-header .menu-btn>svg{transition:transform .3s cubic-bezier(.2,.8,.2,1)!important}
+.site-header .menu-btn:is(:hover,:focus-visible)>svg{transform:rotate(-12deg) scale(1.12)}
+.drawer-panel a.dl[aria-current="page"]{color:var(--ink);background:#FFF4EF;border-left:3px solid var(--brand-tangerine)}
+/* The pricing promise is a simple printed fare note with a legible zero-fee column. */
+.fleet-section .fare-note{display:grid;grid-template-columns:78px minmax(0,1fr);align-items:center;gap:20px;padding:22px;background:#fff;border:1px solid #E7E2DE;border-top:3px solid var(--brand-tangerine);border-radius:3px;box-shadow:none}
+.fare-note .fare-note-price{display:flex;flex-direction:column;align-items:flex-start;gap:3px;border-right:1px dashed #D8D1CC;padding-right:16px}
+.fare-note-price>span{font-size:11px;font-weight:600;color:var(--muted);line-height:1.4}
+.fare-note-price>strong{font-size:31px;line-height:1.1;letter-spacing:-1px;color:var(--ink)}
+.fare-note-price>small{font-size:9px;white-space:nowrap;line-height:1.6;color:var(--muted)}
+.fleet-section .fare-note b{display:block;font-size:16px;line-height:1.45;color:var(--ink)}
+.fleet-section .fare-note p{font-size:13px;line-height:1.8;margin-top:8px}
+/* A little more tangerine in small icons; the main gradient stays intact. */
+.island-home .perks .perk:nth-child(1) .ic{color:var(--brand-tangerine)!important}
+.island-home .fix-list .ic{color:var(--brand-tangerine);background:#FFF2EB}
+@media(max-width:480px){.fleet-section .fare-note{grid-template-columns:66px minmax(0,1fr);gap:16px;padding:20px 16px}.fare-note .fare-note-price{padding-right:12px}.fleet-section .fare-note b{font-size:14px}.fleet-section .fare-note p{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.site-header .nav-label>span,.site-header .nav-ad-menu>summary>svg,.site-header .menu-btn>svg{transition:none!important}.site-header :is(a,summary):is(:hover,:focus-visible)>.nav-label>span,.site-header .nav-ad-menu[open]>summary .nav-label>span,.site-header .menu-btn:is(:hover,:focus-visible)>svg{transform:none}}
+
+/* The car-side note is a compact pickup-location link with a clear directional action. */
+.island-home .island-route-tag{width:390px;max-width:90%;min-width:0;gap:12px;padding:14px 16px;border:1px solid transparent;border-radius:8px;background:linear-gradient(#fff,#fff) padding-box,var(--brand-gradient) border-box;color:var(--ink);text-decoration:none;box-shadow:0 8px 24px -19px #40265055;animation:none}
+.island-home .island-route-tag>div{min-width:0;flex:1}
+.island-home .island-route-tag b{font-size:12px;line-height:1.5;color:var(--ink)}
+.island-home .island-route-tag div>span{display:block;margin-top:4px;font-size:11px;line-height:1.55;color:var(--muted)}
+.island-route-tag .route-pin{display:grid;place-items:center;width:36px;height:40px;margin:0;border-radius:6px;background:#FFF2EB;box-shadow:none;color:var(--brand-tangerine)}
+.island-route-tag .route-pin>svg{width:21px;height:21px;transition:transform .22s ease}
+.island-route-tag .route-link-arrow{display:grid;place-items:center;flex:none;width:26px;height:30px;color:var(--brand-violet)}
+.island-route-tag .route-link-arrow>svg{display:block;width:20px;height:20px;transform:rotate(180deg);transition:transform .22s ease}
+.island-home .island-route-tag:hover{background:linear-gradient(#FFFAF7,#FFFAF7) padding-box,var(--brand-gradient) border-box;color:var(--ink);text-decoration:none;box-shadow:0 10px 26px -18px #40265055}
+.island-route-tag:hover .route-pin>svg{transform:translateY(-2px)}
+.island-route-tag:hover .route-link-arrow>svg{transform:translateX(3px) rotate(180deg)}
+.island-route-tag:focus-visible{outline:3px solid var(--brand-violet);outline-offset:4px}
+@media(max-width:640px){.island-home .hero-media{padding-bottom:18px}.island-home .island-route-tag{position:relative;left:auto;bottom:auto;width:100%;max-width:100%;margin-top:10px;padding:14px}.island-home .hero-media .island-coordinate{display:none}}
+@media(prefers-reduced-motion:reduce){.island-route-tag .route-pin>svg,.island-route-tag .route-link-arrow>svg{transition:none}.island-route-tag:hover .route-pin>svg{transform:none}.island-route-tag:hover .route-link-arrow>svg{transform:rotate(180deg)}}
+
+/* Poster-inspired campaign type, with real Poppins italic and a warm island highlight. */
+.island-home .hero .island-campaign-title{background:none;color:var(--ink);-webkit-text-fill-color:initial;font-style:italic;font-weight:800;font-size:clamp(2.5rem,4.4vw,3.7rem);line-height:1.2;letter-spacing:-.03em;margin-bottom:30px}
+.campaign-search{display:block;background:var(--brand-gradient);background-clip:text;-webkit-background-clip:text;color:transparent;-webkit-text-fill-color:transparent;padding-bottom:8px}
+.campaign-island{display:inline-block;max-width:100%;padding:5px 18px 9px;background:linear-gradient(155deg,#FF792F,#FF6327 30%,#FF4F5E 75%,#F4169B);color:#fff;-webkit-text-fill-color:#fff;border-radius:34px 14px 34px 14px;transform:skewX(-7deg);box-shadow:0 12px 22px -15px #FF632799}
+.campaign-island>span{display:block;transform:skewX(7deg)}
+/* A single white booking surface with aligned, clearly named controls. */
+.island-home .booking{position:relative;background:#fff;border:1px solid #E4DAE4;border-radius:20px;box-shadow:0 16px 40px -28px #53375155;margin-top:36px}
+.island-home .booking::before{content:"";position:absolute;left:24px;right:24px;top:0;height:3px;background:var(--brand-gradient);border-radius:0 0 3px 3px;pointer-events:none}
+.booking-top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:23px 24px 0}
+.island-home .booking-title{display:flex;align-items:center;gap:12px;padding:0;margin:0;color:var(--ink)}
+.booking-title>div{min-width:0}.booking-title strong{display:block;font-size:17px;line-height:1.4;color:var(--ink);font-weight:700}
+.booking-title div>span{display:block;margin-top:3px;font:400 12px/1.6 var(--body);color:var(--muted)}
+.booking-title .booking-mark{width:42px;height:42px;min-width:42px;margin:0}.booking-title .booking-mark>svg{width:23px;height:23px}
+.booking-note{font:500 12px/1.6 var(--body);color:var(--muted);white-space:nowrap}
+.island-home .search-card{display:grid;grid-template-columns:minmax(0,1.25fr) repeat(2,minmax(0,1fr)) minmax(0,.9fr) auto;gap:16px;padding:22px 24px 25px;border-radius:0 0 20px 20px;background:#fff;align-items:end}
+.island-home .search-card .f{gap:8px;margin:0;font-size:13px;line-height:1.5;font-weight:600;color:var(--ink)}
+.island-home .search-card .input{height:54px;min-height:54px;border:1px solid #DAD4DE;border-radius:10px;padding:13px 12px;background:#fff;font:500 14px/1.5 var(--body);color:var(--ink);box-shadow:none}
+.island-home .search-card select.input{padding-right:30px}
+.island-home .search-card .input:focus,.island-home .search-card .dp-field[aria-expanded="true"]{border-color:var(--brand-violet);box-shadow:0 0 0 3px #8A3FFD12}
+.island-home .search-card .btn{display:flex;align-items:center;justify-content:center;gap:9px;min-height:54px;height:54px;min-width:152px;padding:0 20px;font-size:14px;white-space:nowrap;grid-column:auto}
+.island-home .search-card .btn svg{display:block;width:18px;height:18px;flex:none}
+/* Trust points sit on the page, without a lavender rectangle. */
+.island-home .trust{grid-template-columns:repeat(3,minmax(0,1fr)) minmax(140px,.85fr);padding:28px 0;gap:24px;background:transparent;border:0;border-radius:0;box-shadow:none}
+.island-home .trust .t b{font-size:13px}.island-home .trust .t>div>span{font-size:12px}
+.island-home .trust .island-guide-link{font-size:11px}
+/* The pickup link follows the same filled gradient treatment as primary buttons. */
+.island-home .island-route-tag{background:var(--brand-action);border-color:transparent;border-radius:16px 7px 16px 7px;box-shadow:none;color:#fff}
+.island-home .island-route-tag b,.island-home .island-route-tag div>span{color:#fff}
+.island-home .island-route-tag .route-link-arrow{color:#fff}
+.island-home .island-route-tag:hover{background:linear-gradient(115deg,#FF6671,#FF28AD 35%,#9A50FF 65%,#169CFF);color:#fff;box-shadow:none}
+/* Sponsored labels remain readable on pale panels; medallions supply their colour. */
+.partner .media.partner-visual{color:var(--ink)}
+.partner .sponsor-category{color:var(--ink);font-weight:700}
+.partner .sponsor{background:#fff;color:#4A264F;border-color:#E8D9E4}
+.partner .sponsor::before{color:var(--brand-pink)}
+.partner .body p{color:var(--muted)}
+/* Short landscape phones keep the calendar header and controls inside the viewport. */
+.dp-pop.sheet{max-height:calc(100dvh - 16px);overflow-y:auto}
+@media(max-width:1100px){.island-home .search-card{grid-template-columns:repeat(2,minmax(0,1fr))}.island-home .search-card .btn{grid-column:1/-1}.island-home .trust{grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}.island-home .trust .island-guide-link{grid-column:1/-1;justify-self:start;margin:0}}
+@media(max-width:760px){.island-home .trust{grid-template-columns:1fr;gap:20px;padding:26px 0}.island-home .trust .island-guide-link{margin-left:61px}.island-home .trust .t b{font-size:14px}}
+@media(max-width:560px){.island-home .hero .island-campaign-title{font-size:clamp(2rem,9.5vw,2.8rem)}.campaign-island{padding-inline:16px}.booking-top{align-items:flex-start;padding:21px 18px 0;gap:10px}.booking-title strong{font-size:16px}.booking-title div>span{font-size:11px}.booking-note{display:none}.island-home .search-card{grid-template-columns:1fr;gap:17px;padding:20px 18px 21px}.island-home .search-card .btn{width:100%}.island-home .booking::before{left:18px;right:18px}}
+
+/* Feature rows have the same rhythm: one icon, one heading, one concise line. */
+.island-home .hero .perks{width:100%;max-width:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+.island-home .hero .perk,.island-home .hero .perk+.perk{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:50px auto auto;gap:12px;padding:0;border:0;align-content:start}
+.island-home .hero .perk .ic{display:grid;place-items:center;width:50px;height:50px;min-width:50px;min-height:50px;margin:0;background:var(--pastel-blush)!important;border-radius:17px 7px;line-height:1}
+.island-home .hero .perk:nth-child(2) .ic{background:var(--pastel-sky)!important}.island-home .hero .perk:nth-child(3) .ic{background:var(--pastel-lavender)!important}
+.island-home .hero .perk .ic>.solid-icon{display:block;width:32px;height:32px;max-width:70%;max-height:70%;transform-origin:center;will-change:transform}
+.island-home .hero .perk b{font-size:13px;line-height:1.5;margin:0;font-weight:700;white-space:nowrap}
+.island-home .hero .perk>span:not(.ic){font-size:12px;line-height:1.6;margin:0;white-space:nowrap;color:var(--muted)}
+.island-home .hero .perk:nth-child(1) .ic>.solid-icon{animation:perkTagDance 9s .5s ease-in-out infinite}
+.island-home .hero .perk:nth-child(2) .ic>.solid-icon{animation:perkShieldSpring 9s 1.2s ease-in-out infinite}
+.island-home .hero .perk:nth-child(3) .ic>.solid-icon{animation:perkChatNod 9s 1.9s ease-in-out infinite}
+.island-home .trust{padding:24px 16px;gap:24px;align-items:center;border-radius:16px}
+.island-home .trust .t{gap:13px;align-items:center}
+.island-home .trust .t>span[data-icon]{display:grid;place-items:center;flex:none;width:48px;height:48px;min-width:48px;min-height:48px;margin:0;background:#fff;border-radius:15px 6px;color:var(--brand-blue);line-height:1}
+.island-home .trust .t>span[data-icon]>.solid-icon{display:block;width:30px;height:30px;max-width:70%;max-height:70%;color:inherit}
+.island-home .trust .t:nth-child(2)>span[data-icon]{color:var(--brand-pink)}.island-home .trust .t:nth-child(3)>span[data-icon]{color:var(--brand-violet)}
+.island-home .trust .t b{font-size:13px;line-height:1.55;font-weight:700}.island-home .trust .t>div>span{font-size:12px;line-height:1.65;margin-top:4px}
+.island-home .trust .t:nth-child(1)>span[data-icon]>.solid-icon{animation:perkShieldSpring 11s 2s ease-in-out infinite}.island-home .trust .t:nth-child(2)>span[data-icon]>.solid-icon{animation:perkShieldSpring 11s 2.7s ease-in-out infinite}.island-home .trust .t:nth-child(3)>span[data-icon]>.solid-icon{animation:perkChatNod 11s 3.4s ease-in-out infinite}
+@keyframes perkTagDance{0%,34%,100%{transform:none}6%{transform:translateY(-4px) rotate(-12deg) scale(1.08)}13%{transform:rotate(10deg) scale(1.04)}22%{transform:rotate(-5deg)}28%{transform:rotate(2deg)}}
+@keyframes perkShieldSpring{0%,34%,100%{transform:none}7%{transform:translateY(-4px) scale(1.12)}14%{transform:translateY(2px) scale(.94)}23%{transform:translateY(-1px) scale(1.04)}}
+@keyframes perkChatNod{0%,38%,100%{transform:none}7%{transform:rotate(-10deg) scale(1.08)}15%{transform:translateY(-3px) rotate(8deg)}23%{transform:rotate(-4deg)}30%{transform:translateY(1px) scale(.97)}}
+@media(min-width:821px) and (max-width:1080px){.island-home .hero .perks{gap:12px}.island-home .hero .perk b{font-size:12px}.island-home .hero .perk>span:not(.ic){font-size:11px}}
+@media(max-width:560px){.island-home .hero .perks{grid-template-columns:minmax(0,1fr);gap:20px}.island-home .hero .perk,.island-home .hero .perk+.perk{grid-template-columns:50px minmax(0,1fr);grid-template-rows:auto auto;column-gap:15px;row-gap:5px;align-items:center}.island-home .hero .perk .ic{grid-row:1/3}.island-home .hero .perk b,.island-home .hero .perk>span:not(.ic){grid-column:2;white-space:normal}.island-home .hero .perk b{align-self:end;font-size:14px}.island-home .hero .perk>span:not(.ic){align-self:start;font-size:12px}.island-home .trust{grid-template-columns:minmax(0,1fr);gap:21px;padding:23px 18px}.island-home .trust .t>span[data-icon]{width:46px;height:46px;min-width:46px;min-height:46px}.island-home .trust .t>span[data-icon]>.solid-icon{width:29px;height:29px}.island-home .trust .island-guide-link{justify-self:start;margin-left:59px}}
+@media(prefers-reduced-motion:reduce){.island-home .hero .perk .ic>.solid-icon,.island-home .trust .t>span[data-icon]>.solid-icon{animation:none!important;will-change:auto}}

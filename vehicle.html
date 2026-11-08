@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vehicle details | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap page-head" style="padding-bottom:14px">
+  <div class="crumbs"><a href="index.html">Home</a><span class="sep">/</span><a href="vehicles.html">Find a vehicle</a><span class="sep">/</span><span id="crumb"></span></div>
+</div>
+<div class="wrap detail" id="detail"></div>
+<section class="section-tight"><div class="wrap"><h2>More from this company</h2><div class="vgrid" id="more" style="margin-top:20px"></div></div></section>
+
+<div class="modal" id="report-modal" aria-hidden="true"><div class="modal-box" role="dialog" aria-labelledby="rep-title">
+  <div class="modal-head"><h3 id="rep-title">Report a photo</h3><button class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></div>
+  <form id="rep-form" class="stack">
+    <label class="f">What's wrong?<select class="input" id="rep-why"><option>Looks AI-generated or AI-edited</option><option>Stock or manufacturer photo</option><option>Not the same vehicle I was given</option><option>Photo is old or the car looks different now</option><option>Something else</option></select></label>
+    <label class="f">Details<span class="hint">Optional</span><textarea class="input" id="rep-txt" placeholder="Tell us what you noticed"></textarea></label>
+    <button class="btn btn-primary" type="submit">Send report</button>
+    <p class="small muted" style="margin:0">We review every report. Listings that break the real photos rule are taken down.</p>
+  </form>
+</div></div>
+<div class="modal" id="done-modal" aria-hidden="true"><div class="modal-box" role="dialog" aria-labelledby="done-title" style="text-align:center">
+  <div class="success-burst" id="burst"></div>
+  <h3 id="done-title">Booking request sent</h3>
+  <p class="muted" id="done-text" style="margin:8px auto 22px"></p>
+  <div class="row" style="justify-content:center"><button class="btn btn-primary" type="button" id="open-request-chat">Open conversation</button><a class="btn btn-ghost" href="account.html">View booking</a><button class="btn btn-ghost" data-close>Keep browsing</button></div>
+  <div style="text-align:left;margin-top:26px;border-top:1.5px dashed var(--line);padding-top:20px"><p class="small muted" style="margin:0 0 10px">While you wait</p><div class="row" style="flex-wrap:nowrap;gap:14px;align-items:flex-start" id="confirm-ad"></div></div>
+</div></div>
+
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const id = decodeURIComponent(location.hash.slice(1));
+const v = id && A.vehicle(id);
+window.onHash = ()=> location.reload();
+if(!v){ document.getElementById("detail").innerHTML='<div class="card empty" style="grid-column:1/-1"><h1>Listing not found</h1><p class="muted">This car may have been removed, or the link is incomplete.</p><a class="btn btn-primary" href="vehicles.html">Browse available cars</a></div>'; return; }
+if(!A.vehiclePolicyComplete(v)){ document.getElementById("detail").innerHTML='<div class="card"><h1>Listing unavailable</h1><p>This vehicle cannot be booked until its company completes its rental requirements.</p><a class="btn btn-primary" href="vehicles.html">Find another car</a></div>'; return; }
+const c = A.company(v.company), sp = A.specialFor(v), sale = A.salePrice(v);
+document.title = v.name + " | BimCar Connect";
+document.getElementById("crumb").textContent = v.name;
+const R=A.vehicleRequirements(v), P=A.vehiclePayment(v);
+if(!Live.user){document.getElementById('detail').insertAdjacentHTML('beforebegin','<div class="wrap"><p class="notice info">Sign in with a verified email to send a request and chat privately with the rental company.</p></div>');}
+const EXTRAS=DB.extras.filter(x=>x.id!=="deliver" && x.id!=="cdw" && (x.id!=="driver" || R.additionalDrivers==="yes")).map(x=>x.id==="driver"?{...x,price:R.additionalDriverFee}:x);
+const pickupOptions=v.pickups.filter(p=>p!=="Hotel or villa delivery" || R.delivery==="yes");
+const iso = d=> A.isoOf(d); const now=new Date();
+
+// The same per-vehicle blocks and confirmed rentals drive search and booking.
+const VEH=v, PHOTOS=A.carPhotos(v);
+let BOOKED=A.blockedDates(v,A.todayISO(),730);
+let listingChanged=false;
+function availability(){
+  const focus=document.getElementById("b-from")?.value||A.todayISO(), d=new Date(focus+"T12:00:00"); const m1=new Date(d.getFullYear(),d.getMonth(),1), m2=new Date(d.getFullYear(),d.getMonth()+1,1);
+  const st=document.getElementById("b-from")?document.getElementById("b-from").value:null, en=document.getElementById("b-to")?document.getElementById("b-to").value:null;
+  const g=(d)=>`<div><h4>${d.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</h4>${A.calGrid({y:d.getFullYear(),m:d.getMonth(),min:A.todayISO(),booked:picking==="end"?BOOKED.filter(day=>!A.availabilityRanges(A.vehicle(id)||VEH).some(r=>r.from===day)):BOOKED,start:st,end:en})}</div>`;
+  return `<div class="avail">${g(m1)}${g(m2)}</div>`;
+}
+document.getElementById("detail").innerHTML = `
+<div>
+  <div class="row between" style="margin-bottom:10px;align-items:start">
+    <div><span class="badge">${A.esc(v.type)}</span> ${sp?`<span class="badge badge-hib">${A.icon('tag')}${sp.off}</span>`:''}
+      <h1 style="font-size:clamp(2rem,4vw,3rem);margin:.25em 0 .15em">${A.esc(v.name)}</h1>
+      <p class="muted" style="margin:0 0 8px">${A.esc(v.year||'')} ${A.esc(v.color||'')}${v.doors?`, ${A.esc(v.doors)} doors`:''}</p>
+      <div class="row"><a class="small" href="reviews.html#${A.esc(c.id)}">Read rental reviews</a><a class="small" href="company.html#${A.esc(c.id)}">${A.esc(c.name)}</a></div></div>
+    <button class="fav ${A.favs().includes(v.id)?'on':''}" data-fav="${A.esc(v.id)}" style="position:static" aria-label="Save ${A.esc(v.name)}">${A.icon('heart')}</button>
+  </div>
+  <div class="gallery" id="gallery">
+    <div class="main">${A.carImg(v,"","height:100%")}</div>
+    ${PHOTOS.length>1?PHOTOS.slice(0,8).map((src,i)=>`<button type="button" class="thumb ${i===0?'on':''}" data-photo="${i}" aria-label="Show photo ${i+1} of ${PHOTOS.length}">${A.photoImg(src,v,"","height:100%")}</button>`).join(""):''}
+  </div>
+  <div class="notice info" style="margin-top:14px">${A.icon('image')}<p><b>Real photos only.</b> BimCar Connect requires companies to show real, recent photos of the actual vehicle you'll rent. No AI-generated, AI-edited or stock images. Something look off? <button class="link-btn" id="report-btn">Report this photo</button></p></div>
+  ${v.desc?`<div class="card"><h3>About this ${A.esc(v.type==="SUV"?"SUV":v.type.toLowerCase())}</h3><p class="muted" style="margin:0">${A.esc(v.desc)}</p></div>`:''}
+  <div class="spec-grid" style="margin-top:24px">
+    <div class="spec">${A.icon('users')}<b>${A.esc(v.seats)}</b><span>Seats</span></div>
+    <div class="spec">${A.icon('gear')}<b>${A.esc(v.trans)}</b><span>Transmission</span></div>
+    <div class="spec">${A.icon('fuel')}<b>${A.esc(v.fuel)}</b><span>Fuel</span></div>
+    <div class="spec">${A.icon('car')}<b>${v.bags||2}</b><span>Large bags</span></div>
+  </div>
+  <div class="card" style="margin-top:24px"><h3>What's included</h3><ul class="feature-list">${v.features.map(f=>`<li>${A.icon('check')}${A.esc(f)}</li>`).join("")}</ul></div>
+  <div class="card" style="margin-top:20px" id="rental-requirements"><h3>Rental requirements</h3>${A.requirementsBlock(c.id,R,P)}</div>
+  <div class="card" style="margin-top:20px"><h3>Pickup spots</h3><div class="row">${v.pickups.map(p=>`<span class="chip" style="cursor:default">${A.icon('pin')}${A.esc(p)}</span>`).join("")}</div></div>
+  <div class="card" style="margin-top:20px"><div class="row between" style="margin-bottom:14px"><h3 style="margin:0">Availability</h3><span class="small muted">Tap a start date, then an end date</span></div><div id="avail"></div>
+    <div class="avail-legend"><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px var(--line)"></i>Available</span><span><i style="background:repeating-linear-gradient(135deg,#FDE8E8 0 3px,#fff 3px 6px);box-shadow:inset 0 0 0 1px #F5B5B7"></i>Booked</span><span><i style="background:var(--brand-action)"></i>Your dates</span><span><i style="background:#fff;box-shadow:inset 0 0 0 1.5px var(--orange)"></i>Today</span></div></div>
+  <div class="card" style="margin-top:20px">
+    <div class="row" style="gap:14px"><span class="co-avatar co-avatar-md" aria-hidden="true">${A.esc(A.initials(c.name))}</span><div><h3 style="margin:0">${A.esc(c.name)}</h3>${c.base?`<span class="tag">${A.icon('pin')}${A.esc(c.base)}</span>`:""}</div></div>
+    ${c.about?`<p class="muted" style="margin-top:14px">${A.esc(c.about)}</p>`:''}
+    <div class="row">${String(c.phone||'').replace(/\D/g,'').length>=7?`<a class="btn btn-primary btn-sm" href="https://wa.me/${String(c.phone).replace(/\D/g,"")}" target="_blank" rel="noopener">${A.icon('chat')}WhatsApp</a><a class="btn btn-ghost btn-sm" href="tel:${A.esc(String(c.phone).replace(/[^\d+]/g,""))}">${A.icon('phone')}${A.esc(c.phone)}</a>`:''}<a class="btn btn-ghost btn-sm" href="company.html#${A.esc(c.id)}">Company page</a></div>
+  </div>
+</div>
+<aside class="card book-card" aria-label="Booking request">
+  <div class="price-num" style="font-size:2rem">${sale!==v.price?`<span class="price-old">${A.moneyHTML(v.price)}</span>`:''}${A.moneyHTML(sale)}<small> /day</small></div>
+  ${sp?`<p class="small" style="margin:6px 0 0"><b>${sp.title}.</b> Code <button class="code" style="color:var(--ultra);border-color:var(--ultra)" data-copy="${sp.code}">${sp.code}</button></p>`:''}
+  ${!v.available?'<div class="demo-note" style="margin:14px 0 0">This vehicle is booked out right now. Send a request and the company can offer you another date or a similar car.</div>':''}
+  <form id="book" class="stack" style="margin-top:18px">
+    <label class="f">Pick up at<select class="input" id="b-pick">${pickupOptions.map(p=>`<option>${A.esc(p)}</option>`).join("")}</select></label>
+    <div class="form-grid"><label class="f">From<input class="input" type="date" id="b-from" data-pair-end="b-to"></label><label class="f">To<input class="input" type="date" id="b-to" data-pair-start="b-from"></label></div>
+    <fieldset style="border:0;padding:0;margin:6px 0 0" class="stack"><legend class="f">Extras</legend>
+      ${EXTRAS.map(x=>`<label class="check"><input type="checkbox" value="${x.id}" class="b-x"><span>${x.name} <span class="muted small">${A.moneyHTML(x.price)} per ${x.per}</span></span></label>`).join("")}
+    </fieldset>
+    <div class="form-grid"><label class="f">Your name<input class="input" id="b-name" required autocomplete="name"></label><label class="f">WhatsApp or email<input class="input" id="b-contact" required></label></div>
+    <div class="card-flat"><h4>Before you request this car</h4><p class="small">Drivers ${R.minAge}${R.maxAge?'–'+R.maxAge:'+'}; licence held ${R.licenceYears}+ years; minimum ${R.minDays} rental day${R.minDays===1?'':'s'}.</p><details class="faq"><summary>All rental policies and charges</summary>${A.requirementsBlock(c.id,R,P)}</details>
+      <div class="form-grid" style="margin-top:14px">
+        <label class="f">I am a<select class="input" required id="b-residency"><option value="">Choose</option><option value="residents">Barbados resident</option><option value="visitors">Visitor</option></select></label>
+        <label class="f">Licence issued<select class="input" required id="b-licence-origin"><option value="">Choose</option><option value="local">In Barbados</option><option value="overseas">Outside Barbados</option></select></label>
+        <label class="f">Driver age at pickup<input class="input" type="number" step="1" min="${R.minAge||18}" max="${R.maxAge||100}" id="b-age" ${R.minAge||R.maxAge?'required':''} placeholder="${R.minAge?R.minAge+' or older':'Age in years'}"></label>
+        ${R.licenceYears?`<label class="f">Full years holding your licence<input class="input" type="number" step="1" min="${R.licenceYears}" max="80" id="b-licence-years" required></label>`:''}
+      </div>
+      <label class="check" style="margin-top:14px"><input type="checkbox" required id="b-requirements">I have read the rental requirements and confirm that all drivers meet them.</label>
+      <p id="eligibility-error" class="small" role="alert" style="color:var(--red);margin-top:8px"></p>
+    </div>
+    <label class="f">Message to the rental company (optional)<textarea class="input" id="b-message" maxlength="3000" placeholder="Share your arrival time, pickup questions, or other details."></textarea><span class="hint">This starts your private booking conversation. Your conversation appears in Messages at the side of the site.</span></label>
+    <details class="faq" style="padding:16px 18px"><summary>How to pay ${A.esc(c.name)}</summary><div style="margin-top:14px">${A.payBlock(c.id,{payment:P})}</div></details>
+    ${R.afterHours==='yes'?`<label class="check"><input type="checkbox" id="b-after-hours">After-hours pickup / return (${A.moneyHTML(R.afterHoursFee)} per rental)</label>`:''}
+    <div id="sum" aria-live="polite"></div>
+    <div class="notice warn">${A.icon('shield')}<p><b>BimCar Connect is a listing site only.</b> Your rental agreement is with ${A.esc(c.name)}. BimCar Connect is not responsible for the vehicle, damage, accidents, injuries, insurance, payments or disputes.</p></div>
+    <label class="check"><input type="checkbox" required id="b-agree">I understand BimCar Connect is a listing site only and my rental is with ${A.esc(c.name)}.</label>
+    <button class="btn btn-gold btn-block" type="submit">Send booking request</button>
+    <p class="small muted" style="margin:0">Free to request, no booking fee. You pay ${A.esc(c.name)} directly once they confirm.</p>
+  </form>
+</aside>`;
+
+// Gallery thumbs
+document.getElementById("gallery").addEventListener("click",e=>{
+  const t=e.target.closest(".thumb"); if(!t) return;
+  document.querySelectorAll("#gallery .thumb").forEach(x=>x.classList.toggle("on",x===t));
+  document.querySelector("#gallery .main").innerHTML = A.photoImg(PHOTOS[+t.dataset.photo],v,"","height:100%");
+});
+
+// Price summary
+const bf=document.getElementById("b-from"), bt=document.getElementById("b-to");
+const urlDates=new URLSearchParams(location.search);
+let startDef=A.addDays(A.todayISO(),2),defaultDays=Math.min(Math.max(5,R.minDays),R.maxDays||3650);
+for(let k=0;k<365;k++){if(A.vehicleAvailable(v,startDef,A.addDays(startDef,defaultDays)))break;startDef=A.addDays(startDef,1);}
+bf.value=startDef;bt.value=A.addDays(startDef,defaultDays);
+if(A.dateRangeValid(urlDates.get('from'),urlDates.get('to'))){bf.value=urlDates.get('from');bt.value=urlDates.get('to');}
+bf.min=A.todayISO();bt.min=A.addDays(bf.value,1);
+bf.dataset.booked=JSON.stringify(BOOKED); bt.dataset.booked=JSON.stringify(BOOKED.filter(day=>!A.availabilityRanges(A.vehicle(id)||VEH).some(r=>r.from===day)));
+const availBox=document.getElementById("avail");
+function drawAvail(){ availBox.innerHTML=availability(); }
+let picking="start";
+availBox.addEventListener("click",e=>{ const d=e.target.closest(".dp-day:not([disabled])"); if(!d) return; const v=d.dataset.v;
+  if(picking==="start" || v<=bf.value){ if(BOOKED.includes(v)){A.toast("This car is unavailable for pickup on that date.");return;} bf.value=v; if(bt.value<=v) bt.value=A.addDays(v,3); bt.min=A.addDays(v,1); picking="end"; A.toast("Start date set. Now tap an end date."); }
+  else { const clash=!A.vehicleAvailable(A.vehicle(id)||VEH,bf.value,v); if(clash){ A.toast("Some days in that range are booked. Pick an earlier end date."); return; } bt.value=v; picking="start"; A.toast(`${A.fmtLong(bf.value)} to ${A.fmtLong(bt.value)} selected`); }
+  drawAvail(); sum(); checkEligibility(); });
+function sum(){
+  const days = A.daysBetween(bf.value, bt.value);
+  let total = days*sale, rows = `<div class="sum-row"><span>${A.moneyHTML(sale)} × ${days} day${days>1?'s':''}</span><span>${A.moneyHTML(days*sale)}</span></div>`;
+  document.querySelectorAll(".b-x:checked").forEach(x=>{ const e=EXTRAS.find(y=>y.id===x.value); const amt = e.per==="day"? e.price*days : e.price; total+=amt; rows+=`<div class="sum-row"><span>${e.name}</span><span>${A.moneyHTML(amt)}</span></div>`; });
+  if(R.fuelPolicy==="prepaid"){total+=R.prepaidFuelFee;rows+=`<div class="sum-row"><span>Prepaid fuel per rental</span><span>${A.moneyHTML(R.prepaidFuelFee)}</span></div>`;}
+  const ageValue=document.getElementById("b-age").value;
+  if(R.youngDriverFee>0 && ageValue && Number(ageValue)<R.youngDriverUntil){ const charge=R.youngDriverFee*days; total+=charge; rows+=`<div class="sum-row"><span>Young-driver charge × ${days} days</span><span>${A.moneyHTML(charge)}</span></div>`; }
+  if(document.getElementById("b-pick").value==="Hotel or villa delivery"){ total+=R.deliveryFee; rows+=`<div class="sum-row"><span>Delivery per rental</span><span>${A.moneyHTML(R.deliveryFee)}</span></div>`; }
+  if(document.getElementById("b-after-hours")?.checked){ total+=R.afterHoursFee; rows+=`<div class="sum-row"><span>After-hours pickup / return</span><span>${A.moneyHTML(R.afterHoursFee)}</span></div>`; }
+  const levy = 5*Math.min(days,7); total+=levy;
+  rows += `<div class="sum-row"><span>Car Rental Levy <span class="muted small">(BBD $5/day, max 7 days)</span></span><span>${A.moneyHTML(levy)}</span></div>`;
+  document.getElementById("sum").innerHTML = rows + `<div class="sum-row total"><span>Estimated total</span><span>${A.moneyHTML(total)}</span></div>`;
+  return {days,total};
+}
+bf.addEventListener("change",()=>{ bt.min=A.addDays(bf.value,1); if(bt.value<=bf.value) bt.value=iso(new Date(new Date(bf.value).getTime()+864e5)); sum(); });
+bt.addEventListener("change",()=>{ sum(); drawAvail(); }); bf.addEventListener("change",drawAvail); drawAvail(); document.querySelectorAll(".b-x").forEach(x=>x.addEventListener("change",sum)); sum();
+
+function checkEligibility(){
+  const age=document.getElementById("b-age"), years=document.getElementById("b-licence-years"), messages=[];
+  if(listingChanged)messages.push('The price or rental rules have changed. Refresh this page to review them before requesting.');
+  if(age.value && R.minAge && Number(age.value)<R.minAge) messages.push(`This company requires drivers aged ${R.minAge} or older.`);
+  if(age.value && R.maxAge && Number(age.value)>R.maxAge) messages.push(`This company's maximum driver age is ${R.maxAge}.`);
+  if(years && years.value && Number(years.value)<R.licenceYears) messages.push(`You must have held a full licence for at least ${R.licenceYears} years.`);
+  if(!A.vehicleAvailable(A.vehicle(v.id)||VEH,bf.value,bt.value))messages.push("This car is unavailable for part of those dates. Choose another period.");
+  const duration=A.daysBetween(bf.value,bt.value);
+  if(!bf.value || !bt.value || bt.value<=bf.value) messages.push("Choose a drop-off date after pickup.");
+  else if(duration<R.minDays || (R.maxDays!==null && duration>R.maxDays)) messages.push(`Rental length must be at least ${R.minDays} days${R.maxDays?' and no more than '+R.maxDays+' days':''}.`);
+  const residency=document.getElementById('b-residency').value, origin=document.getElementById('b-licence-origin').value;
+  if(residency && R.residency!=="both" && residency!==R.residency) messages.push(`This company accepts ${R.residency} only.`);
+  if(origin && R.licenceOrigin!=="both" && origin!==R.licenceOrigin) messages.push(`This company accepts ${R.licenceOrigin==='local'?'Barbados':'overseas'} licences only.`);
+  document.getElementById("eligibility-error").textContent=messages.join(" ");
+  document.querySelector("#book button[type=submit]").disabled=messages.length>0;
+  return !messages.length;
+}
+document.getElementById("b-age").addEventListener("input",()=>{checkEligibility();sum();});
+["b-residency","b-licence-origin","b-from","b-to","b-pick","b-after-hours"].forEach(id=>document.getElementById(id)?.addEventListener('change',()=>{checkEligibility();sum();}));
+if(document.getElementById("b-licence-years")) document.getElementById("b-licence-years").addEventListener("input",checkEligibility);
+/* Fill the request form from the renter's saved account details */
+(function prefill(){const u=window.Live?.user;if(!u||u.role!=='renter')return;const d=u.details||{},set=(id,v)=>{const el=document.getElementById(id);if(el&&!el.value&&v!==undefined&&v!==null&&v!=='')el.value=v;};
+ set('b-name',u.name);set('b-contact',d.phone||u.email);set('b-residency',d.residency);set('b-licence-origin',d.licenceOrigin);
+ const a=A.driverAge(d.dob);if(a)set('b-age',a);if(/^\d{4}$/.test(d.licenceSince||''))set('b-licence-years',Math.max(0,new Date().getFullYear()-Number(d.licenceSince)));
+ try{checkEligibility();sum();}catch{}})();
+
+document.getElementById("book").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if(!A.vehiclePolicyComplete(A.vehicle(v.id))){ A.toast("This company must complete its rental requirements before taking requests."); return; }
+  if(!checkEligibility()||!Live.requireSession()) return;
+  const s=sum();
+  let req = {id:"BK-"+crypto.randomUUID(), vehicle:v.id, from:bf.value, to:bt.value, pickup:document.getElementById("b-pick").value, total:s.total, status:"request", renter:document.getElementById("b-name").value, contact:document.getElementById("b-contact").value, driverAge:document.getElementById("b-age").value?Number(document.getElementById("b-age").value):null, licenceYears:document.getElementById("b-licence-years")?Number(document.getElementById("b-licence-years").value):null, initialMessage:document.getElementById("b-message").value.trim(),requirementsAccepted:true, requirementsSnapshot:R, paymentSnapshot:P, extras:[...document.querySelectorAll(".b-x:checked")].map(input=>EXTRAS.find(x=>x.id===input.value)), residency:document.getElementById("b-residency").value, licenceOrigin:document.getElementById("b-licence-origin").value, afterHours:document.getElementById("b-after-hours")?.checked||false, sent:new Date().toISOString()};
+  const submit=document.querySelector('#book button[type=submit]');submit.disabled=true;try{req=await Live.requestBooking(req);}catch(error){A.toast(Live.error(error));submit.disabled=false;return;}submit.disabled=false;
+  try{const u=Live.user,d={...(u.details||{})};let changed=false;const c=document.getElementById("b-contact").value.trim(),r=document.getElementById("b-residency").value,o=document.getElementById("b-licence-origin").value;if(!d.phone&&c&&!/@/.test(c)){d.phone=c;changed=true;}if(!d.residency&&r){d.residency=r;changed=true;}if(!d.licenceOrigin&&o){d.licenceOrigin=o;changed=true;}if(changed)Live.saveProfile(u.name,d).catch(()=>{});}catch{}
+  document.getElementById("done-text").textContent = `${c.name} has your request for the ${v.name}, ${A.fmtDate(req.from)} to ${A.fmtDate(req.to)}. Your conversation is available in My trips.`;
+  const bu=document.getElementById("burst"); bu.innerHTML=A.icon('check'); bu.style.animation="none"; void bu.offsetWidth; bu.style.animation="";
+  document.getElementById("open-request-chat").onclick=()=>{A.closeModal("done-modal");BookingChat.open(req.id);};
+  A.openModal("done-modal");
+});
+
+const ad=DB.partners.find(p=>p.spot==="confirm"); const adBox=document.getElementById("confirm-ad"); if(ad&&adBox){ adBox.innerHTML = `${ad.image?`<img src="${A.esc(ad.image)}" alt="" style="width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:10px;flex:none">`:""}<div><span class="badge badge-dark">Sponsored</span><b style="display:block;margin-top:6px">${A.esc(ad.name)}</b><span class="small muted">${A.esc(ad.blurb)}</span>${ad.url?`<a class="small" style="display:block;margin-top:6px" href="${A.esc(ad.url)}" target="_blank" rel="noopener sponsored">Visit ${A.esc(ad.name)} →</a>`:""}</div>`; } else if(adBox){ adBox.parentElement.hidden=true; }
+document.getElementById("more").innerHTML = A.publishedVehicles().filter(x=>x.company===v.company && x.id!==v.id).slice(0,4).map(A.vehicleCard).join("") || '<p class="muted">This is the only vehicle listed by this company.</p>';
+document.getElementById("report-btn").addEventListener("click",()=>A.openModal("report-modal"));
+document.getElementById('rep-form').addEventListener('submit',async e=>{e.preventDefault();if(!Live.requireSession())return;try{await Live.submitInquiry('photo',{vehicle:v.id,why:document.getElementById('rep-why').value,txt:document.getElementById('rep-txt').value.trim()});e.target.reset();A.closeModal('report-modal');A.toast('Photo report received for review');}catch(error){A.toast(Live.error(error));}});
+window.addEventListener('drivebim:data',()=>{const latest=A.vehicle(id);if(!latest){listingChanged=true;checkEligibility();return;}listingChanged=JSON.stringify(A.vehicleRequirements(latest))!==JSON.stringify(R)||JSON.stringify(A.vehiclePayment(latest))!==JSON.stringify(P)||A.salePrice(latest)!==sale;BOOKED=A.blockedDates(latest,A.todayISO(),730);bf.dataset.booked=JSON.stringify(BOOKED);bt.dataset.booked=JSON.stringify(BOOKED.filter(day=>!A.availabilityRanges(latest).some(r=>r.from===day)));drawAvail();checkEligibility();});
+checkEligibility();
+})();
+</script>
+</body></html>

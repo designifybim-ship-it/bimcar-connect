@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Company profile | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<div class="dash"><div id="dash-side"></div>
+<main class="dash-main" id="main">
+<div class="dash-head"><div><h1>Company profile</h1><p class="muted" style="margin:6px 0 0">This is what renters see on your company page.</p></div><a class="btn btn-ghost" id="view"><span data-icon="eye"></span>View public page</a></div>
+<form id="pf" class="stack">
+  <div class="card"><h3>Details</h3><div class="form-grid" style="margin-top:14px">
+    <label class="f">Company name<input class="input" name="name" required maxlength="160"></label>
+    <label class="f">Parish<select class="input" name="parish" id="parish"></select></label>
+    <label class="f">Phone / WhatsApp<input class="input" name="phone" type="tel" maxlength="40" placeholder="+1 (246)"></label>
+    <label class="f">Email<input class="input" name="email" type="email"></label>
+    <label class="f full">Address or landmark<span class="hint">Shown on your company page so renters can find you.</span><input class="input" name="base" maxlength="300" placeholder="e.g. Next to the Shell station, Hastings"></label>
+    <label class="f full">About your company<span class="hint">Two or three sentences. What makes renting from you different?</span><textarea class="input" name="about" maxlength="1500"></textarea></label>
+  </div></div>
+  <div class="card"><h3>Pickup locations</h3>
+    <div class="row" id="pk" style="margin:14px 0 18px"></div>
+    <p class="small muted" style="margin:0">Tick every place renters can collect a car from you. Each vehicle can narrow this down further.</p>
+    </div>
+  <div class="card" id="requirements"><h3>Rental requirements</h3>
+    <p class="muted small">Set your company's rules for all vehicles and drivers. Renters see these on your company page, vehicle pages, and before sending a request. Requirements are mandatory. Your cars stay unpublished until you complete and confirm these rules.</p>
+    <div class="quick-setup" id="quick-setup"><div><b>Quick setup</b><span>Pick the closest match. We fill in every rule below for you, then you just check and change anything that's different.</span></div><div class="qs-opts">
+      <button type="button" class="qs-opt" data-preset="standard"><b>Standard</b><small>Age 25+, 2 years licensed, comprehensive cover, full-to-full</small></button>
+      <button type="button" class="qs-opt" data-preset="visitor"><b>Visitor friendly</b><small>Age 21+ with young-driver fee, airport &amp; hotel delivery</small></button>
+      <button type="button" class="qs-opt" data-preset="strict"><b>Strict</b><small>Age 25 to 75, 3 years licensed, credit card and passport</small></button>
+    </div></div>
+    <div class="form-grid" style="margin-top:18px">
+      <label class="f">Minimum driver age<input class="input" type="number" min="18" max="100" step="1" required id="req-min" placeholder="e.g. 25"><span class="hint">Use 25 if you only rent to drivers aged 25 and older.</span></label>
+      <label class="f">Maximum driver age (leave blank for no maximum)<input class="input" type="number" min="18" max="100" step="1" id="req-max" placeholder="No published maximum"></label>
+      <label class="f">Minimum years holding a full licence<input class="input" type="number" min="0" max="80" step="1" required id="req-years"><span class="hint">Use 0 if you have no minimum experience rule.</span></label>
+    </div>
+    <fieldset style="border:0;padding:0;margin:18px 0"><legend class="f">Documents / items required at pickup</legend><div class="stack" id="req-docs"></div></fieldset>
+    <div id="full-policy-fields"></div>
+    <label class="f">Other rental requirements<textarea class="input" id="req-notes" maxlength="2000" placeholder="e.g. accepted licence countries, young-driver fees, additional-driver rules"></textarea></label>
+    <label class="check" style="margin-top:18px"><input type="checkbox" id="req-confirmed" required>I confirm these are the complete rental requirements for my company, including any age limits, licence experience, required documents, and additional rules.</label>
+    <div class="card-flat" style="margin-top:20px"><h4>Renter preview</h4><div id="req-preview"></div></div>
+    <p class="small muted" style="margin:14px 0 0">Changes go live when you select Save profile below.</p>
+  </div>
+  <div class="card" id="payment"><h3>Payment and policies</h3><p class="muted small">Renters see this on your company page and before they send a booking request. Renters pay you directly. BimCar Connect never handles rental payments.</p>
+    <fieldset style="border:0;padding:0;margin:18px 0 0"><legend class="f">Ways renters can pay you</legend><div class="row" id="pay-methods"></div></fieldset>
+    <div class="form-grid" style="margin-top:20px">
+      <label class="f">When do renters pay?<select class="input" id="pay-when"></select></label>
+      <label class="f" id="dep-wrap">Booking deposit (BBD)<input class="input" type="number" min="1" step="1" id="pay-deposit"></label>
+      <label class="f">Refundable security deposit (BBD)<span class="hint">Held at pickup and returned when the vehicle comes back. Use 0 if none.</span><input class="input" type="number" min="0" step="1" required id="pay-security"></label>
+      <label class="f">Cancellation policy<select class="input" id="pay-cancel"></select></label>
+      <label class="f full" id="bank-wrap">Bank transfer details<span class="hint">Only shown to a renter after you confirm their booking.</span><textarea class="input" id="pay-bank" placeholder="Bank, account name, account number, branch" style="min-height:90px"></textarea></label>
+      <label class="f full" id="link-wrap">Online payment link<span class="hint">Your own link from a provider like a bank or card processor. Only shown after you confirm.</span><input class="input" type="url" id="pay-link" placeholder="https://"></label>
+      <label class="f full">Anything else renters should know about paying?<input class="input" id="pay-notes" placeholder="e.g. USD cash accepted, card machine at pickup"></label>
+    </div>
+    <div style="margin-top:22px"><span class="f" style="font-weight:700;font-size:.9rem">Preview</span><div class="card-flat" style="margin-top:8px" id="pay-preview"></div></div>
+  </div>
+  <div class="card"><h3>Verification</h3><p class="muted small">BimCar Connect checks every company before its cars go live. To get approved and earn the Verified badge, send your trading licence and insurance certificate to the BimCar Connect team.</p>
+    <div class="grid g2" style="margin-top:14px">
+      <div class="card-flat row between"><div class="row"><span data-icon="shield" style="width:24px;height:24px;display:inline-block;color:var(--ultra)"></span><div><b>Company approval</b><div class="small muted" id="approval-text"></div></div></div><span class="badge" id="approval-badge"></span></div>
+      <div class="card-flat row between"><div class="row"><span data-icon="doc" style="width:24px;height:24px;display:inline-block;color:var(--ultra)"></span><div><b>Verified badge</b><div class="small muted" id="verified-text"></div></div></div><span class="badge" id="verified-badge"></span></div>
+    </div>
+    <a class="btn btn-ghost btn-sm" style="margin-top:16px" href="contact.html">Send documents to BimCar Connect</a>
+  </div>
+  <div class="row save-bar" style="justify-content:flex-end"><span class="small muted" id="save-state"></span><button class="btn btn-primary" type="submit" id="save-profile">Save profile</button></div>
+</form>
+
+</main></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const CO=A.requireCompany(); if(!CO) return;
+const _co=CO, c=A.company(CO), f=document.getElementById("pf");
+document.getElementById("view").href="company.html#"+CO;
+document.getElementById("parish").innerHTML=DB.parishes.map(p=>`<option>${p}</option>`).join("");
+const saved=A.user()?.company===CO?A.store.get("profile",{}):{}; const P={...c,...saved};
+["name","parish","phone","email","about","base"].forEach(k=>f.elements[k].value=P[k]||"");
+if(!f.elements.parish.value)f.elements.parish.value=DB.parishes[0];
+document.getElementById("approval-text").textContent=c.approved?"Your cars can show to renters.":"Waiting for BimCar Connect to review your company.";
+document.getElementById("approval-badge").textContent=c.approved?"Approved":"Pending";document.getElementById("approval-badge").className="badge "+(c.approved?"badge-reef":"badge-grey");
+document.getElementById("verified-text").textContent=c.verified?"Licence and insurance checked.":"Send your documents to be verified.";
+document.getElementById("verified-badge").textContent=c.verified?"Verified":"Not yet";document.getElementById("verified-badge").className="badge "+(c.verified?"badge-reef":"badge-grey");
+document.getElementById("pk").innerHTML = DB.pickups.map(p=>`<label class="chip" style="cursor:pointer"><input type="checkbox" value="${A.esc(p)}" ${(c.pickups||[]).includes(p)?'checked':''} style="accent-color:var(--ultra)">${A.esc(p)}</label>`).join("");
+const requirements=A.rentalRequirements(CO);
+const reqMin=document.getElementById("req-min"), reqMax=document.getElementById("req-max"), reqYears=document.getElementById("req-years"), reqNotes=document.getElementById("req-notes");
+document.getElementById("req-confirmed").checked=requirements.confirmed===true;
+reqMin.value=requirements.minAge??""; reqMax.value=requirements.maxAge??""; reqYears.value=requirements.licenceYears; reqNotes.value=requirements.notes;
+const documentOptions=["Valid full driving licence","Passport or government-issued photo ID","Barbados visitor driving permit","Credit card in the main driver's name","Proof of address","Proof of accommodation or return travel","International Driving Permit or certified licence translation"];
+document.getElementById("req-docs").innerHTML=documentOptions.map(d=>`<label class="check"><input type="checkbox" value="${A.esc(d)}" ${d==='Valid full driving licence'?'checked disabled':requirements.documents.includes(d)?'checked':''}>${A.esc(d)}</label>`).join("");
+function readRequirements(){ return {...readFullPolicy(),confirmed:document.getElementById("req-confirmed").checked,minAge:reqMin.value===""?null:Number(reqMin.value),maxAge:reqMax.value===""?null:Number(reqMax.value),licenceYears:Number(reqYears.value),documents:[...document.querySelectorAll("#req-docs input:checked")].map(i=>i.value),notes:reqNotes.value.trim()}; }
+const policyBox=document.getElementById("full-policy-fields");
+const groups=[...new Set(A.policyFields.map(f=>f.group))];
+policyBox.innerHTML=groups.map(g=>`<fieldset class="card-flat" style="margin:18px 0;padding:18px"><legend><b>${A.esc(g)}</b></legend><div class="form-grid">${A.policyFields.filter(f=>f.group===g).map(def=>`<label class="f ${def.type==='text'?'full':''}" id="wrap-policy-${def.key}">${A.esc(def.label)}${def.options?`<select class="input" id="policy-${def.key}" required><option value="">Choose a policy</option>${def.options.map(([v,t])=>`<option value="${v}">${A.esc(t)}</option>`).join('')}</select>`:def.type==='number'?`<input class="input" id="policy-${def.key}" type="number" min="${def.min}" max="${def.max}" step="${def.integer?1:'0.01'}" ${def.optional?'':'required'}>`:`<textarea class="input" id="policy-${def.key}" maxlength="${def.maxLength}" required></textarea>`}</label>`).join('')}</div></fieldset>`).join('');
+A.policyFields.forEach(def=>document.getElementById('policy-'+def.key).value=requirements[def.key]??'');
+function readFullPolicy(){ return Object.fromEntries(A.policyFields.map(def=>{ const value=document.getElementById('policy-'+def.key).value; return [def.key,value===''?null:def.type==='number'?Number(value):value]; })); }
+function fullPolicyUI(){
+ const r=readRequirements();
+ A.policyFields.forEach(def=>{ const input=document.getElementById('policy-'+def.key), active=A.policyFieldActive(def,r); document.getElementById('wrap-policy-'+def.key).hidden=!active; input.disabled=!active; input.required=active&&!def.optional; });
+ document.getElementById('policy-maxDays').setCustomValidity(r.maxDays!==null && r.minDays!==null && r.maxDays<r.minDays?'Maximum rental days must be at least the minimum.':'');
+ document.getElementById('policy-youngDriverUntil').setCustomValidity(r.youngDriverFee>0 && (r.youngDriverUntil<=r.minAge || (r.maxAge!==null && r.youngDriverUntil>r.maxAge+1))?'The young-driver threshold must be above the minimum age and within the accepted age range.':'');
+}
+function previewRequirements(){ fullPolicyUI(); reqMax.setCustomValidity(reqMax.value && reqMin.value && Number(reqMax.value)<Number(reqMin.value)?"Maximum age must be at least the minimum age.":""); document.getElementById("req-preview").innerHTML=A.requirementsBlock(CO,readRequirements()); }
+document.getElementById("requirements").addEventListener("input",previewRequirements); previewRequirements();
+/* Quick setup presets: fill every rule at once so companies only review */
+const PRESETS={
+ standard:{minAge:25,maxAge:'',licenceYears:2,docs:["Passport or government-issued photo ID","Barbados visitor driving permit"],p:{residency:'both',licenceOrigin:'both',youngDriverFee:0,minDays:1,maxDays:'',mileage:'unlimited',insurance:'comprehensive',excess:1500,insuranceTerms:'Damage from off-road driving, driving under the influence or by an unlisted driver is not covered.',fuelPolicy:'full-full',roadside:'yes',additionalDrivers:'yes',additionalDriverFee:10,delivery:'no',afterHours:'no',lateFee:25,pets:'no',smoking:'no'}},
+ visitor:{minAge:21,maxAge:'',licenceYears:1,docs:["Passport or government-issued photo ID","Barbados visitor driving permit","Proof of accommodation or return travel"],p:{residency:'both',licenceOrigin:'both',youngDriverFee:15,youngDriverUntil:25,minDays:2,maxDays:'',mileage:'unlimited',insurance:'comprehensive',excess:2000,insuranceTerms:'Damage from off-road driving, driving under the influence or by an unlisted driver is not covered.',fuelPolicy:'same-same',roadside:'yes',additionalDrivers:'yes',additionalDriverFee:10,delivery:'yes',deliveryFee:40,deliveryAreas:'Grantley Adams Airport, the cruise port and hotels on the south and west coasts.',afterHours:'yes',afterHoursFee:30,lateFee:25,pets:'no',smoking:'no'}},
+ strict:{minAge:25,maxAge:75,licenceYears:3,docs:["Passport or government-issued photo ID","Barbados visitor driving permit","Credit card in the main driver's name","Proof of address"],p:{residency:'both',licenceOrigin:'both',youngDriverFee:0,minDays:3,maxDays:30,mileage:'limited',dailyKm:150,extraKmRate:0.5,insurance:'third-party',excess:3000,insuranceTerms:'Comprehensive cover is available at the counter. Damage from off-road driving, driving under the influence or by an unlisted driver is not covered.',fuelPolicy:'full-full',roadside:'yes',additionalDrivers:'no',delivery:'no',afterHours:'no',lateFee:40,pets:'no',smoking:'no'}}
+};
+document.getElementById('quick-setup').addEventListener('click',e=>{const b=e.target.closest('[data-preset]');if(!b)return;const P=PRESETS[b.dataset.preset];
+ reqMin.value=P.minAge;reqMax.value=P.maxAge;reqYears.value=P.licenceYears;
+ document.querySelectorAll('#req-docs input:not([disabled])').forEach(i=>{i.checked=P.docs.includes(i.value);});
+ A.policyFields.forEach(def=>{const el=document.getElementById('policy-'+def.key);el.value=P.p[def.key]??(def.type==='number'&&!def.optional?0:'');});
+ document.querySelectorAll('.qs-opt').forEach(x=>x.classList.toggle('on',x===b));
+ previewRequirements();document.querySelectorAll('#requirements .pills').forEach(x=>x.dispatchEvent(new Event('sync')));
+ A.toast('Rules filled in. Check them, tick the confirmation, then save.');document.getElementById('req-confirmed').closest('label').scrollIntoView({behavior:'smooth',block:'center'});});
+/* Yes/no and short choices become tap buttons instead of dropdowns */
+document.querySelectorAll('#requirements select.input, #payment select.input').forEach(sel=>{const opts=[...sel.options].filter(o=>o.value!=='');if(opts.length>3||sel.dataset.pilled)return;sel.dataset.pilled='1';sel.classList.add('sr-select');
+ const box=document.createElement('div');box.className='pills'+(opts.length>2?' pills-stack':'');box.setAttribute('role','radiogroup');
+ box.innerHTML=opts.map(o=>`<button type="button" role="radio" data-v="${A.esc(o.value)}">${A.esc(o.textContent)}</button>`).join('');
+ const sync=()=>box.querySelectorAll('button').forEach(b=>{const on=b.dataset.v===sel.value;b.classList.toggle('on',on);b.setAttribute('aria-checked',on);});
+ box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;sel.value=b.dataset.v;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}));sync();});
+ box.addEventListener('sync',sync);sel.addEventListener('change',sync);sel.after(box);sync();});
+
+
+// Payment and policies
+const PI = A.payInfo(CO);
+document.getElementById("pay-methods").innerHTML = DB.payMethods.map(m=>`<label class="chip" style="cursor:pointer"><input type="checkbox" value="${m.id}" ${PI.methods.includes(m.id)?'checked':''} style="accent-color:var(--ink)">${A.icon(m.icon)}${m.label}</label>`).join("");
+document.getElementById("pay-when").innerHTML = Object.entries(DB.payWhen).map(([k,v])=>`<option value="${k}" ${PI.when===k?'selected':''}>${v}</option>`).join("");
+document.getElementById("pay-cancel").innerHTML = Object.entries(DB.cancelRules).map(([k,v])=>`<option value="${k}" ${PI.cancel===k?'selected':''}>${v}</option>`).join("");
+document.getElementById("pay-deposit").value=PI.deposit; document.getElementById("pay-security").value=PI.security;
+document.getElementById("pay-bank").value=PI.bank||""; document.getElementById("pay-link").value=PI.link||""; document.getElementById("pay-notes").value=PI.notes||"";
+function readPay(){ return {methods:[...document.querySelectorAll("#pay-methods input:checked")].map(i=>i.value), when:document.getElementById("pay-when").value, deposit:+document.getElementById("pay-deposit").value||0, security:+document.getElementById("pay-security").value||0, cancel:document.getElementById("pay-cancel").value, bank:document.getElementById("pay-bank").value.trim(), link:document.getElementById("pay-link").value.trim(), notes:document.getElementById("pay-notes").value.trim()}; }
+function payUI(){ const p=readPay();
+  document.getElementById("dep-wrap").hidden = p.when!=="deposit"; document.getElementById("pay-deposit").disabled=p.when!=="deposit"; document.getElementById("pay-deposit").required=p.when==="deposit";
+  document.getElementById("bank-wrap").hidden = !p.methods.includes("Bank transfer");
+  document.getElementById("link-wrap").hidden = !p.methods.includes("Online link");
+  const saved = A.store.get("pay_"+CO,{}); A.store.set("pay_"+CO, p); document.getElementById("pay-preview").innerHTML = A.payBlock(CO,{confirmed:true}); A.store.set("pay_"+CO, saved);
+}
+document.getElementById("payment").addEventListener("input", payUI); document.getElementById("payment").addEventListener("change", payUI); payUI();
+f.addEventListener("submit",async e=>{ e.preventDefault(); if(!A.requirementsComplete(CO,readRequirements(),readPay())){ A.toast("Complete and confirm your rental requirements before saving."); document.getElementById("requirements").scrollIntoView(); return; } const p=readPay(); if(!p.methods.length){ A.toast("Pick at least one way renters can pay"); document.getElementById("payment").scrollIntoView({behavior:"smooth"}); return; }
+  const o={}; ["name","parish","phone","email","about","base"].forEach(k=>o[k]=f.elements[k].value.trim());
+  if(!o.name){ A.toast("Add your company name"); f.elements.name.focus(); return; }
+  if(o.email&&!f.elements.email.checkValidity()){ A.toast("Check the email address"); f.elements.email.focus(); return; }
+  o.pickups=[...document.querySelectorAll("#pk input:checked")].map(i=>i.value);
+  if(!o.pickups.length){ A.toast("Choose at least one pickup location"); document.getElementById("pk").scrollIntoView({behavior:"smooth",block:"center"}); return; }
+  const btn=document.getElementById("save-profile"), state=document.getElementById("save-state"); btn.disabled=true; btn.classList.add("is-loading"); state.textContent="Saving…";
+  try{await Live.saveCompany(CO,o,readRequirements(),p);A.toast('Profile and rental requirements saved');state.textContent="All changes saved";}catch(error){A.toast(Live.error(error));state.textContent="Not saved";}finally{btn.disabled=false;btn.classList.remove("is-loading");} });
+if(location.hash==="#requirements") setTimeout(()=>document.getElementById("requirements").scrollIntoView(),400);
+if(location.hash==="#payment") setTimeout(()=>document.getElementById("payment").scrollIntoView({behavior:"smooth"}),400);
+})();
+</script>
+</body></html>

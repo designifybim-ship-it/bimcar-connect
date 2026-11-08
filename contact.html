@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Contact | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap page-head">
+  <div class="crumbs"><a href="index.html">Home</a><span class="sep">/</span>Contact</div>
+  <h1>Talk to BimCar Connect</h1>
+  <p class="lede">Questions about a listing, your company account, a boost or advertising? Send us a message. Signed-in members send it straight to our inbox; everyone else can send it on WhatsApp.</p>
+</div>
+<div class="wrap grid g2" style="align-items:start;gap:36px">
+  <form class="card stack" id="cform">
+    <div class="form-grid">
+      <label class="f">Your name<input class="input" required autocomplete="name"></label>
+      <label class="f">Email or WhatsApp<input class="input" required></label>
+      <label class="f full">What's it about?<select class="input"><option>I'm renting a vehicle</option><option>I want to list my company for free</option><option>Boosts or advertising</option><option>Something else</option></select></label>
+      <label class="f full">Message<textarea class="input" required></textarea></label>
+    </div>
+    <button class="btn btn-primary" type="submit" id="csend">Send message</button>
+    <p class="small muted" id="cmsg" style="margin:0" aria-live="polite"></p>
+  </form>
+  <div class="stack">
+    <div class="card-flat stack small">
+      <div class="tag"><span data-icon="chat"></span>For booking questions, open Messages at the side.</div>
+      <button class="link-btn" type="button" onclick="BookingChat.inbox()">Open my booking conversations</button>
+      <div class="tag"><span data-icon="pin"></span>Bridgetown, St. Michael, Barbados</div>
+    </div>
+  </div>
+</div>
+
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;
+const A=App, form=document.getElementById('cform'), msg=document.getElementById('cmsg'), btn=document.getElementById('csend');
+const KEY='drivebim.contact.draft';
+const read=()=>{const f=form.querySelectorAll('input');return {name:f[0].value.trim(),contact:f[1].value.trim(),topic:form.querySelector('select').value,message:form.querySelector('textarea').value.trim()};};
+// Restore a message typed before signing in
+try{const d=JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){const f=form.querySelectorAll('input');f[0].value=d.name||'';f[1].value=d.contact||'';form.querySelector('select').value=d.topic||form.querySelector('select').value;form.querySelector('textarea').value=d.message||'';sessionStorage.removeItem(KEY);}}catch{}
+const online=!Live.failed&&!!Live.client;
+const c={email:'bimcarconnect@yahoo.com',...(Live.settings?.contact||{})};if(!String(c.email||'').trim())c.email='bimcarconnect@yahoo.com';
+if(c.email||c.phone){const box=document.createElement('div');box.className='contact-direct';if(c.email){const a=document.createElement('a');a.className='btn btn-ghost btn-sm';a.href='mailto:'+c.email;a.innerHTML=A.icon('mail');a.append(c.email);box.append(a);}if(c.phone){const a=document.createElement('a');a.className='btn btn-ghost btn-sm';a.href='tel:'+String(c.phone).replace(/[^\d+]/g,'');a.innerHTML=A.icon('phone');a.append(c.phone);box.append(a);}form.before(box);}
+if(!Live.user||!online){btn.textContent=DB.contactWhatsApp?'Send on WhatsApp':'Send message';msg.innerHTML=online?'Prefer the website inbox? <a href="login.html" id="contact-login">Log in</a> and we\'ll keep your message.':'';}
+document.getElementById('contact-login')?.addEventListener('click',()=>{try{sessionStorage.setItem(KEY,JSON.stringify(read()));sessionStorage.setItem('drivebim.return',location.pathname);}catch{}});
+form.addEventListener('submit',async e=>{
+ e.preventDefault(); if(!form.reportValidity())return; const data=read();
+ if(!Live.user||!online){
+  if(!DB.contactWhatsApp){try{sessionStorage.setItem(KEY,JSON.stringify(data));}catch{}Live.requireSession?.();return;}
+  const text=`Hi BimCar Connect,\n\n${data.message}\n\nName: ${data.name}\nContact: ${data.contact}\nTopic: ${data.topic}`;
+  window.open('https://wa.me/'+DB.contactWhatsApp+'?text='+encodeURIComponent(text),'_blank','noopener');
+  msg.textContent='WhatsApp opened with your message. Press send there to reach us.';return;
+ }
+ btn.disabled=true;btn.classList.add('is-loading');
+ try{const row=await Live.submitInquiry('contact',data);form.reset();msg.textContent='Thanks! Your message reached the BimCar Connect team. Reference: '+String(row.id).slice(0,8).toUpperCase();A.toast('Message sent');}
+ catch(error){msg.textContent=Live.error(error);}
+ finally{btn.disabled=false;btn.classList.remove('is-loading');}
+});
+})();
+</script>
+</body></html>

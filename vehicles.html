@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Find a vehicle | BimCar Connect</title>
+<meta name="description" content="Compare and book rental cars from local companies across Barbados.">
+<link rel="icon" type="image/png" href="img/brand/bimcar-connect.png">
+
+
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/experience.css">
+<link rel="stylesheet" href="css/messages.css">
+<link rel="stylesheet" href="css/brand.css">
+<link rel="stylesheet" href="css/scroll.css">
+<link rel="stylesheet" href="css/tour.css">
+<link rel="stylesheet" href="css/navigation.css">
+<link rel="stylesheet" href="css/polish.css">
+<link rel="stylesheet" href="css/refine.css">
+<link rel="stylesheet" href="css/icon-colours.css">
+<link rel="stylesheet" href="css/ambient.css">
+<link rel="stylesheet" href="css/launch.css">
+<script src="js/navigation.js" defer></script>
+<script src="js/site-polish.js" defer></script>
+<script src="js/site-tour.js" defer></script>
+<script src="js/launch.js" defer></script></head>
+<body class="">
+<script src="js/experience.js"></script>
+<div id="site-header"></div>
+<main id="main">
+<div class="wrap page-head">
+  <div class="crumbs"><a href="index.html">Home</a><span class="sep">/</span>Find a vehicle</div>
+  <h1>Find a vehicle</h1>
+  <p class="lede">Every compact, sedan, SUV and van listed by local companies. Prices are per day.</p>
+</div>
+<div class="wrap listing">
+  <aside class="filters" id="filters" aria-label="Filters">
+    <label class="f">Search<input class="input" id="q" placeholder="Model, company or feature"></label>
+    <fieldset style="border:0;padding:0;margin:0" class="stack"><legend><h4>Driver requirements</h4></legend>
+      <label class="f">Driver age at pickup<input class="input" type="number" min="18" max="100" step="1" id="f-age" placeholder="e.g. 24"></label>
+      <label class="f">Full years holding a licence<input class="input" type="number" min="0" max="80" step="1" id="f-experience" placeholder="e.g. 2"></label>
+      <label class="check"><input type="checkbox" id="f-no-card">No credit card required</label>
+      <label class="check"><input type="checkbox" id="f-no-permit">No visitor permit required</label>
+      <p class="small muted" style="margin:0">Only cars whose company rules match your filters are shown.</p>
+    </fieldset>
+    <details class="faq" open><summary>Deposit and payment</summary><div class="stack" style="margin-top:14px">
+      <label class="f">Maximum security deposit (BBD)<input class="input" type="number" min="0" max="100000" step="1" id="f-maxDeposit" placeholder="Any amount"></label>
+      <label class="f">Pay with<select class="input" id="f-payment"><option value="">Any payment method</option></select></label>
+      <label class="check"><input type="checkbox" id="f-payPickup">Pay in full at pickup</label>
+      <label class="check"><input type="checkbox" id="f-freeCancellation">Free cancellation available</label>
+    </div></details>
+    <details class="faq" open><summary>Rental terms and insurance</summary><div class="stack" style="margin-top:14px">
+      <label class="f">Rental length (days)<input class="input" type="number" min="1" max="3650" step="1" id="f-duration" placeholder="e.g. 7"></label>
+      <label class="f">Maximum insurance excess (BBD)<input class="input" type="number" min="0" max="100000" step="1" id="f-maxExcess" placeholder="Any amount"></label>
+      <label class="f">Fuel policy<select class="input" id="f-fuel"><option value="">Any fuel policy</option><option value="full-full">Full to full</option><option value="same-same">Return at the same level</option><option value="prepaid">Prepaid fuel</option></select></label>
+      <label class="check"><input type="checkbox" id="f-unlimited">Unlimited mileage</label>
+      <label class="check"><input type="checkbox" id="f-comprehensive">Comprehensive cover included</label>
+      <label class="check"><input type="checkbox" id="f-noYoungFee">No young-driver charge for my age</label>
+    </div></details>
+    <details class="faq"><summary>Eligibility and extras</summary><div class="stack" style="margin-top:14px">
+      <label class="f">I am a<select class="input" id="f-residency"><option value="">Resident or visitor</option><option value="residents">Barbados resident</option><option value="visitors">Visitor</option></select></label>
+      <label class="f">My licence was issued<select class="input" id="f-licenceOrigin"><option value="">Anywhere</option><option value="local">In Barbados</option><option value="overseas">Outside Barbados</option></select></label>
+      <label class="check"><input type="checkbox" id="f-additionalDriver">Additional drivers allowed</label>
+      <label class="check"><input type="checkbox" id="f-delivery">Hotel / villa delivery available</label>
+      <label class="check"><input type="checkbox" id="f-afterHours">After-hours pickup / return</label>
+      <label class="check"><input type="checkbox" id="f-pets">Pets allowed</label>
+    </div></details>
+    <fieldset style="border:0;padding:0;margin:0" class="stack"><legend><h4>Available dates</h4></legend><label class="f">Pickup date<input class="input" type="date" id="f-from" data-pair-end="f-to"></label><label class="f">Drop-off date<input class="input" type="date" id="f-to" data-pair-start="f-from"></label><p class="small muted" id="date-filter-note" aria-live="polite"></p></fieldset>
+    <div><h4>Vehicle type</h4><div class="chips" id="f-type"></div></div>
+    <label class="f">Pick up at<select class="input" id="f-pickup"><option value="">Anywhere on island</option></select></label>
+    <div><h4>Transmission</h4><div class="chips" id="f-trans"><button class="chip on" data-v="">Any</button><button class="chip" data-v="Automatic">Automatic</button><button class="chip" data-v="Manual">Manual</button></div></div>
+    <label class="f">Seats<select class="input" id="f-seats"><option value="0">Any</option><option value="4">4 or more</option><option value="5">5 or more</option><option value="7">7 or more</option><option value="12">12 or more</option></select></label>
+    <div><h4>Max price per day</h4><input type="range" id="f-price" min="80" max="400" step="10" value="400" aria-label="Max price per day"><div class="row between small muted"><span id="price-lbl"></span></div></div>
+    <label class="check"><input type="checkbox" id="f-special">Only vehicles with a special</label>
+    <label class="check"><input type="checkbox" id="f-avail">Hide unavailable cars</label>
+    <button class="btn btn-ghost btn-sm" id="reset">Clear filters</button>
+  </aside>
+  <section>
+    <div class="results-bar">
+      <div class="row"><button class="btn btn-ghost btn-sm filter-toggle" id="ftoggle" aria-controls="filters" aria-expanded="false"><span data-icon="filter"></span>Filters</button><b id="count"></b><span class="small muted">Featured vehicles are paid placements.</span></div>
+      <label class="row small">Sort by <select class="input" id="sort" style="width:auto;padding:8px 12px"><option value="pop">Recommended</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="rating">Rating</option></select></label>
+    </div>
+    <div class="vgrid" id="results"></div>
+  </section>
+</div>
+
+</main>
+<div id="site-footer"></div>
+<script src="js/data.js"></script>
+<script src="vendor/supabase-2.119.0.js"></script>
+<script src="js/live-config.js"></script>
+<script src="js/live.js"></script>
+<script src="js/app.js"></script>
+<script src="js/chat.js"></script>
+<script>
+(async function(){
+await Live.ready;if(Live.failed)return;
+const A=App;
+const S = {q:"", type:"", pickup:"", trans:"", seats:0, price:400, special:false, avail:false, sort:"pop", from:"",to:"",age:"", experience:"", noCard:false, noPermit:false,duration:"",maxDeposit:"",maxExcess:"",payment:"",fuel:"",residency:"",licenceOrigin:"",unlimited:false,comprehensive:false,noYoungFee:false,freeCancellation:false,payPickup:false,additionalDriver:false,delivery:false,afterHours:false,pets:false};
+const saved = A.store.get("search", null);
+if(saved){ S.from=saved.from||""; S.to=saved.to||""; S.type = saved.type||""; S.pickup = saved.pickup||""; A.store.del("search"); }
+function fromHash(){
+  const h = decodeURIComponent(location.hash.slice(1));
+  const map = {airport:"GAIA airport", cruise:"Bridgetown cruise port", delivery:"Hotel or villa delivery"};
+  if(map[h]) S.pickup = map[h];
+  else if(DB.types.some(t=>t.id===h)) S.type = h;
+}
+fromHash();
+const typeBox = document.getElementById("f-type");
+typeBox.innerHTML = `<button class="chip" data-v="">All</button>` + DB.types.map(t=>`<button class="chip" data-v="${A.esc(t.id)}">${A.esc(t.id)}</button>`).join("");
+document.getElementById("f-payment").insertAdjacentHTML("beforeend",DB.payMethods.map(m=>`<option value="${A.esc(m.id)}">${A.esc(m.label)}</option>`).join(''));
+const extraNumberKeys=["duration","maxDeposit","maxExcess"], extraSelectKeys=["payment","fuel","residency","licenceOrigin"], extraCheckKeys=["unlimited","comprehensive","noYoungFee","freeCancellation","payPickup","additionalDriver","delivery","afterHours","pets"];
+const pk = document.getElementById("f-pickup"); DB.pickups.forEach(p=>pk.insertAdjacentHTML("beforeend",`<option>${p}</option>`));
+function syncUI(){
+  document.getElementById('f-from').value=S.from;document.getElementById('f-to').value=S.to;
+  const dated=A.dateRangeValid(S.from,S.to);document.getElementById('f-duration').disabled=dated;
+  document.getElementById('date-filter-note').textContent=dated?'Unavailable cars are greyed out for the selected dates. Use Hide unavailable cars to remove them.':S.from||S.to?'Choose both dates to check availability.':'';
+  [...extraNumberKeys,...extraSelectKeys].forEach(k=>document.getElementById('f-'+k).value=S[k]);
+  extraCheckKeys.forEach(k=>document.getElementById('f-'+k).checked=S[k]);
+  document.getElementById("f-age").value=S.age; document.getElementById("f-experience").value=S.experience; document.getElementById("f-no-card").checked=S.noCard; document.getElementById("f-no-permit").checked=S.noPermit;
+  typeBox.querySelectorAll(".chip").forEach(c=>c.classList.toggle("on", c.dataset.v===S.type));
+  document.querySelectorAll("#f-trans .chip").forEach(c=>c.classList.toggle("on", c.dataset.v===S.trans));
+  pk.value=S.pickup; document.getElementById("f-seats").value=S.seats; document.getElementById("f-price").value=S.price;
+  document.getElementById("f-special").checked=S.special; document.getElementById("f-avail").checked=S.avail; document.getElementById("q").value=S.q;
+  A.bindMoney(document.getElementById("price-lbl"),S.price,{prefix:"Up to "});
+}
+function render(){
+  const q=S.q.toLowerCase();
+  const dated=A.dateRangeValid(S.from,S.to);if(dated) S.duration=String(A.daysBetween(S.from,S.to));
+  let list = A.publishedVehicles().filter(v=>{
+    const unavailable=!v.available || (dated?!A.vehicleAvailable(v,S.from,S.to):A.availabilityRanges(v).some(r=>r.from<=A.todayISO()&&r.to>A.todayISO()));
+    if(S.avail&&unavailable)return false;
+    if(!A.meetsRequirements(v,S)) return false;
+    if(S.delivery && !v.pickups.includes("Hotel or villa delivery")) return false;
+    const c=A.company(v.company);
+    if(q && !(v.name+" "+c.name+" "+v.features.join(" ")+" "+v.type).toLowerCase().includes(q)) return false;
+    if(S.type && v.type!==S.type) return false;
+    if(S.pickup && !v.pickups.includes(S.pickup) && !(S.pickup==="Hotel or villa delivery" && c.pickups.includes(S.pickup))) return false;
+    if(S.trans && v.trans!==S.trans) return false;
+    if(v.seats < S.seats) return false;
+    if(A.salePrice(v) > S.price) return false;
+    if(S.special && !A.specialFor(v)) return false;
+
+    return true;
+  });
+  const sorts = {pop:(a,b)=>b.trips-a.trips, low:(a,b)=>A.salePrice(a)-A.salePrice(b), high:(a,b)=>A.salePrice(b)-A.salePrice(a), rating:(a,b)=>b.rating-a.rating};
+  list.sort(sorts[S.sort]);
+  if(S.sort==="pop"){ const fe=v=>A.isFeatured(v.id,"search")?1:0; list.sort((a,b)=>fe(b)-fe(a)); }
+  const box=document.getElementById("results");
+  document.getElementById("count").textContent = `${list.length} vehicle${list.length===1?"":"s"}`;
+  box.classList.remove("refresh"); void box.offsetWidth; box.classList.add("refresh");
+  box.innerHTML = list.length ? list.map((v,i)=>A.vehicleCard(v,{from:S.from,to:S.to}).replaceAll('vehicle.html#',dated?'vehicle.html?from='+encodeURIComponent(S.from)+'&to='+encodeURIComponent(S.to)+'#':'vehicle.html#').replace('<article class="vcard"',`<article class="vcard" style="animation-delay:${Math.min(i,10)*40}ms"`)).join("")
+    : !A.publishedVehicles().length ? `<div class="empty" style="grid-column:1/-1"><h3>Cars are on their way</h3><p class="muted" style="margin:0 auto 16px">Local rental companies are adding their fleets now. Check back soon, or list your own company for free.</p><a class="btn btn-primary" href="signup.html#company">List your company</a></div>`
+    : `<div class="empty" style="grid-column:1/-1"><h3>No vehicles match those filters</h3><p class="muted" style="margin:0 auto 16px">Try different driver requirements, a higher price limit, or a different pickup spot.</p><button class="btn btn-primary" onclick="document.getElementById('reset').click()">Clear filters</button></div>`;
+  syncUI();
+}
+document.getElementById('f-from').min=A.todayISO();
+['f-from','f-to'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{S.from=document.getElementById('f-from').value;S.to=document.getElementById('f-to').value;render();}));
+extraNumberKeys.forEach(k=>document.getElementById('f-'+k).addEventListener('input',e=>{if(!e.target.checkValidity()){e.target.reportValidity();return;} S[k]=e.target.value;render();}));
+extraSelectKeys.forEach(k=>document.getElementById('f-'+k).addEventListener('change',e=>{S[k]=e.target.value;render();}));
+extraCheckKeys.forEach(k=>document.getElementById('f-'+k).addEventListener('change',e=>{S[k]=e.target.checked;render();}));
+[ ["f-age","age"], ["f-experience","experience"] ].forEach(([id,key])=>document.getElementById(id).addEventListener("input",e=>{ if(!e.target.checkValidity()){ e.target.reportValidity(); return; } S[key]=e.target.value; render(); }));
+[ ["f-no-card","noCard"], ["f-no-permit","noPermit"] ].forEach(([id,key])=>document.getElementById(id).addEventListener("change",e=>{ S[key]=e.target.checked; render(); }));
+typeBox.addEventListener("click",e=>{const c=e.target.closest(".chip"); if(c){S.type=c.dataset.v; render();}});
+document.getElementById("f-trans").addEventListener("click",e=>{const c=e.target.closest(".chip"); if(c){S.trans=c.dataset.v; render();}});
+pk.addEventListener("change",e=>{S.pickup=e.target.value; render();});
+document.getElementById("f-seats").addEventListener("change",e=>{S.seats=+e.target.value; render();});
+document.getElementById("f-price").addEventListener("input",e=>{S.price=+e.target.value; render();});
+document.getElementById("f-special").addEventListener("change",e=>{S.special=e.target.checked; render();});
+document.getElementById("f-avail").addEventListener("change",e=>{S.avail=e.target.checked; render();});
+document.getElementById("sort").addEventListener("change",e=>{S.sort=e.target.value; render();});
+let qt; document.getElementById("q").addEventListener("input",e=>{clearTimeout(qt); qt=setTimeout(()=>{S.q=e.target.value; render();},200);});
+document.getElementById("reset").addEventListener("click",()=>{Object.assign(S,{q:"",type:"",pickup:"",trans:"",seats:0,price:400,special:false,avail:false,from:"",to:"",age:"",experience:"",noCard:false,noPermit:false,duration:"",maxDeposit:"",maxExcess:"",payment:"",fuel:"",residency:"",licenceOrigin:"",unlimited:false,comprehensive:false,noYoungFee:false,freeCancellation:false,payPickup:false,additionalDriver:false,delivery:false,afterHours:false,pets:false}); render();});
+document.getElementById("ftoggle").addEventListener("click",e=>{const open=document.getElementById("filters").classList.toggle("open");e.currentTarget.setAttribute("aria-expanded",String(open));});
+window.onHash = ()=>{ fromHash(); render(); };
+render();
+window.addEventListener('drivebim:data',render);
+})();
+</script>
+</body></html>
