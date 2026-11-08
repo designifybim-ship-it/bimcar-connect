@@ -601,11 +601,22 @@ async function postEditor(p){
  </form></div>`;
  document.body.appendChild(m);
  const form=m.querySelector('form'),body=form.elements.body,prev=m.querySelector('#pe-preview'),msg=m.querySelector('#pe-msg');
+ /* Full-screen writing layout: write on the left, settings on the right, preview as a tab */
+ m.classList.add('pe-full');
+ {const [mainCol,side]=form.querySelectorAll(':scope > .stack'),catGrid=mainCol.querySelector(':scope > .form-grid'),saveRow=side.querySelector(':scope > .row:last-child'),art=body.closest('div'),pvLabel=prev.previousElementSibling;
+  mainCol.classList.add('pe-main');side.classList.add('pe-side');
+  side.prepend(msg);side.prepend(saveRow);saveRow.classList.add('pe-save-row');
+  const h=document.createElement('div');h.className='pe-side-h';h.textContent='Post settings';saveRow.after(msg);msg.after(h);
+  side.appendChild(catGrid);catGrid.classList.add('pe-cat');
+  if(pvLabel&&pvLabel.classList.contains('small'))pvLabel.remove();
+  art.classList.add('pe-art');art.insertAdjacentHTML('afterbegin','<div class="pills pe-mode" role="tablist"><button type="button" data-pemode="write" class="on">Write</button><button type="button" data-pemode="preview">Preview</button></div>');
+  art.appendChild(prev);}
  const preview=()=>{const v=Object.fromEntries(new FormData(form));prev.innerHTML=`${coverSrc?`<img class="pe-cover" src="${esc(coverSrc)}" alt="">`:''}<span class="journal-category">${esc(v.category||'Island Drives')}</span><h2>${esc(v.title||'Your title')}</h2>${v.excerpt?`<p class="lede">${esc(v.excerpt)}</p>`:''}<div class="post-body">${A.renderPost(v.body)}</div>`;};
  const wrap=(before,after,placeholder)=>{const s0=body.selectionStart,s1=body.selectionEnd,sel=body.value.slice(s0,s1)||placeholder;body.setRangeText(before+sel+after,s0,s1,'end');body.focus();if(!body.value.slice(s0,s1))body.setSelectionRange(s0+before.length,s0+before.length+sel.length);preview();};
  const linePrefix=prefix=>{const s0=body.selectionStart,start=body.value.lastIndexOf('\n',s0-1)+1;body.setRangeText(prefix,start,start,'end');body.focus();preview();};
  m.addEventListener('click',async e=>{
   if(e.target.closest('[data-pe=close]')||e.target===m){A.closeModal(m);setTimeout(()=>m.remove(),300);return;}
+  const pm=e.target.closest('[data-pemode]');if(pm){const pv=pm.dataset.pemode==='preview';m.querySelectorAll('[data-pemode]').forEach(b=>b.classList.toggle('on',b===pm));m.querySelector('.pe-art').classList.toggle('is-preview',pv);if(pv)preview();return;}
   const cm=e.target.closest('[data-cmode]');if(cm){cMode=cm.dataset.cmode;cm.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===cm));m.querySelector('#pe-cfocus').hidden=cMode!=='fill';if(coverFile)setCover();return;}
   const cf=e.target.closest('[data-cfocus]');if(cf){cFocus=cf.dataset.cfocus;cf.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===cf));if(coverFile)setCover();return;}
   const ph=e.target.closest('[data-ph]');if(ph){photoAction(+ph.closest('[data-phi]').dataset.phi,ph.dataset.ph);return;}
