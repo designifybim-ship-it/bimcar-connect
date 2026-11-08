@@ -6,25 +6,25 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611081915">
-<link rel="stylesheet" href="css/style.css?v=202611081915">
-<link rel="stylesheet" href="css/experience.css?v=202611081915">
-<link rel="stylesheet" href="css/messages.css?v=202611081915">
-<link rel="stylesheet" href="css/brand.css?v=202611081915">
-<link rel="stylesheet" href="css/scroll.css?v=202611081915">
-<link rel="stylesheet" href="css/tour.css?v=202611081915">
-<link rel="stylesheet" href="css/navigation.css?v=202611081915">
-<link rel="stylesheet" href="css/polish.css?v=202611081915">
-<link rel="stylesheet" href="css/refine.css?v=202611081915">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611081915">
-<link rel="stylesheet" href="css/ambient.css?v=202611081915">
-<link rel="stylesheet" href="css/launch.css?v=202611081915">
-<script src="js/navigation.js?v=202611081915" defer></script>
-<script src="js/site-polish.js?v=202611081915" defer></script>
-<script src="js/site-tour.js?v=202611081915" defer></script>
-<script src="js/launch.js?v=202611081915" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611081926">
+<link rel="stylesheet" href="css/style.css?v=202611081926">
+<link rel="stylesheet" href="css/experience.css?v=202611081926">
+<link rel="stylesheet" href="css/messages.css?v=202611081926">
+<link rel="stylesheet" href="css/brand.css?v=202611081926">
+<link rel="stylesheet" href="css/scroll.css?v=202611081926">
+<link rel="stylesheet" href="css/tour.css?v=202611081926">
+<link rel="stylesheet" href="css/navigation.css?v=202611081926">
+<link rel="stylesheet" href="css/polish.css?v=202611081926">
+<link rel="stylesheet" href="css/refine.css?v=202611081926">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611081926">
+<link rel="stylesheet" href="css/ambient.css?v=202611081926">
+<link rel="stylesheet" href="css/launch.css?v=202611081926">
+<script src="js/navigation.js?v=202611081926" defer></script>
+<script src="js/site-polish.js?v=202611081926" defer></script>
+<script src="js/site-tour.js?v=202611081926" defer></script>
+<script src="js/launch.js?v=202611081926" defer></script></head>
 <body class="">
-<script src="js/experience.js?v=202611081915"></script>
+<script src="js/experience.js?v=202611081926"></script>
 <div id="site-header"></div>
 <div class="dash"><div id="dash-side"></div>
 <main class="dash-main" id="main">
@@ -85,12 +85,12 @@
 </form>
 
 </main></div>
-<script src="js/data.js?v=202611081915"></script>
+<script src="js/data.js?v=202611081926"></script>
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="js/live-config.js?v=202611081915"></script>
-<script src="js/live.js?v=202611081915"></script>
-<script src="js/app.js?v=202611081915"></script>
-<script src="js/chat.js?v=202611081915"></script>
+<script src="js/live-config.js?v=202611081926"></script>
+<script src="js/live.js?v=202611081926"></script>
+<script src="js/app.js?v=202611081926"></script>
+<script src="js/chat.js?v=202611081926"></script>
 <script>
 (async function(){
 await Live.ready;if(Live.failed)return;
@@ -141,12 +141,12 @@ document.getElementById('quick-setup').addEventListener('click',e=>{const b=e.ta
  previewRequirements();document.querySelectorAll('#requirements .pills').forEach(x=>x.dispatchEvent(new Event('sync')));
  A.toast('Rules filled in. Check them, tick the confirmation, then save.');document.getElementById('req-confirmed').closest('label').scrollIntoView({behavior:'smooth',block:'center'});});
 /* Yes/no and short choices become tap buttons instead of dropdowns */
-document.querySelectorAll('#requirements select.input, #payment select.input').forEach(sel=>{const opts=[...sel.options].filter(o=>o.value!=='');if(opts.length>3||sel.dataset.pilled)return;sel.dataset.pilled='1';sel.classList.add('sr-select');
+function pillify(){document.querySelectorAll('#requirements select.input, #payment select.input').forEach(sel=>{const opts=[...sel.options].filter(o=>o.value!=='');if(opts.length<2||opts.length>3||sel.dataset.pilled)return;sel.dataset.pilled='1';sel.classList.add('sr-select');
  const box=document.createElement('div');box.className='pills'+(opts.length>2?' pills-stack':'');box.setAttribute('role','radiogroup');
  box.innerHTML=opts.map(o=>`<button type="button" role="radio" data-v="${A.esc(o.value)}">${A.esc(o.textContent)}</button>`).join('');
  const sync=()=>box.querySelectorAll('button').forEach(b=>{const on=b.dataset.v===sel.value;b.classList.toggle('on',on);b.setAttribute('aria-checked',on);});
  box.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;sel.value=b.dataset.v;sel.dispatchEvent(new Event('input',{bubbles:true}));sel.dispatchEvent(new Event('change',{bubbles:true}));sync();});
- box.addEventListener('sync',sync);sel.addEventListener('change',sync);sel.after(box);sync();});
+ box.addEventListener('sync',sync);sel.addEventListener('change',sync);sel.after(box);sync();});}pillify();
 
 
 // Payment and policies
@@ -154,6 +154,7 @@ const PI = A.payInfo(CO);
 document.getElementById("pay-methods").innerHTML = DB.payMethods.map(m=>`<label class="chip" style="cursor:pointer"><input type="checkbox" value="${m.id}" ${PI.methods.includes(m.id)?'checked':''} style="accent-color:var(--ink)">${A.icon(m.icon)}${m.label}</label>`).join("");
 document.getElementById("pay-when").innerHTML = Object.entries(DB.payWhen).map(([k,v])=>`<option value="${k}" ${PI.when===k?'selected':''}>${v}</option>`).join("");
 document.getElementById("pay-cancel").innerHTML = Object.entries(DB.cancelRules).map(([k,v])=>`<option value="${k}" ${PI.cancel===k?'selected':''}>${v}</option>`).join("");
+pillify();
 document.getElementById("pay-deposit").value=PI.deposit; document.getElementById("pay-security").value=PI.security;
 document.getElementById("pay-bank").value=PI.bank||""; document.getElementById("pay-link").value=PI.link||""; document.getElementById("pay-notes").value=PI.notes||"";
 function readPay(){ return {methods:[...document.querySelectorAll("#pay-methods input:checked")].map(i=>i.value), when:document.getElementById("pay-when").value, deposit:+document.getElementById("pay-deposit").value||0, security:+document.getElementById("pay-security").value||0, cancel:document.getElementById("pay-cancel").value, bank:document.getElementById("pay-bank").value.trim(), link:document.getElementById("pay-link").value.trim(), notes:document.getElementById("pay-notes").value.trim()}; }
