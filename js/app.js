@@ -362,11 +362,12 @@ function requireCompany(){
 }
 
 /* Blog post formatting: a small, safe subset of Markdown.
-   ## Heading, ### Subheading, **bold**, *italic*, [link](https://…), - list, 1. list, > quote, ![caption](image URL). */
+   ## Heading, ### Subheading, **bold**, *italic*, [link](https://…), - list, 1. list, > quote, ---, YouTube link on its own line,
+   ![caption](image URL){wide|medium|small|left|right}. */
 function renderPost(md){
   const inline=t=>esc(t)
-    .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)/g,(m,a,u)=>`<figure class="post-figure"><img src="${u}" alt="${a}" loading="lazy">${a?`<figcaption>${a}</figcaption>`:''}</figure>`)
-    .replace(/\[([^\]]+)\]\(((?:https:\/\/|mailto:)[^)\s]+|[\w-]+\.html(?:#[\w-]+)?)\)/g,(m,t2,u)=>`<a href="${u}"${/^https:/.test(u)?' target="_blank" rel="noopener"':''}>${t2}</a>`)
+    .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(wide|medium|small|left|right)\})?/g,(m,a,u,l)=>`<figure class="post-figure${l?' is-'+l:''}"><img src="${u}" alt="${a}" loading="lazy" decoding="async">${a&&a!=='Add a caption'?`<figcaption>${a}</figcaption>`:''}</figure>`)
+    .replace(/\[([^\]]+)\]\(((?:https:\/\/|mailto:)[^)\s]+|[\w-]+\.html(?:\?p=[\w-]+)?(?:#[\w-]+)?)\)/g,(m,t2,u)=>`<a href="${u}"${/^https:/.test(u)?' target="_blank" rel="noopener"':''}>${t2}</a>`)
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
   const out=[];let list=null,para=[],gal=[];
   const flushGal=()=>{if(gal.length){out.push(gal.length>1?`<div class="post-gallery">${gal.join('')}</div>`:gal[0]);gal=[];}};
@@ -377,7 +378,9 @@ function renderPost(md){
     if((m=line.match(/^>\s?(.*)/))){flush();out.push(`<blockquote>${inline(m[1])}</blockquote>`);return;}
     if((m=line.match(/^[-*]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ul'){flush();list={tag:'ul',items:[]};}list.items.push(m[1]);return;}
     if((m=line.match(/^\d+[.)]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ol'){flush();list={tag:'ol',items:[]};}list.items.push(m[1]);return;}
-    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)$/.test(line)){const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
+    if(/^(-{3,}|\*{3,})$/.test(line)){flush();out.push('<hr>');return;}
+    if((m=line.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{6,20})\S*$/))){flush();out.push(`<div class="post-video"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`);return;}
+    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right)\})?$/.test(line)){const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
     if(list)flush();para.push(line);});
   flush();return out.join('\n');
 }
