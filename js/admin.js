@@ -302,7 +302,9 @@ async function optimiseImage(file,{mode='fill',focus='center',W=1200,H=675}={}){
  if(!/^image\//.test(file.type))throw new Error('Choose an image file (JPG, PNG, WebP or HEIC).');
  if(file.size>25*1024*1024)throw new Error('That image is over 25 MB. Choose a smaller one.');
  let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'});}catch{bmp=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('This image format can\'t be read in this browser. Try a JPG or PNG.'));i.src=URL.createObjectURL(file);});}
- if(mode==='natural'){const k=Math.min(1,1600/Math.max(bmp.width,1),1600/Math.max(bmp.height,1));W=Math.max(1,Math.round(bmp.width*k));H=Math.max(1,Math.round(bmp.height*k));}
+ /* Sharp on retina screens: keep up to 2× the display size (never upscale past the original) */
+ if(mode==='natural'){const k=Math.min(1,2560/Math.max(bmp.width,1),2560/Math.max(bmp.height,1));W=Math.max(1,Math.round(bmp.width*k));H=Math.max(1,Math.round(bmp.height*k));}
+ else{const r0=mode==='fill'?Math.min(bmp.width/W,bmp.height/H):Math.max(bmp.width/W,bmp.height/H),k=Math.min(2,Math.max(1,r0));W=Math.round(W*k);H=Math.round(H*k);}
  const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.imageSmoothingQuality='high';
  const iw=bmp.width,ih=bmp.height,cover=Math.max(W/iw,H/ih),contain=Math.min(W/iw,H/ih);
  if(mode==='natural'){g.drawImage(bmp,0,0,W,H);}else if(mode==='contain'){const w=iw*contain,h=ih*contain;g.drawImage(bmp,(W-w)/2,(H-h)/2,w,h);}else if(mode==='fit'){ // soft blurred backdrop, then the whole image with nothing cropped
@@ -313,8 +315,9 @@ async function optimiseImage(file,{mode='fill',focus='center',W=1200,H=675}={}){
  }
  const enc=(type,q)=>new Promise(r=>c.toBlob(r,type,q));
  const alpha=(()=>{try{const t=document.createElement('canvas');t.width=64;t.height=Math.max(1,Math.round(64*H/W));const tg=t.getContext('2d');tg.drawImage(c,0,0,t.width,t.height);const d=tg.getImageData(0,0,t.width,t.height).data;for(let i=3;i<d.length;i+=4)if(d[i]<250)return true;}catch{}return false;})();
- let blob=await enc('image/webp',alpha?.9:.82);if(!blob||blob.type!=='image/webp')blob=alpha?await enc('image/png'):await enc('image/jpeg',.86);
- return {blob,url:URL.createObjectURL(blob),before:file.size,after:blob.size,from:`${iw}×${ih}`};
+ let blob=await enc('image/webp',.92);if(!blob||blob.type!=='image/webp')blob=alpha?await enc('image/png'):await enc('image/jpeg',.92);
+ for(const q of [.85,.78,.7]){if(blob.size<=4.5*1048576)break;const b2=await enc(blob.type==='image/png'?'image/webp':blob.type,q);if(b2)blob=b2;}
+ return {blob,url:URL.createObjectURL(blob),before:file.size,after:blob.size,from:`${iw}×${ih}`,to:`${W}×${H}`};
 }
 const kb=n=>n>1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
 
@@ -365,7 +368,7 @@ async function adEditor(ad,preset){
  document.body.appendChild(m);
  const form=m.querySelector('form'),prev=m.querySelector('#ae-preview'),size=m.querySelector('#ae-size'),msg=m.querySelector('#ae-msg');
  const preview=()=>{const v=Object.fromEntries(new FormData(form));prev.dataset.size=adSize;prev.innerHTML=A.partnerCard({name:v.title||'Business name',kind:v.category||'',blurb:v.blurb||'Your short description appears here.',url:v.url&&/^https:\/\//.test(v.url)?v.url:'',image:src&&/^(https:|blob:)/.test(src)?src:null,size:adSize}).replace('/^https:\\/\\//','');if(src&&src.startsWith('blob:')){const im=prev.querySelector('.partner-img');if(!im){prev.querySelector('.media')?.insertAdjacentHTML('afterbegin',`<img class="partner-img" src="${src}" alt="">`);prev.querySelector('.partner')?.classList.add('has-image');}}};
- async function process(){if(!file)return;size.textContent='Optimising…';const [,W,H]=AD_SIZES[adSize];try{img=await optimiseImage(file,{mode,focus,W,H});src=img.url;size.innerHTML=`<b>Optimised:</b> ${esc(img.from)} · ${kb(img.before)} → ${W}×${H} · ${kb(img.after)} ${img.blob.type==='image/webp'?'WebP':'JPEG'} (${Math.max(0,Math.round((1-img.after/img.before)*100))}% smaller)`;}catch(e){img=null;size.textContent=e.message;}preview();}
+ async function process(){if(!file)return;size.textContent='Optimising…';const [,W,H]=AD_SIZES[adSize];try{img=await optimiseImage(file,{mode,focus,W,H});src=img.url;size.innerHTML=`<b>Optimised:</b> ${esc(img.from)} · ${kb(img.before)} → ${img.to} · ${kb(img.after)} ${img.blob.type==='image/webp'?'WebP':'JPEG'} (${Math.max(0,Math.round((1-img.after/img.before)*100))}% smaller)`;}catch(e){img=null;size.textContent=e.message;}preview();}
  m.querySelector('#ae-file').addEventListener('change',e=>{file=e.target.files[0];process();});
  const drop=m.querySelector('#ae-drop');['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,()=>drop.classList.remove('over')));drop.addEventListener('drop',e=>{e.preventDefault();file=e.dataTransfer.files[0];process();});
  m.addEventListener('click',e=>{
@@ -589,7 +592,7 @@ async function postEditor(p){
     <div class="pe-photos" id="pe-photos" hidden></div><div class="pe-foot small muted"><span id="pe-count">0 words</span><span>Tip: drag, drop or paste photos straight into the text. JPG, PNG (transparency kept), WebP and phone photos all work. Select several photos at once for a gallery.</span><span id="pe-saved"></span></div></div>
   </div>
   <div class="stack">
-   <label class="dropzone ad-drop" id="pe-drop"><input type="file" accept="image/*" id="pe-file" class="sr"><span>${icon('upload')}</span><b>Cover image</b><span class="small muted">Any photo, including transparent PNGs. Resized to 1200 × 675 and compressed automatically.</span></label>
+   <label class="dropzone ad-drop" id="pe-drop"><input type="file" accept="image/*" id="pe-file" class="sr"><span>${icon('upload')}</span><b>Cover image</b><span class="small muted">Any photo, including transparent PNGs. Kept sharp and sized for fast loading automatically.</span></label>
    <div class="pe-cover-opts"><div class="pills" role="radiogroup" aria-label="Cover fit"><button type="button" data-cmode="contain" class="on">Show whole image</button><button type="button" data-cmode="fill">Fill and crop</button></div><div class="pills" id="pe-cfocus" role="radiogroup" aria-label="Crop position" hidden><button type="button" data-cfocus="top">Top</button><button type="button" data-cfocus="center" class="on">Centre</button><button type="button" data-cfocus="bottom">Bottom</button></div></div>
    <p class="small muted" id="pe-size">${coverSrc?'Current cover. Upload a new one to replace it.':''}</p>
    <div class="form-grid"><label class="f">Status<select class="input" name="status"><option value="draft" ${x.status!=='published'?'selected':''}>Draft (only you can see it)</option><option value="published" ${x.status==='published'?'selected':''}>Published</option></select></label><label class="f">Publish date<span class="hint">A future date schedules it</span><input class="input" type="date" name="published_at" value="${esc(x.published_at||A.todayISO())}"></label></div>
@@ -650,7 +653,7 @@ async function postEditor(p){
   if(f==='link'){const url=(await formBox('Add a link',[{name:'url',label:'Link address',type:'url',value:'https://'}],'Add link'))?.url;if(url&&/^(https:\/\/|mailto:|[\w-]+\.html)/.test(url))wrap('[',`](${url})`,'link text');}
  });
  let coverFile=null,cMode='contain',cFocus='center';
- async function setCover(file){coverFile=file||coverFile;file=coverFile;if(!file)return;const sz=m.querySelector('#pe-size');sz.textContent='Optimising…';try{cover=await optimiseImage(file,{mode:cMode,focus:cFocus});coverSrc=cover.url;sz.innerHTML=`<b>Optimised:</b> ${esc(cover.from)} · ${kb(cover.before)} → ${kb(cover.after)}`;}catch(err){cover=null;sz.textContent=err.message;}preview();}
+ async function setCover(file){coverFile=file||coverFile;file=coverFile;if(!file)return;const sz=m.querySelector('#pe-size');sz.textContent='Optimising…';try{cover=await optimiseImage(file,{mode:cMode==='contain'?'natural':cMode,focus:cFocus});coverSrc=cover.url;sz.innerHTML=`<b>Optimised:</b> ${esc(cover.from)} · ${kb(cover.before)} → ${cover.to} · ${kb(cover.after)}`;}catch(err){cover=null;sz.textContent=err.message;}preview();}
  m.querySelector('#pe-file').addEventListener('change',e=>e.target.files[0]&&setCover(e.target.files[0]));
  const drop=m.querySelector('#pe-drop');['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,()=>drop.classList.remove('over')));drop.addEventListener('drop',e=>{e.preventDefault();e.dataTransfer.files[0]&&setCover(e.dataTransfer.files[0]);});
  async function addPhotos(files){files=[...files].filter(f=>/^image\//.test(f.type)).slice(0,12);if(!files.length)return;const urls=[];
