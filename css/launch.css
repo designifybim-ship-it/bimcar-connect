@@ -1466,7 +1466,7 @@ form .btn-primary[type=submit]:hover{transform:translateY(-2px);box-shadow:0 18p
  .dash-head .row{flex-wrap:wrap}
  .dash-main .input[data-search],.dash-main [data-search]{max-width:none!important;width:100%}
 }
-@media (max-width:760px){
+@media (max-width:1180px){
  /* tables become stacked cards */
  .dash-main .table-wrap{overflow:visible!important;border:0!important;box-shadow:none!important;background:transparent!important}
  .dash-main table.t,.admin-console table.t{min-width:0!important;width:100%;border:0}
@@ -1483,9 +1483,29 @@ form .btn-primary[type=submit]:hover{transform:translateY(-2px);box-shadow:0 18p
  .dash-main table.t tbody td[colspan]::before{display:none}
  .dash-main table.t tbody tr:has(td[colspan]){padding:0;border:0;box-shadow:none;background:transparent}
 }
-@media (max-width:760px){
+@media (max-width:1180px){
  .dash-main table.t tbody td:not(:first-child):not(:last-child):not([colspan]){display:block;text-align:right;overflow:hidden}
  .dash-main table.t tbody td:not(:first-child):not(:last-child)::before{float:left;margin-right:12px}
  .dash-main table.t tbody td:not(:first-child):not(:last-child)>*{text-align:right}
  .dash-main table.t tbody td:not(:first-child):not(:last-child) .row{justify-content:flex-end}
+}
+
+/* tablets: two cards side by side, even stat cards */
+@media (min-width:700px) and (max-width:1180px){
+ .dash-main table.t tbody{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+ .dash-main table.t tbody tr{margin:0!important}
+ .dash-main table.t tbody tr:has(td[colspan]){grid-column:1/-1}
+}
+@media (max-width:1180px){
+ .dash-main .kpis{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important}
+ .admin-console .kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .admin-console .kpis .kpi{padding:16px}
+ .admin-console .kpi .k-num{font-size:1.5rem}
+}
+@media (max-width:700px){.admin-console .kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media (min-width:901px) and (max-width:1180px){
+ .dash.admin-console,.dash{grid-template-columns:210px minmax(0,1fr)!important;gap:18px!important;padding-left:16px!important;padding-right:16px!important}
+ .side a{font-size:.84rem}
+ .adm-act span{display:none}.adm-act{padding:10px}
+ .dash-head{flex-wrap:wrap}
 }
