@@ -1343,3 +1343,29 @@ textarea.drop-over{border-color:#8a3ffd!important;background:#f8f3ff!important;b
 .post-editor-grid{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)}
 .pe-preview{max-height:58vh;overflow:auto;border:1px solid #efe9f7;border-radius:16px;padding:18px;background:#fff}
 .pe-toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+
+/* ======================================================================
+   Public forms: polished finish
+   ====================================================================== */
+.input{min-height:50px;font-size:.98rem;padding-left:15px}
+textarea.input{padding-top:13px}
+label.f{gap:7px;font-size:.92rem}
+form.card,#af,.review-write,#book{position:relative}
+form.card,#af{padding:clamp(22px,3vw,34px)!important;border:1px solid #ece7f4!important;border-radius:24px!important;box-shadow:0 1px 2px rgba(40,20,80,.04),0 24px 48px -36px rgba(60,30,110,.45)!important;overflow:hidden}
+form.card::before,#af::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--brand-gradient)}
+/* main buttons: bigger and friendlier */
+form .btn-primary[type=submit],#af .btn-primary,#book .btn-primary[type=submit]{min-height:54px;border-radius:15px;font-size:1rem;box-shadow:0 14px 26px -16px #e0337f;transition:transform .2s ease,box-shadow .2s ease}
+form .btn-primary[type=submit]:hover{transform:translateY(-2px);box-shadow:0 18px 30px -16px #e0337f}
+@media (max-width:640px){form .btn-primary[type=submit]{width:100%}}
+/* extras and multi-choice ticks become tappable option cards */
+#book .check:has(.b-x),#req-docs .check,#book .check:has(#b-after-hours){padding:12px 14px;border:1.5px solid #ece6f3;border-radius:14px;background:#fff;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s;align-items:center}
+#book .check:has(.b-x):hover,#req-docs .check:hover{border-color:#cdb3f6}
+#book .check:has(.b-x:checked),#req-docs .check:has(input:checked),#book .check:has(#b-after-hours:checked){border-color:#8a3ffd;background:#fbf8ff;box-shadow:0 0 0 3px rgba(138,63,253,.1)}
+#book .check:has(.b-x)+.check:has(.b-x){margin-top:8px}
+#req-docs{gap:8px!important}
+/* confirmation ticks stand out a little */
+#book .check:not(:has(.b-x)):not(:has(#b-after-hours)),#req-confirmed+*,.check:has(#req-confirmed){padding:12px 14px;border-radius:14px;background:#faf7fe}
+/* small text spacing */
+.ad-pick-summary,[data-package-label]{gap:6px}
+#book .check:has(#b-after-hours){display:block;line-height:1.6}
+#book .check:has(#b-after-hours) input{display:inline-grid;vertical-align:-4px;margin-right:10px}

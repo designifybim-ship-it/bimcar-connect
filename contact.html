@@ -35,10 +35,10 @@
 <div class="wrap grid g2" style="align-items:start;gap:36px">
   <form class="card stack" id="cform">
     <div class="form-grid">
-      <label class="f">Your name<input class="input" required autocomplete="name"></label>
-      <label class="f">Email or WhatsApp<input class="input" required></label>
+      <label class="f">Your name<input class="input" required autocomplete="name" placeholder="e.g. Jane Smith"></label>
+      <label class="f">Email or WhatsApp<input class="input" required placeholder="you@email.com or +1 246…"></label>
       <label class="f full">What's it about?<select class="input"><option>I'm renting a vehicle</option><option>I want to list my company for free</option><option>Boosts or advertising</option><option>Something else</option></select></label>
-      <label class="f full">Message<textarea class="input" required></textarea></label>
+      <label class="f full">Message<textarea class="input" placeholder="How can we help?" required></textarea></label>
     </div>
     <button class="btn btn-primary" type="submit" id="csend">Send message</button>
     <p class="small muted" id="cmsg" style="margin:0" aria-live="polite"></p>
