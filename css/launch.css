@@ -1307,3 +1307,5 @@ body:has(.dash) .site-header,body:has(.dash) .site-header.scrolled,body:has(.das
 .dash:not(.admin-console) .dash-main .kpi.feature{background:var(--brand-gradient)!important;border:0!important}
 .dash:not(.admin-console) .dash-main .kpi.feature *{color:#fff!important}
 body:has(.dash) .site-header .header-brand-logo{height:42px!important;width:auto!important;max-height:42px}
+.rp-copy h2{white-space:normal!important;font-size:clamp(1.8rem,2.4vw,2.6rem)!important;overflow-wrap:break-word;padding-bottom:4px}
+.rp-copy h2{font-size:clamp(1.8rem,2.3vw,2.25rem)!important}
