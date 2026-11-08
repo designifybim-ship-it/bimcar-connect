@@ -368,14 +368,16 @@ function renderPost(md){
     .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)/g,(m,a,u)=>`<figure class="post-figure"><img src="${u}" alt="${a}" loading="lazy">${a?`<figcaption>${a}</figcaption>`:''}</figure>`)
     .replace(/\[([^\]]+)\]\(((?:https:\/\/|mailto:)[^)\s]+|[\w-]+\.html(?:#[\w-]+)?)\)/g,(m,t2,u)=>`<a href="${u}"${/^https:/.test(u)?' target="_blank" rel="noopener"':''}>${t2}</a>`)
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
-  const out=[];let list=null,para=[];
-  const flush=()=>{if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p>${inline(t)}</p>`);para=[];}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
+  const out=[];let list=null,para=[],gal=[];
+  const flushGal=()=>{if(gal.length){out.push(gal.length>1?`<div class="post-gallery">${gal.join('')}</div>`:gal[0]);gal=[];}};
+  const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p>${inline(t)}</p>`);para=[];}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
   String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{const line=raw.trim();let m;
     if(!line){flush();return;}
     if((m=line.match(/^(#{2,3})\s+(.+)/))){flush();out.push(`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`);return;}
     if((m=line.match(/^>\s?(.*)/))){flush();out.push(`<blockquote>${inline(m[1])}</blockquote>`);return;}
     if((m=line.match(/^[-*]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ul'){flush();list={tag:'ul',items:[]};}list.items.push(m[1]);return;}
     if((m=line.match(/^\d+[.)]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ol'){flush();list={tag:'ol',items:[]};}list.items.push(m[1]);return;}
+    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)$/.test(line)){const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
     if(list)flush();para.push(line);});
   flush();return out.join('\n');
 }
