@@ -609,14 +609,39 @@ async function postEditor(p){
   const h=document.createElement('div');h.className='pe-side-h';h.textContent='Post settings';saveRow.after(msg);msg.after(h);
   side.appendChild(catGrid);catGrid.classList.add('pe-cat');
   if(pvLabel&&pvLabel.classList.contains('small'))pvLabel.remove();
-  art.classList.add('pe-art');art.insertAdjacentHTML('afterbegin','<div class="pills pe-mode" role="tablist"><button type="button" data-pemode="write" class="on">Write</button><button type="button" data-pemode="preview">Preview</button></div>');
+  art.classList.add('pe-art');art.insertAdjacentHTML('afterbegin','<div class="pills pe-mode" role="tablist"><button type="button" data-pemode="write" class="on">Write</button><button type="button" data-pemode="preview">Preview &amp; arrange</button></div><button type="button" class="btn btn-ghost btn-sm pv-addbtn" data-pv-add>Add photos or a gallery</button>');
   art.appendChild(prev);}
- const preview=()=>{const v=Object.fromEntries(new FormData(form));prev.innerHTML=`${coverSrc?`<img class="pe-cover" src="${esc(coverSrc)}" alt="">`:''}<span class="journal-category">${esc(v.category||'Island Drives')}</span><h2>${esc(v.title||'Your title')}</h2>${v.excerpt?`<p class="lede">${esc(v.excerpt)}</p>`:''}<div class="post-body">${A.renderPost(v.body)}</div>`;};
+ const basePreview=()=>{const v=Object.fromEntries(new FormData(form));prev.innerHTML=`${coverSrc?`<img class="pe-cover" src="${esc(coverSrc)}" alt="">`:''}<span class="journal-category">${esc(v.category||'Island Drives')}</span><h2>${esc(v.title||'Your title')}</h2>${v.excerpt?`<p class="lede">${esc(v.excerpt)}</p>`:''}<div class="post-body">${A.renderPost(v.body)}</div>`;};
+ /* Preview tab: drag blocks into place, resize photos and build galleries right on the page */
+ const IMGL=/^!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(\w+)\})?$/;
+ const blocks=()=>body.value.replace(/\r/g,'').split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
+ const setBlocks=bs=>{body.value=bs.join('\n\n')+'\n';body.dispatchEvent(new Event('input',{bubbles:true}));};
+ const isArrange=()=>m.querySelector('.pe-art')?.classList.contains('is-preview');
+ function arrange(){basePreview();const holder=prev.querySelector('.post-body');if(!holder)return;const bs=blocks();
+  holder.innerHTML=bs.map((b,i)=>{const lines=b.split('\n'),imgs=lines.every(l=>IMGL.test(l.trim()));const kind=imgs?(lines.length>1?'gallery':'photo'):(/^#{2,3}\s/.test(b)?'heading':'text');
+   const lay=imgs&&lines.length===1?(lines[0].trim().match(IMGL)[3]||''):'';
+   const tools=kind==='photo'?`<div class="pv-tools">${[['','Full'],['wide','Wide'],['medium','Medium'],['small','Small'],['left','Left'],['right','Right']].map(([k,t])=>`<button type="button" data-pv="lay:${k}" class="${lay===k?'on':''}">${t}</button>`).join('')}${IMGL.test((bs[i+1]||'').split('\n')[0].trim())?'<button type="button" data-pv="join">Make gallery with next</button>':''}</div>`:kind==='gallery'?`<div class="pv-tools"><span>Gallery of ${lines.length}</span><button type="button" data-pv="split">Split into single photos</button>${IMGL.test((bs[i+1]||'').split('\n')[0].trim())?'<button type="button" data-pv="join">Add next photo</button>':''}</div>`:'';
+   return `<div class="pv-blk pv-${kind}" draggable="true" data-blk="${i}"><div class="pv-bar"><span class="pv-grip" title="Drag to move">⠿</span><button type="button" data-pv="up" title="Move up" ${i===0?'disabled':''}>↑</button><button type="button" data-pv="down" title="Move down" ${i===bs.length-1?'disabled':''}>↓</button><button type="button" data-pv="del" title="Delete this block">✕</button></div>${A.renderPost(b)}${tools}</div>`;}).join('')||'<p class="muted">Write something first, then arrange it here.</p>';}
+ const preview=()=>{if(isArrange())arrange();else basePreview();};
+ let dragFrom=null;
+ prev.addEventListener('dragstart',e=>{const b=e.target.closest?.('.pv-blk');if(!b)return;dragFrom=+b.dataset.blk;b.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain','x');}catch{}});
+ prev.addEventListener('dragend',e=>{prev.querySelectorAll('.pv-blk').forEach(b=>b.classList.remove('dragging','drop-before','drop-after'));});
+ prev.addEventListener('dragover',e=>{const b=e.target.closest?.('.pv-blk');if(dragFrom===null||!b)return;e.preventDefault();const r=b.getBoundingClientRect(),after=e.clientY>r.top+r.height/2;prev.querySelectorAll('.pv-blk').forEach(x=>x.classList.remove('drop-before','drop-after'));b.classList.add(after?'drop-after':'drop-before');});
+ prev.addEventListener('drop',e=>{const b=e.target.closest?.('.pv-blk');if(dragFrom===null||!b)return;e.preventDefault();const r=b.getBoundingClientRect(),after=e.clientY>r.top+r.height/2;let to=+b.dataset.blk+(after?1:0);const bs=blocks(),[x]=bs.splice(dragFrom,1);if(to>dragFrom)to--;bs.splice(to,0,x);dragFrom=null;setBlocks(bs);arrange();});
+ prev.addEventListener('click',e=>{const a=e.target.closest('[data-pv]');if(!a)return;const i=+a.closest('.pv-blk').dataset.blk,bs=blocks(),act=a.dataset.pv;
+  if(act==='up'&&i>0)[bs[i-1],bs[i]]=[bs[i],bs[i-1]];
+  else if(act==='down'&&i<bs.length-1)[bs[i+1],bs[i]]=[bs[i],bs[i+1]];
+  else if(act==='del'){if(!confirm('Delete this block from the article?'))return;bs.splice(i,1);}
+  else if(act==='join'){bs[i]=bs[i]+'\n'+bs[i+1].split('\n').map(l=>l.trim().replace(/\{\w+\}$/,'')).join('\n');bs.splice(i+1,1);}
+  else if(act==='split'){bs.splice(i,1,...bs[i].split('\n').map(l=>l.trim()));}
+  else if(act.startsWith('lay:')){const mm=bs[i].trim().match(IMGL);if(mm){const k=act.slice(4);bs[i]=`![${mm[1]}](${mm[2]})${k?`{${k}}`:''}`;}}
+  setBlocks(bs);arrange();});
  const wrap=(before,after,placeholder)=>{const s0=body.selectionStart,s1=body.selectionEnd,sel=body.value.slice(s0,s1)||placeholder;body.setRangeText(before+sel+after,s0,s1,'end');body.focus();if(!body.value.slice(s0,s1))body.setSelectionRange(s0+before.length,s0+before.length+sel.length);preview();};
  const linePrefix=prefix=>{const s0=body.selectionStart,start=body.value.lastIndexOf('\n',s0-1)+1;body.setRangeText(prefix,start,start,'end');body.focus();preview();};
  m.addEventListener('click',async e=>{
   if(e.target.closest('[data-pe=close]')||e.target===m){A.closeModal(m);setTimeout(()=>m.remove(),300);return;}
-  const pm=e.target.closest('[data-pemode]');if(pm){const pv=pm.dataset.pemode==='preview';m.querySelectorAll('[data-pemode]').forEach(b=>b.classList.toggle('on',b===pm));m.querySelector('.pe-art').classList.toggle('is-preview',pv);if(pv)preview();return;}
+  if(e.target.closest('[data-pv-add]')){body.setSelectionRange(body.value.length,body.value.length);m.querySelector('#pe-inline-img').click();return;}
+  const pm=e.target.closest('[data-pemode]');if(pm){const pv=pm.dataset.pemode==='preview';m.querySelectorAll('[data-pemode]').forEach(b=>b.classList.toggle('on',b===pm));m.querySelector('.pe-art').classList.toggle('is-preview',pv);preview();return;}
   const cm=e.target.closest('[data-cmode]');if(cm){cMode=cm.dataset.cmode;cm.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===cm));m.querySelector('#pe-cfocus').hidden=cMode!=='fill';if(coverFile)setCover();return;}
   const cf=e.target.closest('[data-cfocus]');if(cf){cFocus=cf.dataset.cfocus;cf.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===cf));if(coverFile)setCover();return;}
   const ph=e.target.closest('[data-ph]');if(ph){photoAction(+ph.closest('[data-phi]').dataset.phi,ph.dataset.ph);return;}
