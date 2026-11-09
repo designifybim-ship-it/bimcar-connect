@@ -668,6 +668,47 @@ function coLogoUrl(c){return c&&c.logoPath&&window.Live?.companyImageUrl?Live.co
 function coCoverUrl(c){return c&&c.coverPath&&window.Live?.companyImageUrl?Live.companyImageUrl(c.coverPath):null;}
 function coAvatar(c,cls){const u=coLogoUrl(c);return u?`<span class="co-avatar has-logo ${cls||''}" aria-hidden="true"><img src="${esc(u)}" alt="" loading="lazy" decoding="async"></span>`:`<span class="co-avatar ${cls||''}" aria-hidden="true">${esc(initials(c?.name||''))}</span>`;}
 /* Resize a picked photo in the browser before upload: keeps it sharp but light */
+/* Instagram-style crop: drag to move, pinch / scroll / slider to zoom, then save at an exact size */
+function cropImage(file,{aspect=1,outW=1080,outH=1080,round=false,title='Adjust photo'}={}){
+ return new Promise((resolve,reject)=>{
+  if(!file||!/^image\//.test(file.type)){reject(new Error('Choose a JPG, PNG or WebP image.'));return;}
+  const url=URL.createObjectURL(file),img=new Image();
+  img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('That image could not be opened. Try a JPG or PNG.'));};
+  img.onload=()=>{
+   const prev=document.activeElement;
+   const m=document.createElement('div');m.className='crop-modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label',title);
+   m.innerHTML=`<div class="crop-panel"><div class="crop-head"><button type="button" class="crop-x" data-c="cancel">Cancel</button><b>${esc(title)}</b><button type="button" class="crop-done" data-c="save">Save</button></div>
+    <div class="crop-stage"><div class="crop-frame${round?' is-round':''}" style="aspect-ratio:${aspect}" tabindex="0" aria-label="Drag to move the photo. Use plus and minus to zoom."><img alt="" draggable="false"><div class="crop-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div></div>
+    <div class="crop-tools"><span aria-hidden="true">${icon('image')}</span><input type="range" min="1" max="4" step="0.01" value="1" aria-label="Zoom"><span class="crop-big" aria-hidden="true">${icon('image')}</span></div>
+    <p class="crop-hint">Drag to move · pinch, scroll or use the slider to zoom</p></div>`;
+   document.body.append(m);document.documentElement.classList.add('crop-open');
+   const frame=m.querySelector('.crop-frame'),pic=m.querySelector('img'),zoom=m.querySelector('input[type=range]');pic.src=url;
+   const w=img.naturalWidth,h=img.naturalHeight;let W=0,H=0,base=1,z=1,x=0,y=0;
+   const clamp=()=>{const s=base*z;x=Math.min(0,Math.max(W-w*s,x));y=Math.min(0,Math.max(H-h*s,y));};
+   const paint=()=>{const s=base*z;pic.style.width=w*s+'px';pic.style.height=h*s+'px';pic.style.transform=`translate(${x}px,${y}px)`;};
+   const measure=(keep)=>{const r=frame.getBoundingClientRect();const cx=keep&&W?(W/2-x)/(base*z):w/2,cy=keep&&H?(H/2-y)/(base*z):h/2;W=r.width;H=r.height;base=Math.max(W/w,H/h);x=W/2-cx*base*z;y=H/2-cy*base*z;clamp();paint();};
+   const zoomTo=(nz,px=W/2,py=H/2)=>{nz=Math.min(4,Math.max(1,nz));const s0=base*z,s1=base*nz;x=px-(px-x)*s1/s0;y=py-(py-y)*s1/s0;z=nz;zoom.value=z;clamp();paint();};
+   requestAnimationFrame(()=>measure(false));const ro=window.ResizeObserver?new ResizeObserver(()=>measure(true)):null;ro?.observe(frame);
+   const pts=new Map();let last=null,pinch=null;
+   frame.addEventListener('pointerdown',e=>{frame.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});frame.classList.add('is-moving');if(pts.size===2){const [a,b]=[...pts.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z};}else last={x:e.clientX,y:e.clientY};});
+   frame.addEventListener('pointermove',e=>{if(!pts.has(e.pointerId))return;pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    if(pts.size>=2&&pinch){const [a,b]=[...pts.values()],r=frame.getBoundingClientRect();zoomTo(pinch.z*Math.hypot(a.x-b.x,a.y-b.y)/pinch.d,(a.x+b.x)/2-r.left,(a.y+b.y)/2-r.top);}
+    else if(last){x+=e.clientX-last.x;y+=e.clientY-last.y;last={x:e.clientX,y:e.clientY};clamp();paint();}});
+   const up=e=>{pts.delete(e.pointerId);if(pts.size<2)pinch=null;if(pts.size===1){const p=[...pts.values()][0];last={x:p.x,y:p.y};}else{last=null;frame.classList.remove('is-moving');}};
+   frame.addEventListener('pointerup',up);frame.addEventListener('pointercancel',up);
+   frame.addEventListener('wheel',e=>{e.preventDefault();const r=frame.getBoundingClientRect();zoomTo(z*Math.exp(-e.deltaY*0.0015),e.clientX-r.left,e.clientY-r.top);},{passive:false});
+   zoom.addEventListener('input',()=>zoomTo(+zoom.value));
+   frame.addEventListener('keydown',e=>{const k={ArrowLeft:[10,0],ArrowRight:[-10,0],ArrowUp:[0,10],ArrowDown:[0,-10]}[e.key];if(k){e.preventDefault();x+=k[0];y+=k[1];clamp();paint();}else if(e.key==='+'||e.key==='='){zoomTo(z+.1);}else if(e.key==='-'){zoomTo(z-.1);}});
+   const close=v=>{ro?.disconnect();m.remove();document.documentElement.classList.remove('crop-open');URL.revokeObjectURL(url);document.removeEventListener('keydown',esc_);prev?.focus?.();resolve(v);};
+   const esc_=e=>{if(e.key==='Escape')close(null);};document.addEventListener('keydown',esc_);
+   m.addEventListener('click',e=>{const b=e.target.closest('[data-c]');if(!b)return;if(b.dataset.c==='cancel')return close(null);
+    const s=base*z,k=outW/W,c=document.createElement('canvas');c.width=outW;c.height=outH;const g=c.getContext('2d');g.imageSmoothingQuality='high';g.drawImage(img,x*k,y*k,w*s*k,h*s*k);
+    b.disabled=true;b.textContent='Saving…';c.toBlob(bl=>{if(bl)close(bl);else c.toBlob(b2=>close(b2),'image/png');},'image/webp',0.92);});
+   setTimeout(()=>frame.focus(),50);
+  };
+  img.src=url;
+ });
+}
 async function resizeImage(file,{maxW=2400,maxH=2400,fillW=0,fillH=0}={}){
  if(!/^image\//.test(file?.type||''))throw new Error('Choose a JPG, PNG or WebP image.');if(file.size>25*1048576)throw new Error('That image is over 25 MB. Choose a smaller one.');
  let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'});}catch{bmp=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('This image can\'t be read. Try a JPG or PNG.'));i.src=URL.createObjectURL(file);});}
@@ -678,7 +719,7 @@ async function resizeImage(file,{maxW=2400,maxH=2400,fillW=0,fillH=0}={}){
  if(fillW){const s=Math.max(W/iw,H/ih),w=iw*s,h=ih*s;g.drawImage(bmp,(W-w)/2,(H-h)/2,w,h);}else g.drawImage(bmp,0,0,W,H);
  const enc=(t,q)=>new Promise(r=>c.toBlob(r,t,q));let blob=await enc('image/webp',.92);if(!blob||blob.type!=='image/webp')blob=await enc('image/png');
  if(blob.size>5.5*1048576)blob=await enc('image/webp',.8)||blob;return blob;}
-window.App = {coAvatar, coLogoUrl, coCoverUrl, resizeImage, setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
+window.App = {coAvatar, coLogoUrl, coCoverUrl, resizeImage, cropImage, setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
   vehicleCard, carImg, specialCard, boosts, activeBoosts, isFeatured, partnerCard, todayISO, payInfo, payBlock, tickCountdowns, MARK, companyCard, toast, openModal, closeModal, copy, countUp, fmtDate, daysBetween, esc, go, RATE};
 function offlineNotice(){
   if(document.querySelector('.offline-notice'))return;

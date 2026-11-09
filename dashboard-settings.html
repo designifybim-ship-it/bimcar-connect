@@ -6,25 +6,25 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611082040">
-<link rel="stylesheet" href="css/style.css?v=202611082040">
-<link rel="stylesheet" href="css/experience.css?v=202611082040">
-<link rel="stylesheet" href="css/messages.css?v=202611082040">
-<link rel="stylesheet" href="css/brand.css?v=202611082040">
-<link rel="stylesheet" href="css/scroll.css?v=202611082040">
-<link rel="stylesheet" href="css/tour.css?v=202611082040">
-<link rel="stylesheet" href="css/navigation.css?v=202611082040">
-<link rel="stylesheet" href="css/polish.css?v=202611082040">
-<link rel="stylesheet" href="css/refine.css?v=202611082040">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611082040">
-<link rel="stylesheet" href="css/ambient.css?v=202611082040">
-<link rel="stylesheet" href="css/launch.css?v=202611082040">
-<script src="js/navigation.js?v=202611082040" defer></script>
-<script src="js/site-polish.js?v=202611082040" defer></script>
-<script src="js/site-tour.js?v=202611082040" defer></script>
-<script src="js/launch.js?v=202611082040" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611082107">
+<link rel="stylesheet" href="css/style.css?v=202611082107">
+<link rel="stylesheet" href="css/experience.css?v=202611082107">
+<link rel="stylesheet" href="css/messages.css?v=202611082107">
+<link rel="stylesheet" href="css/brand.css?v=202611082107">
+<link rel="stylesheet" href="css/scroll.css?v=202611082107">
+<link rel="stylesheet" href="css/tour.css?v=202611082107">
+<link rel="stylesheet" href="css/navigation.css?v=202611082107">
+<link rel="stylesheet" href="css/polish.css?v=202611082107">
+<link rel="stylesheet" href="css/refine.css?v=202611082107">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611082107">
+<link rel="stylesheet" href="css/ambient.css?v=202611082107">
+<link rel="stylesheet" href="css/launch.css?v=202611082107">
+<script src="js/navigation.js?v=202611082107" defer></script>
+<script src="js/site-polish.js?v=202611082107" defer></script>
+<script src="js/site-tour.js?v=202611082107" defer></script>
+<script src="js/launch.js?v=202611082107" defer></script></head>
 <body class="">
-<script src="js/experience.js?v=202611082040"></script>
+<script src="js/experience.js?v=202611082107"></script>
 <div id="site-header"></div>
 <div class="dash"><div id="dash-side"></div>
 <main class="dash-main" id="main">
@@ -33,8 +33,8 @@
   <div class="card brand-card" id="branding"><h3>Branding</h3><p class="muted small" style="margin:4px 0 14px">Your banner and logo show on your company page and in the list of rental companies.</p>
     <div class="brand-preview"><div class="brand-cover" id="brand-cover"><span>No banner yet</span></div><div class="brand-logo-slot" id="brand-logo"></div></div>
     <div class="brand-actions">
-      <label class="btn btn-ghost btn-sm"><input type="file" accept="image/jpeg,image/png,image/webp" class="sr" id="brand-cover-file">Upload banner</label><button type="button" class="btn btn-ghost btn-sm" id="brand-cover-del" hidden>Remove banner</button>
-      <label class="btn btn-ghost btn-sm"><input type="file" accept="image/jpeg,image/png,image/webp" class="sr" id="brand-logo-file">Upload logo</label><button type="button" class="btn btn-ghost btn-sm" id="brand-logo-del" hidden>Remove logo</button>
+      <label class="btn btn-ghost btn-sm"><input type="file" accept="image/jpeg,image/png,image/webp" class="sr" id="brand-cover-file">Upload banner</label><button type="button" class="btn btn-ghost btn-sm" id="brand-cover-adj" hidden>Adjust banner</button><button type="button" class="btn btn-ghost btn-sm" id="brand-cover-del" hidden>Remove banner</button>
+      <label class="btn btn-ghost btn-sm"><input type="file" accept="image/jpeg,image/png,image/webp" class="sr" id="brand-logo-file">Upload logo</label><button type="button" class="btn btn-ghost btn-sm" id="brand-logo-adj" hidden>Adjust logo</button><button type="button" class="btn btn-ghost btn-sm" id="brand-logo-del" hidden>Remove logo</button>
     </div>
     <p class="small muted" style="margin:10px 0 0">Banner: <b>2400 × 800 px</b> (wide). Logo: <b>800 × 800 px</b> (square). Your own images only, no AI-generated logos of other brands.</p><p class="form-msg" id="brand-msg" role="alert"></p>
   </div>
@@ -96,24 +96,25 @@
 </form>
 
 </main></div>
-<script src="js/data.js?v=202611082040"></script>
+<script src="js/data.js?v=202611082107"></script>
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="js/live-config.js?v=202611082040"></script>
-<script src="js/live.js?v=202611082040"></script>
-<script src="js/app.js?v=202611082040"></script>
-<script src="js/chat.js?v=202611082040"></script>
+<script src="js/live-config.js?v=202611082107"></script>
+<script src="js/live.js?v=202611082107"></script>
+<script src="js/app.js?v=202611082107"></script>
+<script src="js/chat.js?v=202611082107"></script>
 <script>
 (async function(){
 await Live.ready;if(Live.failed)return;
 const A=App;
 const CO=A.requireCompany(); if(!CO) return;
-function paintBrand(){const c=A.company(CO),cv=A.coCoverUrl(c),lg=A.coLogoUrl(c);const cvEl=document.getElementById('brand-cover');cvEl.style.backgroundImage=cv?`url('${cv}')`:'';cvEl.classList.toggle('has-image',!!cv);document.getElementById('brand-logo').innerHTML=A.coAvatar(c,'co-avatar-lg');document.getElementById('brand-cover-del').hidden=!cv;document.getElementById('brand-logo-del').hidden=!lg;}
+function paintBrand(){const c=A.company(CO),cv=A.coCoverUrl(c),lg=A.coLogoUrl(c);const cvEl=document.getElementById('brand-cover');cvEl.style.backgroundImage=cv?`url('${cv}')`:'';cvEl.classList.toggle('has-image',!!cv);document.getElementById('brand-logo').innerHTML=A.coAvatar(c,'co-avatar-lg');document.getElementById('brand-cover-del').hidden=document.getElementById('brand-cover-adj').hidden=!cv;document.getElementById('brand-logo-del').hidden=document.getElementById('brand-logo-adj').hidden=!lg;}
 paintBrand();
-async function brandUpload(kind,file,inp){const msg=document.getElementById('brand-msg');msg.textContent='';if(!file)return;inp.closest('label').classList.add('is-loading');
- try{const blob=kind==='logo'?await A.resizeImage(file,{maxW:800,maxH:800}):await A.resizeImage(file,{fillW:2400,fillH:800});await Live.setCompanyImage(CO,kind,blob);paintBrand();A.toast(kind==='logo'?'Logo updated':'Banner updated');}
- catch(e){msg.textContent=Live.error(e);}finally{inp.value='';inp.closest('label').classList.remove('is-loading');}}
+async function brandUpload(kind,file,inp){const msg=document.getElementById('brand-msg');msg.textContent='';if(!file)return;const busy=inp.closest('label')||inp;busy.classList.add('is-loading');
+ try{const blob=kind==='logo'?await A.cropImage(file,{aspect:1,outW:800,outH:800,round:true,title:'Adjust logo'}):await A.cropImage(file,{aspect:3,outW:2400,outH:800,title:'Adjust banner'});if(!blob)return;await Live.setCompanyImage(CO,kind,blob);paintBrand();A.toast(kind==='logo'?'Logo updated':'Banner updated');}
+ catch(e){msg.textContent=Live.error(e);}finally{if('value' in inp&&inp.type==='file')inp.value='';busy.classList.remove('is-loading');}}
 document.getElementById('brand-cover-file').addEventListener('change',e=>brandUpload('cover',e.target.files[0],e.target));
 document.getElementById('brand-logo-file').addEventListener('change',e=>brandUpload('logo',e.target.files[0],e.target));
+['cover','logo'].forEach(k=>document.getElementById(`brand-${k}-adj`).addEventListener('click',async e=>{const btn=e.currentTarget,c=A.company(CO),u=k==='logo'?A.coLogoUrl(c):A.coCoverUrl(c);if(!u)return;try{const r=await fetch(u,{mode:'cors'});if(!r.ok)throw 0;const bl=await r.blob();await brandUpload(k,new File([bl],k+'.webp',{type:bl.type||'image/webp'}),btn);}catch{document.getElementById('brand-msg').textContent='That image could not be opened for adjusting. Upload it again instead.';}}));
 ['cover','logo'].forEach(k=>document.getElementById(`brand-${k}-del`).addEventListener('click',async()=>{try{await Live.setCompanyImage(CO,k,null);paintBrand();A.toast('Removed');}catch(e){document.getElementById('brand-msg').textContent=Live.error(e);}}));
 const _co=CO, c=A.company(CO), f=document.getElementById("pf");
 document.getElementById("view").href="company.html#"+CO;
