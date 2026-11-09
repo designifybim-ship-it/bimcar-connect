@@ -377,6 +377,23 @@ function tidyPhotoBlocks(md){const IM=/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(?:\{([\
    a line ending in {:center} or {:right} is aligned that way
    [Label](https://…){button} or {button-outline}   {spacer-s} {spacer} {spacer-l}
    ![caption](https://…){layout}  photos, see the layouts below; a YouTube link on its own line embeds the video */
+/* Instagram-style business profile block:  ::: profile / @handle | Name | Bio | posts | followers | following | https://link / photos… / ::: */
+function renderProfile(lines){const IM=/^!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)\{(avatar|highlight|post)\}$/;let head=null,av='';const hl=[],ph=[];
+ lines.forEach(l=>{const m=l.match(IM);if(m){if(m[3]==='avatar')av=m[2];else if(m[3]==='highlight'){const [a,...r]=m[1].split('|').map(x=>x.trim());hl.push({src:m[2],who:a,text:r.join(' · ')});}else ph.push({src:m[2],cap:m[1]});}else if(!head&&!/^!\[/.test(l))head=l.split('|').map(x=>x.trim());});
+ const [h='',name='',bio='',posts='',fol='',fing='',link='']=head||[],handle=h.replace(/^@/,'').replace(/[^A-Za-z0-9._]/g,''),num=v=>String(v||'').replace(/[^0-9.,kKmM]/g,'').slice(0,10);
+ const ig=/^https:\/\/[^\s"'<>()]+$/.test(link)?link:'';
+ const groups=[];hl.forEach(x=>{const g=groups[groups.length-1];if(x.who&&g&&g.who===x.who)g.slides.push(x);else groups.push({who:x.who||'Highlight',slides:[x]});});
+ const stat=(n,l)=>n?`<li><b>${esc(n)}</b> ${l}</li>`:'';
+ return `<section class="ig-profile" data-stories aria-label="${esc(name||handle||'Business')} profile">
+ <p class="ig-badge">Featured business · paid feature</p>
+ <header class="ig-head"><button type="button" class="ig-av${groups.length?' has-story':''}" ${groups.length?'data-story="0"':'disabled'} aria-label="${groups.length?'Watch '+esc(name||handle)+"'s highlights":esc(name||handle)}">${av?`<img src="${esc(av)}" alt="" loading="lazy">`:`<span>${esc(initials(name||handle||'B'))}</span>`}</button>
+  <div class="ig-info"><div class="ig-top">${handle?`<b class="ig-handle">${esc(handle)}</b>`:''}${ig?`<a class="ig-follow" href="${esc(ig)}" target="_blank" rel="noopener nofollow">View on Instagram</a>`:''}</div>
+   <ul class="ig-stats">${stat(num(posts)||String(ph.length||''),'posts')}${stat(num(fol),'followers')}${stat(num(fing),'following')}</ul>
+   ${name?`<p class="ig-name">${esc(name)}</p>`:''}${bio?`<p class="ig-bio">${esc(bio)}</p>`:''}</div></header>
+ ${groups.length?`<div class="story-scroll ig-hl"><button type="button" class="story-arrow is-prev" data-story-scroll="-1" aria-label="Scroll back" hidden>‹</button><div class="story-list">${groups.map((g,i)=>`<button type="button" class="story-circle" data-story="${i}" aria-label="Watch ${esc(g.who)} (${g.slides.length} ${g.slides.length===1?'slide':'slides'})"><span class="story-ring"><img src="${esc(g.slides[0].src)}" alt="" loading="lazy"></span>${g.slides.length>1?`<span class="story-count">${g.slides.length}</span>`:''}<span class="story-name">${esc(g.who)}</span></button>`).join('')}</div><button type="button" class="story-arrow is-next" data-story-scroll="1" aria-label="Scroll forward" hidden>›</button></div>`:''}
+ ${ph.length?`<div class="ig-tabs" aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Posts</span></div><div class="ig-grid">${ph.map((x,i)=>`<button type="button" class="ig-tile" data-ig-tile="${i}" aria-label="Open photo ${i+1}${x.cap?': '+esc(x.cap):''}"><img src="${esc(x.src)}" alt="${esc(x.cap)}" loading="lazy" decoding="async"></button>`).join('')}</div>`:''}
+ <div hidden>${groups.map(g=>`<div data-story-group data-who="${esc(g.who)}">${g.slides.map(x=>`<i data-story-slide data-src="${esc(x.src)}" data-who="${esc(g.who)}" data-text="${esc(x.text)}"></i>`).join('')}</div>`).join('')}</div>
+</section>`;}
 const LINK_URL='(?:https:\\/\\/|mailto:)[^)\\s]+|[\\w-]+\\.html(?:\\?p=[\\w-]+)?(?:#[\\w-]+)?';
 function renderPost(md){
   const inline=t=>esc(t)
@@ -401,7 +418,10 @@ function renderPost(md){
     if(b.k==='polaroid'){if(n>1)return `<div class="polaroid-row n-${Math.min(n,4)}">${it.join('')}</div>`;const dir=beside?((side++%2)?'left':'right'):'center';return it[0].replace('is-polaroid','is-polaroid is-'+dir);}
     return n>1?`<div class="post-gallery n-${n>=5?'many':n}">${it.join('')}</div>`:it[0];};
   const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p${paraAlign?` class="al-${paraAlign}"`:''}>${inline(t)}</p>`);para=[];paraAlign='';}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
+  let prof=null;
   String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{let line=raw.trim();let m;
+    if(prof){if(line===':::'){out.push(renderProfile(prof));prof=null;}else if(line)prof.push(line);return;}
+    if(/^:::\s*profile$/.test(line)){flush();prof=[];return;}
     if(!line){flush();return;}
     let al='';if((m=line.match(/^(.*\S)\s*\{:(center|right)\}$/))){line=m[1];al=m[2];}const ac=al?` class="al-${al}"`:'';
     if((m=line.match(/^(#{2,3})\s+(.+)/))){flush();out.push(`<h${m[1].length}${ac}>${inline(m[2])}</h${m[1].length}>`);return;}
@@ -415,6 +435,7 @@ function renderPost(md){
     if((m=line.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{6,20})\S*$/))){flush();out.push(`<div class="post-video"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`);return;}
     if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?$/.test(line)){if(/\{featured\}$/.test(line)){flush();out.push(inline(line));return;}const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
     if(list)flush();para.push(line);if(al)paraAlign=al;});
+  if(prof)out.push(renderProfile(prof));
   flush();return out.map((x,i)=>typeof x==='object'?renderBlock(x,typeof out[i+1]==='string'&&/^<p>/.test(out[i+1])):x).join('\n');
 }
 /* What the blog shows, set in Admin → Blog posts → Blog settings */
@@ -745,6 +766,8 @@ addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove
   const st=box.querySelector('.lb-stage');st.addEventListener('pointerdown',e=>{sx=e.clientX;});st.addEventListener('pointerup',e=>{if(sx!==null&&Math.abs(e.clientX-sx)>45)go(e.clientX<sx?1:-1);sx=null;});
   document.addEventListener('keydown',key);show();setTimeout(()=>box?.querySelector('.lb-close').focus(),30);}
  function items(root){return [...root.querySelectorAll('figure img')].map(im=>({src:im.currentSrc||im.src,alt:im.alt||'',cap:(()=>{const f=im.closest('figure');if(f.classList.contains('post-feature'))return [f.querySelector('figcaption b')?.textContent,f.querySelector('figcaption span:not(.pf-kicker)')?.textContent].filter(Boolean).join(' · ');return f.querySelector('figcaption')?.textContent||im.alt||'';})()}));}
+ window.BimGallery={open:(items,i)=>open(items,i||0)};
+ document.addEventListener('click',e=>{const t=e.target.closest('[data-ig-tile]');if(!t)return;const sec=t.closest('.ig-profile');open([...sec.querySelectorAll('.ig-tile img')].map(im=>({src:im.currentSrc||im.src,alt:im.alt,cap:im.alt})),+t.dataset.igTile);});
  function from(target){const root=target.closest('.post-body,.article-body');if(!root)return false;const all=items(root);if(!all.length)return false;
   const fig=target.closest('.polaroid-stack')?target.closest('.polaroid-stack').querySelector('figure img'):target.closest('figure')?.querySelector('img');const imgs=[...root.querySelectorAll('figure img')];open(all,Math.max(0,imgs.indexOf(fig)));return true;}
  document.addEventListener('click',e=>{if(e.target.closest('a'))return;const t=e.target.closest('.post-body figure img,.article-body figure img,.polaroid-stack');if(t&&from(t))e.preventDefault();});

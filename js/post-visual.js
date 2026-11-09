@@ -7,6 +7,7 @@
      text    {t:'p'|'h2'|'h3'|'quote'|'callout', html, align}
      list    {t:'ul'|'ol', items:[html]}
      photos  {t:'photos', layout, photos:[{url,a,b}]}   a/b = caption, or name + news
+     profile {t:'profile', handle,name,bio,posts,followers,following,url,avatar, highlights:[{url,a,b}], photos:[{url,a}]}
      other   {t:'hr'} {t:'video',url} {t:'spacer',size:'s'|'m'|'l'}
              {t:'button',label,url,style:'button'|'button-outline',align}
    Photo layouts that hold several photos (grid, polaroids, pile, stories) join a
@@ -67,11 +68,18 @@ const safeStart=s=>/^(#{2,3}\s|>|!!!|[-*]\s|\d+[.)]\s|-{3,}$|\*{3,}$|!\[|\{space
 const capClean=s=>tidy(s).replace(/[\[\]|]/g,' ').replace(/ {2,}/g,' ').trim();
 const alignOf=b=>b.align&&b.align!=='left'?` {:${b.align}}`:'';
 
-function parse(md){const out=[];let para=[],paraAlign='',list=null;
+const newProfile=()=>({t:'profile',handle:'',name:'',bio:'',posts:'',followers:'',following:'',url:'',avatar:'',highlights:[],photos:[]});
+function parse(md){const out=[];let para=[],paraAlign='',list=null,prof=null;
  const flushP=()=>{if(para.length){out.push({t:'p',html:mdInline(para.join(' ')),align:paraAlign||'left'});para=[];paraAlign='';}};
  const flushL=()=>{if(list){out.push(list);list=null;}};
  const flush=()=>{flushP();flushL();};
  String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{let line=raw.trim();const lit=line.startsWith('\u200b');line=line.replace(/^\u200b/,'');let m;
+  /* Instagram-style profile: ::: profile … ::: */
+  if(prof){if(!line)return;if(line===':::'){delete prof._h;out.push(prof);prof=null;return;}
+   if((m=line.match(IMG))){if(m[3]==='avatar')prof.avatar=m[2];else if(m[3]==='highlight'){const [a,...r]=m[1].split('|').map(x=>x.trim());prof.highlights.push({url:m[2],a:a||'',b:r.join(' · ')});}else prof.photos.push({url:m[2],a:m[1]});}
+   else if(!prof._h){prof._h=1;const f=line.split('|').map(x=>x.trim());Object.assign(prof,{handle:(f[0]||'').replace(/^@/,''),name:f[1]||'',bio:f[2]||'',posts:f[3]||'',followers:f[4]||'',following:f[5]||'',url:f[6]||''});}
+   return;}
+  if(!lit&&/^:::\s*profile$/.test(line)){flush();prof={...newProfile(),_h:0};return;}
   if(!line){flush();return;}
   let al='left';if((m=line.match(/^(.*\S)\s*\{:(center|right)\}$/))){line=m[1];al=m[2];}
   if(!lit){
@@ -90,7 +98,7 @@ function parse(md){const out=[];let para=[],paraAlign='',list=null;
     else out.push({t:'photos',layout,photos:[ph]});return;}
   }
   if(list)flushL();para.push(line.replace(/∗/g,'*'));if(al!=='left')paraAlign=al;});
- flush();return out;}
+ flush();if(prof){delete prof._h;out.push(prof);}return out;}
 
 function serialize(blocks){return blocks.map(b=>{
  if(b.t==='p'){const s=htmlToMd(b.html);return s?safeStart(s)+alignOf(b):null;}
@@ -98,6 +106,11 @@ function serialize(blocks){return blocks.map(b=>{
  if(b.t==='quote'){const s=htmlToMd(b.html);return s?'> '+s+alignOf(b):null;}
  if(b.t==='callout'){const s=htmlToMd(b.html);return s?'!!! '+s+alignOf(b):null;}
  if(b.t==='ul'||b.t==='ol'){const it=b.items.map(htmlToMd).filter(Boolean);return it.length?it.map((x,i)=>(b.t==='ul'?'- ':`${i+1}. `)+x).join('\n'):null;}
+ if(b.t==='profile'){const cnt=x=>String(x||'').replace(/[^0-9.,kKmM]/g,'').slice(0,10),h=String(b.handle||'').replace(/[^A-Za-z0-9._]/g,'').slice(0,30);
+  const url=/^https:\/\/[^\s|()\[\]]+$/.test(b.url||'')?b.url:'',hl=b.highlights.filter(p=>p.url),ph=b.photos.filter(p=>p.url);
+  if(!h&&!capClean(b.name)&&!b.avatar&&!hl.length&&!ph.length)return null;
+  return [':::profile',[h?'@'+h:'',capClean(b.name),capClean(b.bio),cnt(b.posts),cnt(b.followers),cnt(b.following),url].join(' | '),
+   ...(b.avatar?[`![](${b.avatar}){avatar}`]:[]),...hl.map(p=>`![${capClean(p.a)}${capClean(p.b)?' | '+capClean(p.b):''}](${p.url}){highlight}`),...ph.map(p=>`![${capClean(p.a)}](${p.url}){post}`),':::'].join('\n');}
  if(b.t==='hr')return '---';
  if(b.t==='spacer')return b.size==='s'?'{spacer-s}':b.size==='l'?'{spacer-l}':'{spacer}';
  if(b.t==='video')return YT.test(b.url||'')?b.url:null;
@@ -114,6 +127,7 @@ const ADD_ITEMS=[
  {k:'photos:polaroid',label:'Polaroids',desc:'Prints in a row, or one beside text',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="1.5" transform="rotate(-4 12 12)"/><rect x="7" y="6" width="10" height="9" transform="rotate(-4 12 12)"/></svg>'},
  {k:'photos:pile',label:'Photo pile',desc:'A stack that opens a gallery',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="7" width="13" height="13" rx="1.5"/><path d="M4 16V5.5A1.5 1.5 0 0 1 5.5 4H16"/></svg>'},
  {k:'photos:story',label:'Business stories',desc:'Instagram-style circles (paid feature)',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2"/><circle cx="12" cy="12" r="5.5"/></svg>'},
+ {k:'profile',label:'Instagram profile',desc:'A business profile with highlights and a photo grid',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor"/></svg>'},
  {k:'photos:featured',label:'Featured person',desc:'An owner or local, with their business',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>'},
  {k:'button',label:'Button',desc:'A link styled as a button',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="10" rx="5"/><path d="M9 12h6"/></svg>'},
  {k:'callout',label:'Callout',desc:'A highlighted tip box',ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>'},
@@ -163,9 +177,9 @@ function mount(root,ta,opts){
   const ed=`<${tag} class="ve-edit${al}" contenteditable="true" data-placeholder="${PH[b.t]}">${b.html||''}</${tag}>`;
   return b.t==='callout'?`<aside class="post-callout ve-callout${al}"><span class="pc-ic" aria-hidden="true">i</span>${ed}</aside>`:ed;}
  /* stories: photos next to each other with the same business name are one circle with several slides */
- function storySlides(b){const key=p=>tidy(p.a).toLowerCase(),info=[];let start=0;b.photos.forEach((p,i)=>{if(i&&!(key(p)&&key(p)===key(b.photos[i-1])))start=i;info.push({start});});
-  return info.map((x,i)=>{let end=i;while(end+1<b.photos.length&&info[end+1].start===x.start)end++;return {slide:i-x.start+1,of:end-x.start+1,first:i===x.start};});}
- function photoCards(b){const L=LAYOUTS[b.layout]||LAYOUTS.grid,n=b.photos.length,st=b.layout==='story'?storySlides(b):null;return b.photos.map((p,i)=>`<div class="ve-ph${p.url?'':' is-loading'}${st&&!st[i].first?' is-slide':''}" data-pi="${i}" draggable="${p.url?'true':'false'}">
+ function storySlides(arr){const key=p=>tidy(p.a).toLowerCase(),info=[];let start=0;arr.forEach((p,i)=>{if(i&&!(key(p)&&key(p)===key(arr[i-1])))start=i;info.push({start});});
+  return info.map((x,i)=>{let end=i;while(end+1<arr.length&&info[end+1].start===x.start)end++;return {slide:i-x.start+1,of:end-x.start+1,first:i===x.start};});}
+ function photoCards(b){const L=LAYOUTS[b.layout]||LAYOUTS.grid,n=b.photos.length,st=b.layout==='story'?storySlides(b.photos):null;return b.photos.map((p,i)=>`<div class="ve-ph${p.url?'':' is-loading'}${st&&!st[i].first?' is-slide':''}" data-pi="${i}" draggable="${p.url?'true':'false'}">
    ${st?`<div class="ve-story-tag"><b>${esc(tidy(p.a)||'No business name yet')}</b><span>${st[i].of>1?`Slide ${st[i].slide} of ${st[i].of}`:'1 slide'}</span></div>`:''}
    <div class="ve-ph-img">${p.url?`<img src="${esc(p.url)}" alt="" draggable="false">`:'<span class="ve-spin" aria-label="Uploading"></span>'}</div>
    <div class="ve-ph-tools" role="group" aria-label="Photo ${i+1}">${p.url?`<button type="button" data-ve="prep" title="Replace with another photo">Replace</button><button type="button" data-ve="pcrop" title="Crop and position">Crop</button>`:''}${n>1?`<button type="button" class="ve-ph-ic" data-ve="pleft" title="Move left" aria-label="Move left" ${i===0?'disabled':''}>‹</button><button type="button" class="ve-ph-ic" data-ve="pright" title="Move right" aria-label="Move right" ${i===n-1?'disabled':''}>›</button>`:''}${n>1?'<button type="button" class="ve-ph-ic ve-ph-x" data-ve="pdel" title="Remove photo" aria-label="Remove photo">✕</button>':'<button type="button" class="ve-ph-x ve-ph-wide" data-ve="pdel">Remove photo</button>'}${st&&p.url?'<button type="button" class="ve-ph-wide ve-ph-slide" data-ve="pslide" title="Add more photos to this business\'s story">+ Add slide</button>':''}</div>
@@ -177,6 +191,24 @@ function mount(root,ta,opts){
     <optgroup label="One photo">${['featured','wide','medium','small','left','right','polaroid-left','polaroid-right','polaroid-center'].map(opt).join('')}</optgroup></select></label>
    <span class="ve-hint">${esc(L.hint(n))}</span>${L.multi||!n?`<button type="button" class="ve-addph" data-ve="addph">${b.layout==='story'?'+ Add another business':'+ Add photos'}</button>`:''}${b.layout==='story'?'<button type="button" class="ve-addph" data-ve="gridbelow">+ Photo grid underneath</button>':''}</div>
    <div class="ve-phs lay-${esc(b.layout)}">${photoCards(b)}</div>`;}
+ function profileBlock(b){const f=(k,label,ph,extra)=>`<label class="${extra||''}">${label}<input class="input" data-pf-f="${k}" value="${esc(b[k])}" placeholder="${esc(ph)}" maxlength="${k==='url'?200:k==='name'?60:k==='handle'?30:12}"></label>`;
+  const card=(list,p,i,arr,st)=>`<div class="ve-ph ve-pf-card${p.url?'':' is-loading'}" data-list="${list}" data-pi="${i}" draggable="false">
+   ${st?`<div class="ve-story-tag"><b>${esc(tidy(p.a)||'No title yet')}</b><span>${st[i].of>1?`Slide ${st[i].slide} of ${st[i].of}`:'1 slide'}</span></div>`:''}
+   <div class="ve-ph-img">${p.url?`<img src="${esc(p.url)}" alt="" draggable="false">`:'<span class="ve-spin" aria-label="Uploading"></span>'}</div>
+   <div class="ve-ph-tools">${p.url?'<button type="button" data-pf="rep">Replace</button><button type="button" data-pf="crop">Crop</button>':''}${arr.length>1?`<button type="button" class="ve-ph-ic" data-pf="left" aria-label="Move left" ${i===0?'disabled':''}>‹</button><button type="button" class="ve-ph-ic" data-pf="right" aria-label="Move right" ${i===arr.length-1?'disabled':''}>›</button><button type="button" class="ve-ph-ic ve-ph-x" data-pf="del" aria-label="Remove photo">✕</button>`:'<button type="button" class="ve-ph-x ve-ph-wide" data-pf="del">Remove photo</button>'}${st&&p.url?'<button type="button" class="ve-ph-wide ve-ph-slide" data-pf="slide">+ Add slide</button>':''}</div>
+   ${st?`<input class="ve-cap" data-cap="a" maxlength="30" placeholder="Title, e.g. Menu" value="${esc(p.a)}"><input class="ve-cap" data-cap="b" maxlength="140" placeholder="News (optional)" value="${esc(p.b)}">`:`<input class="ve-cap" data-cap="a" maxlength="140" placeholder="Caption (optional)" value="${esc(p.a)}">`}</div>`;
+  const st=storySlides(b.highlights);
+  return `<div class="ve-ig"><p class="ve-ig-badge">Instagram-style profile · shown to readers as a paid feature</p>
+   <div class="ve-ig-top"><div class="ve-ig-av"><div class="ve-ig-avimg${b.highlights.length?' has-ring':''}">${b.avatar?`<img src="${esc(b.avatar)}" alt="">`:'<span>Profile<br>photo</span>'}</div>
+     <div class="ve-ig-avbtns"><button type="button" data-pf="avatar">${b.avatar?'Replace':'Add photo'}</button>${b.avatar?'<button type="button" data-pf="avcrop">Crop</button>':''}</div></div>
+    <div class="ve-ig-fields">${f('handle','Instagram name','e.g. ohyumcakery')}${f('name','Business name','e.g. Oh Yum Cakery')}
+     <label class="wide">Bio<textarea class="input" data-pf-f="bio" maxlength="150" rows="2" placeholder="What they do, where, opening hours">${esc(b.bio)}</textarea></label>
+     ${f('posts','Posts','Auto')}${f('followers','Followers','e.g. 12.4k')}${f('following','Following','e.g. 310')}
+     ${f('url','Their Instagram link','https://www.instagram.com/…','wide')}<p class="ve-ig-note wide">Copy the follower numbers from their real Instagram, so readers see true figures.</p></div></div>
+   <div class="ve-ig-sec"><div><b>Highlights</b><span>Story circles readers tap to watch. Photos with the same title make one circle with several slides.</span></div><button type="button" class="ve-addph" data-pf="add" data-list="highlights">+ Add highlight</button></div>
+   ${b.highlights.length?`<div class="ve-phs lay-story">${b.highlights.map((p,i,a)=>card('highlights',p,i,a,st)).join('')}</div>`:''}
+   <div class="ve-ig-sec"><div><b>Photo grid</b><span>Laid out like an Instagram profile. Readers tap a photo to see it big.</span></div><button type="button" class="ve-addph" data-pf="add" data-list="photos">+ Add photos</button></div>
+   ${b.photos.length?`<div class="ve-phs ve-ig-grid">${b.photos.map((p,i,a)=>card('photos',p,i,a,null)).join('')}</div>`:''}</div>`;}
  function buttonBlock(b){return `<div class="ve-btn-prev al-${b.align||'left'}"><span class="btn ${b.style==='button-outline'?'btn-ghost':'btn-primary'}">${esc(b.label||'Button text')}</span></div>
   <div class="ve-btn-fields"><label>Button text<input class="input" data-bf="label" maxlength="60" value="${esc(b.label)}" placeholder="e.g. Book a table"></label><label>Link<input class="input" data-bf="url" maxlength="400" value="${esc(b.url)}" placeholder="https://"></label><label>Style<select class="input" data-bf="style"><option value="button" ${b.style!=='button-outline'?'selected':''}>Filled</option><option value="button-outline" ${b.style==='button-outline'?'selected':''}>Outline</option></select></label></div>
   <p class="ve-warn" ${b.url&&!LINK_OK(b.url)?'':'hidden'}>Links need to start with https:// (for example https://www.example.com).</p>`;}
@@ -184,6 +216,7 @@ function mount(root,ta,opts){
   if(isText(b))body=textEl(b);
   else if(b.t==='photos')body=photoBlock(b);
   else if(b.t==='button')body=buttonBlock(b);
+  else if(b.t==='profile')body=profileBlock(b);
   else if(b.t==='hr')body='<hr>';
   else if(b.t==='spacer')body=`<div class="ve-spacer sz-${b.size}"><span>Space</span><select data-ve-spacer aria-label="Space size"><option value="s" ${b.size==='s'?'selected':''}>Small</option><option value="m" ${b.size==='m'?'selected':''}>Medium</option><option value="l" ${b.size==='l'?'selected':''}>Large</option></select></div>`;
   else if(b.t==='video'){const v=(b.url||'').match(YT);body=`<div class="ve-video">${v?`<img src="https://img.youtube.com/vi/${esc(v[1])}/hqdefault.jpg" alt="">`:''}<span class="ve-play">▶</span><span class="ve-vlabel">YouTube video</span><button type="button" data-ve="vid">Change video</button></div>`;}
@@ -220,27 +253,33 @@ function mount(root,ta,opts){
   if(k==='video')return video(null);
   if(k==='hr')return addBlock({t:'hr'});
   if(k==='spacer')return addBlock({t:'spacer',size:'m'});
+  if(k==='profile')return addBlock(newProfile());
   if(k==='button')return addBlock({t:'button',label:'',url:'',style:'button',align:'left'});
   return addBlock({t:k,html:'',align:'left'});}
 
  /* ----- photos ----- */
- function pick(target){pickFor=target;fileIn.multiple=!(target.replace||(target.layout&&!LAYOUTS[target.layout].multi));fileIn.value='';fileIn.click();}
- fileIn.addEventListener('change',()=>{const fs=[...fileIn.files];fileIn.value='';const t=pickFor;pickFor=null;if(!fs.length||!t)return;if(t.replace)replacePhoto(t.bid,t.pi,fs[0]);else addPhotos(fs,t);});
+ function pick(target){pickFor=target;fileIn.multiple=!(target.replace||target.avatar||(target.layout&&!LAYOUTS[target.layout].multi));fileIn.value='';fileIn.click();}
+ fileIn.addEventListener('change',()=>{const fs=[...fileIn.files];fileIn.value='';const t=pickFor;pickFor=null;if(!fs.length||!t)return;if(t.avatar)setAvatar(t.bid,fs[0]);else if(t.replace)replacePhoto(t.bid,t.pi,fs[0],t.list);else addPhotos(fs,t);});
  async function addPhotos(files,target){files=files.filter(f=>/^image\//.test(f.type)).slice(0,20);if(!files.length)return;remember();
   let b=target.bid?blocks[find(target.bid)]:null;
   if(!b){b={t:'photos',layout:target.layout||'grid',photos:[]};insertAfter(b,cur);}
-  if(b.photos.length+files.length>1&&!LAYOUTS[b.layout].multi){b.layout=toMulti(b.layout);opts.toast?.('That layout holds one photo, so these are shown together. You can change the layout above the photos.');}
-  const slots=files.map(()=>({url:'',a:target.name||'',b:''}));if(Number.isInteger(target.at))b.photos.splice(target.at,0,...slots);else b.photos.push(...slots);draw();setCur(b.id);scrollTo(b.id);
+  const L0=t=>t.list?b[t.list]:b.photos;let arr=L0(target);
+  if(!target.list&&b.photos.length+files.length>1&&!LAYOUTS[b.layout].multi){b.layout=toMulti(b.layout);opts.toast?.('That layout holds one photo, so these are shown together. You can change the layout above the photos.');}
+  const slots=files.map(()=>({url:'',a:target.name||'',b:''}));if(Number.isInteger(target.at))arr.splice(target.at,0,...slots);else arr.push(...slots);draw();setCur(b.id);scrollTo(b.id);
   for(let i=0;i<files.length;i++){opts.status?.(`Uploading photo ${i+1} of ${files.length}…`);
    try{slots[i].url=await opts.upload(files[i]);}catch(e){opts.status?.(opts.errorText?opts.errorText(e):String(e.message||e));}
    if(find(b.id)>-1)redrawBlock(b);}
-  b.photos=b.photos.filter(p=>p.url);opts.status?.('');draw();done();
-  const at=Number.isInteger(target.at)?target.at:b.photos.length-files.length,cap=doc.querySelectorAll(`[data-id="${b.id}"] .ve-ph`)[Math.max(0,at)]?.querySelectorAll('.ve-cap')[target.name?1:0];if(LAYOUTS[b.layout]?.two&&cap)cap.focus();}
- async function replacePhoto(bid,pi,file){const b=blocks[find(bid)];if(!b||!b.photos[pi])return;remember();const old=b.photos[pi].url;b.photos[pi].url='';redrawBlock(b);opts.status?.('Uploading photo…');
-  try{b.photos[pi].url=await opts.upload(file);}catch(e){b.photos[pi].url=old;opts.status?.(opts.errorText?opts.errorText(e):String(e.message||e));return redrawBlock(b);}
+  if(target.list)b[target.list]=arr.filter(p=>p.url);else b.photos=b.photos.filter(p=>p.url);arr=L0(target);opts.status?.('');draw();done();
+  const at=Number.isInteger(target.at)?target.at:arr.length-files.length,cards=doc.querySelectorAll(`[data-id="${b.id}"] ${target.list?`[data-list="${target.list}"].ve-ph`:'.ve-ph'}`),cap=cards[Math.max(0,at)]?.querySelectorAll('.ve-cap')[target.name?1:0];
+  if((target.list==='highlights'||LAYOUTS[b.layout]?.two)&&cap)cap.focus();}
+ async function setAvatar(bid,file){const b=blocks[find(bid)];if(!b)return;opts.status?.('Uploading photo…');
+  try{const url=await opts.upload(file);remember();b.avatar=url;opts.status?.('');redrawBlock(b);done();}catch(e){opts.status?.(opts.errorText?opts.errorText(e):String(e.message||e));}}
+ async function replacePhoto(bid,pi,file,list){const b=blocks[find(bid)],arr=b&&(list?b[list]:b.photos);if(!arr||!arr[pi])return;remember();const old=arr[pi].url;arr[pi].url='';redrawBlock(b);opts.status?.('Uploading photo…');
+  try{arr[pi].url=await opts.upload(file);}catch(e){arr[pi].url=old;opts.status?.(opts.errorText?opts.errorText(e):String(e.message||e));return redrawBlock(b);}
   opts.status?.('');redrawBlock(b);done();}
- async function cropPhoto(bid,pi){const b=blocks[find(bid)],p=b?.photos[pi];if(!p||!opts.crop)return;const L=LAYOUTS[b.layout]||LAYOUTS.grid;
-  try{const url=await opts.crop(p.url,L.crop);if(!url)return;remember();p.url=url;redrawBlock(b);done();}catch(e){opts.toast?.(opts.errorText?opts.errorText(e):String(e.message||e));}}
+ async function cropPhoto(bid,pi,list){const b=blocks[find(bid)],p=list==='avatar'?{url:b?.avatar}:(list?b?.[list]:b?.photos)?.[pi];if(!p?.url||!opts.crop)return;
+  const ratio=list==='avatar'?[1,1]:list==='highlights'?[9,16]:list==='photos'&&b.t==='profile'?[4,5]:(LAYOUTS[b.layout]||LAYOUTS.grid).crop;
+  try{const url=await opts.crop(p.url,ratio);if(url&&list==='avatar'){remember();b.avatar=url;redrawBlock(b);done();return;}if(!url)return;remember();p.url=url;redrawBlock(b);done();}catch(e){opts.toast?.(opts.errorText?opts.errorText(e):String(e.message||e));}}
 
  /* ----- links and video ----- */
  const saveSel=()=>{const s=getSelection();savedRange=s.rangeCount&&doc.contains(s.anchorNode)?s.getRangeAt(0).cloneRange():null;};
@@ -279,12 +318,19 @@ function mount(root,ta,opts){
  doc.addEventListener('focusin',e=>{const b=e.target.closest('.ve-b');if(b)setCur(b.dataset.id);});
  doc.addEventListener('mousedown',e=>{const b=e.target.closest('.ve-b');if(b&&!e.target.closest('.ve-edit,input,select,button'))setCur(b.dataset.id);});
  doc.addEventListener('input',e=>{const be=e.target.closest('.ve-b');if(!be)return;const b=blocks[find(be.dataset.id)];if(!b)return;
-  if(e.target.matches('.ve-cap')){const p=b.photos[+e.target.closest('.ve-ph').dataset.pi];if(p)p[e.target.dataset.cap]=e.target.value;}
+  if(e.target.matches('.ve-cap')){const list=e.target.closest('[data-list]')?.dataset.list,p=(list?b[list]:b.photos)[+e.target.closest('.ve-ph').dataset.pi];if(p)p[e.target.dataset.cap]=e.target.value;
+   if(list==='highlights'&&e.target.dataset.cap==='a'){const t=e.target.closest('.ve-ph').querySelector('.ve-story-tag b');if(t)t.textContent=tidy(e.target.value)||'No title yet';}}
+  else if(e.target.matches('[data-pf-f]')){b[e.target.dataset.pfF]=e.target.value;}
   else if(e.target.matches('[data-bf]')){b[e.target.dataset.bf]=e.target.value;const pv=be.querySelector('.ve-btn-prev .btn');if(pv&&e.target.dataset.bf==='label')pv.textContent=b.label||'Button text';}
   else if(e.target.closest('.ve-edit')){const ed=e.target.closest('.ve-edit');if(!ed.textContent&&!ed.querySelector('img,li+li'))ed.innerHTML=(b.t==='ul'||b.t==='ol')?'<li></li>':'';readText(b);}
   sync();clearTimeout(typingT);typingT=setTimeout(remember,800);});
  doc.addEventListener('change',e=>{const be=e.target.closest('.ve-b');if(!be)return;const b=blocks[find(be.dataset.id)];if(!b)return;
   if(e.target.matches('[data-ve-layout]')){remember();b.layout=e.target.value;draw();done();setCur(b.id);remember();return;}
+  if(e.target.matches('[data-pf-f]')){const k=e.target.dataset.pfF;let v=e.target.value.trim();
+   if(k==='handle')v=v.replace(/^https?:\/\/(www\.)?instagram\.com\//i,'').replace(/[^A-Za-z0-9._]/g,'').slice(0,30);
+   if(k==='url'&&v){if(/^@?[A-Za-z0-9._]{1,30}$/.test(v))v='https://www.instagram.com/'+v.replace(/^@/,'')+'/';else if(!/^https?:\/\//.test(v))v='https://'+v;v=v.replace(/^http:/,'https:');if(!b.handle){const m=v.match(/instagram\.com\/([A-Za-z0-9._]+)/);if(m){b.handle=m[1];const h=be.querySelector('[data-pf-f=handle]');if(h)h.value=m[1];}}}
+   if(['posts','followers','following'].includes(k))v=v.replace(/[^0-9.,kKmM]/g,'').slice(0,10);
+   b[k]=v;e.target.value=v;done();return;}
   if(e.target.matches('[data-ve-spacer]')){remember();b.size=e.target.value;redrawBlock(b);done();return;}
   /* button fields update in place, so moving to the next box never loses your place */
   if(e.target.matches('[data-bf]')){const f=e.target.dataset.bf;b[f]=e.target.value.trim();
@@ -305,6 +351,22 @@ function mount(root,ta,opts){
   if(act==='pleft'&&pi>0)[b.photos[pi-1],b.photos[pi]]=[b.photos[pi],b.photos[pi-1]];
   if(act==='pright'&&pi<b.photos.length-1)[b.photos[pi+1],b.photos[pi]]=[b.photos[pi],b.photos[pi+1]];
   draw();done();});
+
+ doc.addEventListener('click',e=>{const a=e.target.closest('[data-pf]');if(!a)return;const be=a.closest('.ve-b'),b=blocks[find(be.dataset.id)];if(!b)return;const act=a.dataset.pf;setCur(b.id);
+  if(act==='avatar')return pick({bid:b.id,avatar:true});
+  if(act==='avcrop')return cropPhoto(b.id,0,'avatar');
+  const card=a.closest('[data-list]'),list=card?.dataset.list,arr=b[list];if(!arr)return;
+  if(act==='add')return pick({bid:b.id,list});
+  const pi=+card.dataset.pi;
+  if(act==='rep')return pick({bid:b.id,list,pi,replace:true});
+  if(act==='crop')return cropPhoto(b.id,pi,list);
+  if(act==='slide'){const name=tidy(arr[pi].a);if(!name){opts.toast?.('Give this highlight a title first, then add more slides to it.');card.querySelector('.ve-cap')?.focus();return;}
+   let end=pi;while(end+1<arr.length&&tidy(arr[end+1].a).toLowerCase()===name.toLowerCase())end++;return pick({bid:b.id,list,at:end+1,name});}
+  remember();
+  if(act==='del'){arr.splice(pi,1);opts.toast?.('Photo removed. Press ↶ to undo.');}
+  if(act==='left'&&pi>0)[arr[pi-1],arr[pi]]=[arr[pi],arr[pi-1]];
+  if(act==='right'&&pi<arr.length-1)[arr[pi+1],arr[pi]]=[arr[pi],arr[pi+1]];
+  redrawBlock(b);done();});
 
  doc.addEventListener('keydown',e=>{const ed=e.target.closest('.ve-edit');if(!ed)return;const be=ed.closest('.ve-b'),b=blocks[find(be.dataset.id)];
   const k=e.key.toLowerCase();
