@@ -365,8 +365,8 @@ function requireCompany(){
 /* Blog post formatting: a small, safe subset of Markdown.
    ## Heading, ### Subheading, **bold**, *italic*, [link](https://…), - list, 1. list, > quote, ---, YouTube link on its own line,
    ![caption](image URL){wide|medium|small|left|right}. */
-/* Join photo blocks of the same kind that are only separated by blank lines (one story row, one pile, one polaroid row, one grid) */
-function tidyPhotoBlocks(md){const IM=/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(?:\{([\w-]+)\})?$/,JOIN=['','polaroid','pile','story'];
+/* Join photo blocks of the same kind that are only separated by blank lines (one grid or one carousel) */
+function tidyPhotoBlocks(md){const IM=/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(?:\{([\w-]+)\})?$/,JOIN=['','carousel'];
  const bs=String(md||'').replace(/\r/g,'').split(/\n\s*\n/),out=[];
  const kindOf=b=>{const ls=b.trim().split('\n').map(l=>l.trim());if(!ls[0]||!ls.every(l=>IM.test(l)))return null;const ks=[...new Set(ls.map(l=>l.match(IM)[1]||''))];return ks.length===1&&JOIN.includes(ks[0])?ks[0]:null;};
  bs.forEach(b=>{const k=kindOf(b),prev=out[out.length-1];if(k!==null&&prev&&kindOf(prev)===k)out[out.length-1]=prev.trim()+'\n'+b.trim();else out.push(b);});
@@ -377,50 +377,25 @@ function tidyPhotoBlocks(md){const IM=/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(?:\{([\
    a line ending in {:center} or {:right} is aligned that way
    [Label](https://…){button} or {button-outline}   {spacer-s} {spacer} {spacer-l}
    ![caption](https://…){layout}  photos, see the layouts below; a YouTube link on its own line embeds the video */
-/* Instagram-style business profile block:  ::: profile / @handle | Name | Bio | posts | followers | following | https://link / photos… / ::: */
-function renderProfile(lines){const IM=/^!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)\{(avatar|highlight|post)\}$/;let head=null,av='';const hl=[],ph=[];
- lines.forEach(l=>{const m=l.match(IM);if(m){if(m[3]==='avatar')av=m[2];else if(m[3]==='highlight'){const [a,...r]=m[1].split('|').map(x=>x.trim());hl.push({src:m[2],who:a,text:r.join(' · ')});}else ph.push({src:m[2],cap:m[1]});}else if(!head&&!/^!\[/.test(l))head=l.split('|').map(x=>x.trim());});
- const [h='',name='',bio='',posts='',fol='',fing='',link='']=head||[],handle=h.replace(/^@/,'').replace(/[^A-Za-z0-9._]/g,''),num=v=>String(v||'').replace(/[^0-9.,kKmM]/g,'').slice(0,10);
- const ig=/^https:\/\/[^\s"'<>()]+$/.test(link)?link:'';
- const groups=[];hl.forEach(x=>{const g=groups[groups.length-1];if(x.who&&g&&g.who===x.who)g.slides.push(x);else groups.push({who:x.who||'Highlight',slides:[x]});});
- const stat=(n,l)=>n?`<li><b>${esc(n)}</b> ${l}</li>`:'';
- return `<section class="ig-profile" data-stories aria-label="${esc(name||handle||'Business')} profile">
- <p class="ig-badge">Featured business · paid feature</p>
- <header class="ig-head"><button type="button" class="ig-av${groups.length?' has-story':''}" ${groups.length?'data-story="0"':'disabled'} aria-label="${groups.length?'Watch '+esc(name||handle)+"'s highlights":esc(name||handle)}">${av?`<img src="${esc(av)}" alt="" loading="lazy">`:`<span>${esc(initials(name||handle||'B'))}</span>`}</button>
-  <div class="ig-info"><div class="ig-top">${handle?`<b class="ig-handle">${esc(handle)}</b>`:''}${ig?`<a class="ig-follow" href="${esc(ig)}" target="_blank" rel="noopener nofollow">View on Instagram</a>`:''}</div>
-   <ul class="ig-stats">${stat(num(posts)||String(ph.length||''),'posts')}${stat(num(fol),'followers')}${stat(num(fing),'following')}</ul>
-   ${name?`<p class="ig-name">${esc(name)}</p>`:''}${bio?`<p class="ig-bio">${esc(bio)}</p>`:''}</div></header>
- ${groups.length?`<div class="story-scroll ig-hl"><button type="button" class="story-arrow is-prev" data-story-scroll="-1" aria-label="Scroll back" hidden>‹</button><div class="story-list">${groups.map((g,i)=>`<button type="button" class="story-circle" data-story="${i}" aria-label="Watch ${esc(g.who)} (${g.slides.length} ${g.slides.length===1?'slide':'slides'})"><span class="story-ring"><img src="${esc(g.slides[0].src)}" alt="" loading="lazy"></span>${g.slides.length>1?`<span class="story-count">${g.slides.length}</span>`:''}<span class="story-name">${esc(g.who)}</span></button>`).join('')}</div><button type="button" class="story-arrow is-next" data-story-scroll="1" aria-label="Scroll forward" hidden>›</button></div>`:''}
- ${ph.length?`<div class="ig-tabs" aria-hidden="true"><span><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>Posts</span></div><div class="ig-grid">${ph.map((x,i)=>`<button type="button" class="ig-tile" data-ig-tile="${i}" aria-label="Open photo ${i+1}${x.cap?': '+esc(x.cap):''}"><img src="${esc(x.src)}" alt="${esc(x.cap)}" loading="lazy" decoding="async"></button>`).join('')}</div>`:''}
- <div hidden>${groups.map(g=>`<div data-story-group data-who="${esc(g.who)}">${g.slides.map(x=>`<i data-story-slide data-src="${esc(x.src)}" data-who="${esc(g.who)}" data-text="${esc(x.text)}"></i>`).join('')}</div>`).join('')}</div>
-</section>`;}
 const LINK_URL='(?:https:\\/\\/|mailto:)[^)\\s]+|[\\w-]+\\.html(?:\\?p=[\\w-]+)?(?:#[\\w-]+)?';
 function renderPost(md){
   const inline=t=>esc(t)
-    .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?/g,(m,a,u,l)=>{const cap=a&&a!=='Add a caption'?a:'';
-      if(l==='story'){const [who,...rest]=cap.split('|').map(x=>x.trim());return `<i data-story-slide data-src="${u}" data-who="${who||''}" data-text="${rest.join(' · ')}"></i>`;}
-      if(l==='featured'){const [who,...rest]=cap.split('|').map(x=>x.trim());return `<figure class="post-feature"><div class="pf-photo"><img src="${u}" alt="${who||''}" loading="lazy" decoding="async"><span class="pf-badge">Featured</span></div>${cap?`<figcaption><span class="pf-kicker">Meet the people behind it</span><b>${who}</b>${rest.length?`<span>${rest.join(' · ')}</span>`:''}</figcaption>`:''}</figure>`;}
-      const cls=l==='pile'?' is-polaroid is-pile':/^polaroid-/.test(l||'')?' is-polaroid is-'+l.slice(9)+' is-placed':l?' is-'+l:'';
-      return `<figure class="post-figure${cls}"><img src="${u}" alt="${cap}" loading="lazy" decoding="async">${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;})
+    .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{([\w-]+)\})?/g,(m,a,u,l)=>{const cap=(a&&a!=='Add a caption'?a:'').split('|').map(x=>x.trim()).filter(Boolean).join(' · ');
+      return `<figure class="post-figure${l==='carousel'?' is-car':''}"><img src="${u}" alt="${cap}" loading="lazy" decoding="async">${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;})
     .replace(/\[([^\]]+)\]\(((?:https:\/\/|mailto:)[^)\s]+|[\w-]+\.html(?:\?p=[\w-]+)?(?:#[\w-]+)?)\)/g,(m,t2,u)=>`<a href="${u}"${/^https:/.test(u)?' target="_blank" rel="noopener"':''}>${t2}</a>`)
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
     .replace(/\+\+([^+]+)\+\+/g,'<u>$1</u>').replace(/~~([^~]+)~~/g,'<s>$1</s>');
   const BTN=new RegExp('^\\[([^\\]]+)\\]\\(('+LINK_URL+')\\)\\{(button|button-outline)\\}$');
   const out=[];let paraAlign='';let list=null,para=[],gal=[];
-  let side=0;
-  const kindOf=g=>g.includes('data-story-slide')?'story':g.includes('is-pile')?'pile':g.includes('is-placed')?null:g.includes('is-polaroid')?'polaroid':/<figure class="post-figure">/.test(g)?'gallery':null;
-  /* photos of the same kind separated only by blank lines join into one block (one story bar, one row, one grid) */
-  const flushGal=()=>{if(!gal.length)return;const plainRun=gal.length>1&&gal.every(g=>/^<figure class="post-figure/.test(g)&&!g.includes('is-polaroid'));gal.forEach(g=>{const k=plainRun?'gallery':kindOf(g),last=out[out.length-1];if(!k){out.push(g);return;}if(last&&typeof last==='object'&&last.k===k)last.items.push(g);else out.push({k,items:[g]});});gal=[];};
-  const renderBlock=(b,beside)=>{const it=b.items,n=it.length;
-    if(b.k==='story'){const groups=[];it.forEach(g=>{const who=(g.match(/data-who="([^"]*)"/)||[])[1];const last=groups[groups.length-1];if(who&&last&&last.who===who)last.slides.push(g);else groups.push({who:who||'Featured',slides:[g]});});
-      return `<div class="story-bar" data-stories><div class="story-bar-head"><b>Stories</b><span class="story-paid">Featured businesses · paid feature</span></div><div class="story-scroll"><button type="button" class="story-arrow is-prev" data-story-scroll="-1" aria-label="Scroll stories back" hidden>‹</button><div class="story-list">${groups.map((g,x)=>{const src=(g.slides[0].match(/data-src="([^"]*)"/)||[])[1];return `<button type="button" class="story-circle" data-story="${x}" aria-label="Watch ${g.who}'s story (${g.slides.length} ${g.slides.length===1?'update':'updates'})"><span class="story-ring"><img src="${src}" alt="" loading="lazy"></span>${g.slides.length>1?`<span class="story-count">${g.slides.length}</span>`:''}<span class="story-name">${g.who}</span></button>`;}).join('')}</div><button type="button" class="story-arrow is-next" data-story-scroll="1" aria-label="Scroll stories forward" hidden>›</button></div><div hidden>${groups.map(g=>`<div data-story-group data-who="${g.who}">${g.slides.join('')}</div>`).join('')}</div></div>`;}
-    if(b.k==='pile'){const dir=beside?((side++%2)?'left':'right'):'center';return `<div class="polaroid-stack is-${dir}" role="button" tabindex="0" aria-label="Open the photo gallery (${n} photos)">${it.join('')}<span class="ps-count">${n===1?'Tap to view':n+' photos · tap to view'}</span></div>`;}
-    if(b.k==='polaroid'){if(n>1)return `<div class="polaroid-row n-${Math.min(n,4)}">${it.join('')}</div>`;const dir=beside?((side++%2)?'left':'right'):'center';return it[0].replace('is-polaroid','is-polaroid is-'+dir);}
-    return n>1?`<div class="post-gallery n-${n>=5?'many':n}">${it.join('')}</div>`:it[0];};
+  /* photos next to each other (only blank lines between) become one grid or one carousel */
+  const flushGal=()=>{if(!gal.length)return;gal.forEach(g=>{const k=g.includes('is-car')?'car':'grid',last=out[out.length-1];if(last&&typeof last==='object'&&last.k===k)last.items.push(g);else out.push({k,items:[g]});});gal=[];};
+  const renderBlock=b=>{const it=b.items,n=it.length;if(n===1)return it[0];
+    if(b.k==='car')return `<div class="post-carousel" data-carousel aria-roledescription="carousel"><div class="pc-track">${it.map((f,i)=>`<div class="pc-slide" aria-label="Photo ${i+1} of ${n}">${f}</div>`).join('')}</div><button type="button" class="pc-arrow pc-prev" data-pc="-1" aria-label="Previous photo" disabled>‹</button><button type="button" class="pc-arrow pc-next" data-pc="1" aria-label="Next photo">›</button><div class="pc-dots">${it.map((_,i)=>`<button type="button" data-pc-dot="${i}" aria-label="Show photo ${i+1}"${i?'':' class="on"'}></button>`).join('')}</div></div>`;
+    return `<div class="post-gallery n-${n>=5?'many':n}">${it.join('')}</div>`;};
   const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p${paraAlign?` class="al-${paraAlign}"`:''}>${inline(t)}</p>`);para=[];paraAlign='';}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
   let prof=null;
   String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{let line=raw.trim();let m;
-    if(prof){if(line===':::'){out.push(renderProfile(prof));prof=null;}else if(line)prof.push(line);return;}
+    if(prof){if(line===':::'){const imgs=prof.filter(l=>/^!\[/.test(l)&&!/\{avatar\}$/.test(l)).map(l=>inline(l.replace(/\{[\w-]+\}$/,'{carousel}')));flush();gal=imgs;flushGal();prof=null;}else if(line)prof.push(line);return;}
     if(/^:::\s*profile$/.test(line)){flush();prof=[];return;}
     if(!line){flush();return;}
     let al='';if((m=line.match(/^(.*\S)\s*\{:(center|right)\}$/))){line=m[1];al=m[2];}const ac=al?` class="al-${al}"`:'';
@@ -433,10 +408,10 @@ function renderPost(md){
     if((m=line.match(/^\d+[.)]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ol'){flush();list={tag:'ol',items:[]};}list.items.push(m[1]);return;}
     if(/^(-{3,}|\*{3,})$/.test(line)){flush();out.push('<hr>');return;}
     if((m=line.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{6,20})\S*$/))){flush();out.push(`<div class="post-video"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`);return;}
-    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?$/.test(line)){if(/\{featured\}$/.test(line)){flush();out.push(inline(line));return;}const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
+    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{[\w-]+\})?$/.test(line)){const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
     if(list)flush();para.push(line);if(al)paraAlign=al;});
-  if(prof)out.push(renderProfile(prof));
-  flush();return out.map((x,i)=>typeof x==='object'?renderBlock(x,typeof out[i+1]==='string'&&/^<p>/.test(out[i+1])):x).join('\n');
+  if(prof){const imgs=prof.filter(l=>/^!\[/.test(l)&&!/\{avatar\}$/.test(l)).map(l=>inline(l.replace(/\{[\w-]+\}$/,'{carousel}')));flush();gal=imgs;flushGal();}
+  flush();return out.map(x=>typeof x==='object'?renderBlock(x):x).join('\n');
 }
 /* What the blog shows, set in Admin → Blog posts → Blog settings */
 const BLOG_DISPLAY_DEFAULT={cover:true,category:true,author:true,date:true,readTime:true,summary:true,layout:'grid',postAuthor:true,postDate:true,postReadTime:true,postTags:true};
@@ -722,34 +697,12 @@ addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove
  if('MutationObserver' in window)new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-current']});
  addEventListener('hashchange',run);document.addEventListener('DOMContentLoaded',run);run();
 })();
-/* Instagram-style business stories inside articles */
+/* Photo carousel in articles: arrows, dots and swipe */
 (function(){
- let box=null,groups=[],gi=0,si=0,timer=null,start=0,elapsed=0,paused=false,prevFocus=null;const DUR=5000;
- function data(bar){return [...bar.querySelectorAll('[data-story-group]')].map(g=>({who:g.dataset.who,slides:[...g.querySelectorAll('[data-story-slide]')].map(x=>({src:x.dataset.src,text:x.dataset.text}))}));}
- function render(){const g=groups[gi],sl=g.slides[si];box.querySelector('.st-bars').innerHTML=g.slides.map((_,n)=>`<i><b style="width:${n<si?100:0}%"></b></i>`).join('');
-  box.querySelector('.st-who').textContent=g.who;box.querySelector('.st-av').src=g.slides[0].src;const im=box.querySelector('.st-img');im.src=sl.src;im.alt=g.who;
-  const t=box.querySelector('.st-text');t.textContent=sl.text||'';t.hidden=!sl.text;elapsed=0;start=performance.now();}
- function tick(now){if(!box)return;if(!paused){const p=Math.min(1,(elapsed+(now-start))/DUR);const bar=box.querySelectorAll('.st-bars b')[si];if(bar)bar.style.width=p*100+'%';if(p>=1){next();}}timer=requestAnimationFrame(tick);}
- function next(){const g=groups[gi];if(si<g.slides.length-1)si++;else if(gi<groups.length-1){gi++;si=0;}else return close();render();}
- function prev(){if(si>0)si--;else if(gi>0){gi--;si=groups[gi].slides.length-1;}render();}
- function pause(v){if(v&&!paused){elapsed+=performance.now()-start;}else if(!v&&paused){start=performance.now();}paused=v;box?.classList.toggle('is-paused',v);}
- function close(){cancelAnimationFrame(timer);box?.remove();box=null;document.documentElement.classList.remove('crop-open');document.removeEventListener('keydown',key);prevFocus?.focus?.();}
- function key(e){if(e.key==='Escape')close();else if(e.key==='ArrowRight')next();else if(e.key==='ArrowLeft')prev();else if(e.key===' '){e.preventDefault();pause(!paused);}}
- function open(bar,n){groups=data(bar);if(!groups.length)return;gi=n;si=0;paused=false;prevFocus=document.activeElement;
-  box=document.createElement('div');box.className='story-view';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label','Business story');
-  box.innerHTML=`<div class="st-frame"><div class="st-bars"></div><div class="st-top"><img class="st-av" alt=""><div><b class="st-who"></b><span class="st-tag">Featured · paid feature</span></div><button type="button" class="st-pause" aria-label="Pause or play"></button><button type="button" class="st-close" aria-label="Close story">${icon('close')}</button></div><img class="st-img" alt=""><p class="st-text"></p><button type="button" class="st-hit st-l" aria-label="Previous"></button><button type="button" class="st-hit st-r" aria-label="Next"></button></div>`;
-  document.body.append(box);document.documentElement.classList.add('crop-open');
-  const fr=box.querySelector('.st-frame');let downAt=0,y0=null;
-  fr.addEventListener('pointerdown',e=>{if(e.target.closest('.st-close,.st-pause'))return;downAt=Date.now();y0=e.clientY;pause(true);});
-  fr.addEventListener('pointerup',e=>{if(e.target.closest('.st-close,.st-pause'))return;const held=Date.now()-downAt>280;pause(false);if(y0!==null&&e.clientY-y0>90){close();return;}if(held)return;if(e.target.closest('.st-l'))prev();else if(e.target.closest('.st-r'))next();});
-  fr.addEventListener('pointerleave',()=>{if(paused&&downAt)pause(false);});
-  box.querySelector('.st-close').addEventListener('click',close);box.querySelector('.st-pause').addEventListener('click',()=>pause(!paused));
-  box.addEventListener('click',e=>{if(e.target===box)close();});
-  document.addEventListener('keydown',key);render();timer=requestAnimationFrame(tick);setTimeout(()=>box?.querySelector('.st-close').focus(),30);}
- const paintArrows=()=>document.querySelectorAll('.story-scroll').forEach(w=>{const l=w.querySelector('.story-list'),max=l.scrollWidth-l.clientWidth;w.querySelector('.is-prev').hidden=l.scrollLeft<4;w.querySelector('.is-next').hidden=l.scrollLeft>=max-4;});
- document.addEventListener('scroll',e=>{if(e.target.classList?.contains('story-list'))paintArrows();},true);addEventListener('resize',paintArrows);new MutationObserver(()=>{if(document.querySelector('.story-scroll'))paintArrows();}).observe(document.documentElement,{childList:true,subtree:true});
- document.addEventListener('click',e=>{const a=e.target.closest('[data-story-scroll]');if(!a)return;const l=a.parentElement.querySelector('.story-list');l.scrollBy({left:+a.dataset.storyScroll*l.clientWidth*.8,behavior:'smooth'});});
- document.addEventListener('click',e=>{const c=e.target.closest('[data-story]');if(!c)return;const bar=c.closest('[data-stories]');if(bar)open(bar,+c.dataset.story);});
+ const paint=c=>{const t=c.querySelector('.pc-track'),i=Math.round(t.scrollLeft/Math.max(1,t.clientWidth)),n=t.children.length;c.querySelector('.pc-prev').disabled=i<=0;c.querySelector('.pc-next').disabled=i>=n-1;c.querySelectorAll('[data-pc-dot]').forEach((d,k)=>d.classList.toggle('on',k===i));};
+ document.addEventListener('click',e=>{const a=e.target.closest('[data-pc],[data-pc-dot]');if(!a)return;const c=a.closest('[data-carousel]'),t=c.querySelector('.pc-track'),cur=Math.round(t.scrollLeft/t.clientWidth),to=a.dataset.pcDot!==undefined?+a.dataset.pcDot:cur+(+a.dataset.pc);t.scrollTo({left:Math.max(0,to)*t.clientWidth,behavior:'smooth'});});
+ document.addEventListener('scroll',e=>{const t=e.target;if(t.classList&&t.classList.contains('pc-track'))paint(t.closest('[data-carousel]'));},true);
+ document.addEventListener('keydown',e=>{const c=e.target.closest?.('[data-carousel]');if(!c||!/^Arrow(Left|Right)$/.test(e.key))return;e.preventDefault();c.querySelector(e.key==='ArrowLeft'?'.pc-prev':'.pc-next').click();});
 })();
 /* Photo gallery: tap any photo in an article to open all of them full screen */
 (function(){
@@ -767,11 +720,9 @@ addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove
   document.addEventListener('keydown',key);show();setTimeout(()=>box?.querySelector('.lb-close').focus(),30);}
  function items(root){return [...root.querySelectorAll('figure img')].map(im=>({src:im.currentSrc||im.src,alt:im.alt||'',cap:(()=>{const f=im.closest('figure');if(f.classList.contains('post-feature'))return [f.querySelector('figcaption b')?.textContent,f.querySelector('figcaption span:not(.pf-kicker)')?.textContent].filter(Boolean).join(' · ');return f.querySelector('figcaption')?.textContent||im.alt||'';})()}));}
  window.BimGallery={open:(items,i)=>open(items,i||0)};
- document.addEventListener('click',e=>{const t=e.target.closest('[data-ig-tile]');if(!t)return;const sec=t.closest('.ig-profile');open([...sec.querySelectorAll('.ig-tile img')].map(im=>({src:im.currentSrc||im.src,alt:im.alt,cap:im.alt})),+t.dataset.igTile);});
  function from(target){const root=target.closest('.post-body,.article-body');if(!root)return false;const all=items(root);if(!all.length)return false;
-  const fig=target.closest('.polaroid-stack')?target.closest('.polaroid-stack').querySelector('figure img'):target.closest('figure')?.querySelector('img');const imgs=[...root.querySelectorAll('figure img')];open(all,Math.max(0,imgs.indexOf(fig)));return true;}
- document.addEventListener('click',e=>{if(e.target.closest('a'))return;const t=e.target.closest('.post-body figure img,.article-body figure img,.polaroid-stack');if(t&&from(t))e.preventDefault();});
- document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList?.contains('polaroid-stack')){e.preventDefault();from(e.target);}});
+  const fig=target.closest('figure')?.querySelector('img');const imgs=[...root.querySelectorAll('figure img')];open(all,Math.max(0,imgs.indexOf(fig)));return true;}
+ document.addEventListener('click',e=>{if(e.target.closest('a'))return;const t=e.target.closest('.post-body figure img,.article-body figure img');if(t&&from(t))e.preventDefault();});
 })();
 /* Anonymous visit counting: no cookies, no names, nothing personal. Admin visits and bots aren't counted. */
 (function(){

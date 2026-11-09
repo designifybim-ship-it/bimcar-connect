@@ -2246,3 +2246,24 @@ html.crop-open,html.crop-open body{overflow:hidden}
 @media (max-width:640px){.ig-head{align-items:start}}
 @media (max-width:760px){.ve-ig-fields{grid-template-columns:repeat(3,minmax(0,1fr))}.ve-ig-fields label:nth-child(1),.ve-ig-fields label:nth-child(2){grid-column:1/-1}}.ve-ig-fields+*{}
 .ve-ig-note{grid-column:1/-1;margin:0!important;font-size:.72rem!important;color:#9a90ad}
+/* ---------- article carousel (sits between paragraphs, never beside them) ---------- */
+.post-carousel{position:relative;clear:both;margin:30px 0}
+.pc-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scroll-behavior:smooth;border-radius:18px;scrollbar-width:none;overscroll-behavior-x:contain}
+.pc-track::-webkit-scrollbar{display:none}
+.pc-slide{flex:0 0 100%;scroll-snap-align:start;scroll-snap-stop:always;min-width:0}
+.pc-slide .post-figure{margin:0!important;float:none!important;width:auto!important;transform:none!important;padding:0!important;box-shadow:none!important;background:none!important}
+.pc-slide img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:18px!important;cursor:zoom-in}
+.pc-slide figcaption{margin-top:8px;text-align:center;font-size:.86rem;color:var(--muted)}
+.pc-arrow{position:absolute;top:calc(50% - 30px);transform:translateY(-50%);width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.94);color:var(--ink);font-size:1.6rem;line-height:1;box-shadow:0 8px 22px -10px rgba(20,10,40,.5);cursor:pointer;display:grid;place-items:center;transition:opacity .2s}
+.pc-arrow:disabled{opacity:0;pointer-events:none}
+.pc-prev{left:12px}.pc-next{right:12px}
+.pc-dots{display:flex;justify-content:center;gap:7px;margin-top:12px}
+.pc-dots button{width:8px;height:8px;padding:0;border:0;border-radius:999px;background:#d9cdef;cursor:pointer;transition:width .2s,background .2s}
+.pc-dots button.on{width:22px;background:var(--ultra,#7a3cf0)}
+@media (max-width:640px){.pc-arrow{width:34px;height:34px;font-size:1.3rem}.pc-prev{left:8px}.pc-next{right:8px}}
+/* editor: layout choice and carousel preview */
+.ve-lay-pills{display:inline-flex;gap:2px;padding:3px;border-radius:12px;background:#f1ecf9}
+.ve-lay-pills button{border:0;background:none;border-radius:9px;padding:7px 14px;font:600 .8rem var(--body,inherit);color:#6b6880;cursor:pointer;white-space:nowrap}
+.ve-lay-pills button.on{background:#fff;color:var(--ultra,#7a3cf0);box-shadow:0 2px 8px -4px rgba(40,20,80,.4)}
+.ve-phs.lay-carousel{display:flex;overflow-x:auto;gap:12px;scroll-snap-type:x proximity;padding-bottom:6px}
+.ve-phs.lay-carousel .ve-ph{flex:0 0 min(240px,70%);scroll-snap-align:start}
