@@ -6,22 +6,22 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611091016">
-<link rel="stylesheet" href="css/style.css?v=202611091016">
-<link rel="stylesheet" href="css/experience.css?v=202611091016">
-<link rel="stylesheet" href="css/messages.css?v=202611091016">
-<link rel="stylesheet" href="css/brand.css?v=202611091016">
-<link rel="stylesheet" href="css/scroll.css?v=202611091016">
-<link rel="stylesheet" href="css/tour.css?v=202611091016">
-<link rel="stylesheet" href="css/navigation.css?v=202611091016">
-<link rel="stylesheet" href="css/polish.css?v=202611091016">
-<link rel="stylesheet" href="css/refine.css?v=202611091016">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611091016">
-<link rel="stylesheet" href="css/ambient.css?v=202611091016">
-<link rel="stylesheet" href="css/launch.css?v=202611091016">
-<script src="js/navigation.js?v=202611091016" defer></script>
-<script src="js/site-polish.js?v=202611091016" defer></script>
-<script src="js/site-tour.js?v=202611091016" defer></script>
-<script src="js/launch.js?v=202611091016" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611091223">
+<link rel="stylesheet" href="css/style.css?v=202611091223">
+<link rel="stylesheet" href="css/experience.css?v=202611091223">
+<link rel="stylesheet" href="css/messages.css?v=202611091223">
+<link rel="stylesheet" href="css/brand.css?v=202611091223">
+<link rel="stylesheet" href="css/scroll.css?v=202611091223">
+<link rel="stylesheet" href="css/tour.css?v=202611091223">
+<link rel="stylesheet" href="css/navigation.css?v=202611091223">
+<link rel="stylesheet" href="css/polish.css?v=202611091223">
+<link rel="stylesheet" href="css/refine.css?v=202611091223">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611091223">
+<link rel="stylesheet" href="css/ambient.css?v=202611091223">
+<link rel="stylesheet" href="css/launch.css?v=202611091223">
+<script src="js/navigation.js?v=202611091223" defer></script>
+<script src="js/site-polish.js?v=202611091223" defer></script>
+<script src="js/site-tour.js?v=202611091223" defer></script>
+<script src="js/launch.js?v=202611091223" defer></script></head>
 <body>
-<script src="js/experience.js?v=202611091016"></script><div id="site-header"></div><main id="main"><section class="wrap section"><div class="card owner-access-card"><div class="eyebrow" style="color:var(--blue);font-weight:700;margin-bottom:12px">BimCar Connect management</div><h1>Platform sign-in</h1><p class="lede">Use your designated management account to manage companies, listings, booking conversations, payments, and enquiries.</p><ol><li><b>Create your account</b> with the designated management email assigned to BimCar Connect.</li><li><b>Verify your email</b> using the confirmation link. The designated management email receives admin access automatically after verification.</li><li><b>Sign in</b> and open the admin dashboard. Other accounts cannot grant themselves admin permissions.</li></ol><div id="owner-access-status" class="notice info" style="margin-top:20px"><p>Already registered? Sign in with your designated management email. If the verification email has not arrived, request another on the signup screen.</p></div><div class="btn-stack"><a class="btn btn-primary" id="owner-sign-in" href="login.html">Platform sign-in</a><a class="btn btn-ghost" id="owner-register" href="signup.html?owner=1">Create management account</a><a class="btn btn-ghost" href="admin.html">Open admin dashboard</a></div></div></section></main><div id="site-footer"></div><script src="js/data.js?v=202611091016"></script><script src="vendor/supabase-2.119.0.js"></script><script src="js/live-config.js?v=202611091016"></script><script src="js/live.js?v=202611091016"></script><script src="js/app.js?v=202611091016"></script><script src="js/chat.js?v=202611091016"></script><script>(async()=>{await Live.ready;if(Live.failed)return;if(Live.user?.role==='admin'){location.href='admin.html';return;}['owner-sign-in','owner-register'].forEach(id=>document.getElementById(id).addEventListener('click',()=>sessionStorage.setItem('drivebim.return',location.pathname.replace(/[^/]*$/,'')+'admin.html')));if(Live.user){const status=document.getElementById('owner-access-status');status.replaceChildren();const text=document.createElement('p');text.textContent='You are signed in as '+Live.user.email+'. This account does not have admin access. Sign out and use your designated management account.';const logout=document.createElement('button');logout.type='button';logout.className='btn btn-ghost btn-sm';logout.textContent='Sign out';logout.addEventListener('click',()=>Live.signOut());status.append(text,logout);}})();</script></body></html>
+<script src="js/experience.js?v=202611091223"></script><div id="site-header"></div><main id="main"><section class="wrap section"><div class="card owner-access-card"><div class="eyebrow" style="color:var(--blue);font-weight:700;margin-bottom:12px">BimCar Connect management</div><h1>Platform sign-in</h1><p class="lede">Use your designated management account to manage companies, listings, booking conversations, payments, and enquiries.</p><ol><li><b>Create your account</b> with the designated management email assigned to BimCar Connect.</li><li><b>Verify your email</b> using the confirmation link. The designated management email receives admin access automatically after verification.</li><li><b>Sign in</b> and open the admin dashboard. Other accounts cannot grant themselves admin permissions.</li></ol><div id="owner-access-status" class="notice info" style="margin-top:20px"><p>Already registered? Sign in with your designated management email. If the verification email has not arrived, request another on the signup screen.</p></div><div class="btn-stack"><a class="btn btn-primary" id="owner-sign-in" href="login.html">Platform sign-in</a><a class="btn btn-ghost" id="owner-register" href="signup.html?owner=1">Create management account</a><a class="btn btn-ghost" href="admin.html">Open admin dashboard</a></div></div></section></main><div id="site-footer"></div><script src="js/data.js?v=202611091223"></script><script src="vendor/supabase-2.119.0.js"></script><script src="js/live-config.js?v=202611091223"></script><script src="js/live.js?v=202611091223"></script><script src="js/app.js?v=202611091223"></script><script src="js/chat.js?v=202611091223"></script><script>(async()=>{await Live.ready;if(Live.failed)return;if(Live.user?.role==='admin'){location.href='admin.html';return;}['owner-sign-in','owner-register'].forEach(id=>document.getElementById(id).addEventListener('click',()=>sessionStorage.setItem('drivebim.return',location.pathname.replace(/[^/]*$/,'')+'admin.html')));if(Live.user){const status=document.getElementById('owner-access-status');status.replaceChildren();const text=document.createElement('p');text.textContent='You are signed in as '+Live.user.email+'. This account does not have admin access. Sign out and use your designated management account.';const logout=document.createElement('button');logout.type='button';logout.className='btn btn-ghost btn-sm';logout.textContent='Sign out';logout.addEventListener('click',()=>Live.signOut());status.append(text,logout);}})();</script></body></html>

@@ -51,6 +51,10 @@ function open(p,deps){
     <h4>Featured image</h4>
     <div class="pe2-cover" id="pe2-cover"></div>
     <input type="file" accept="image/*" id="pe2-cover-file" hidden>
+    <h4 class="pe2-h4">Side polaroids</h4>
+    <p class="pe2-note">Shown as polaroids beside the article on computers, and in a strip above the text on phones. Readers tap one to open them big.</p>
+    <div class="pe2-side" id="pe2-side"></div>
+    <input type="file" accept="image/*" multiple id="pe2-side-file" hidden>
     <label class="pe2-f">Category<select class="input" id="pe2-cat">${cats.map(c=>`<option ${c===x.category?'selected':''}>${esc(c)}</option>`).join('')}${x.category&&!cats.includes(x.category)?`<option selected>${esc(x.category)}</option>`:''}<option value="__new">+ New category…</option></select></label>
     <div class="pe2-f"><span>Tags</span><div class="pe2-tags" id="pe2-tags"><input id="pe2-tag-in" list="pe2-tag-list" placeholder="Add a tag and press Enter" maxlength="30" aria-label="Add a tag"></div><datalist id="pe2-tag-list">${knownTags.map(t=>`<option value="${esc(t)}">`).join('')}</datalist><small>Readers can tap a tag to see similar posts.</small></div>
     <label class="pe2-f">Author<input class="input" id="pe2-author" maxlength="80" value="${esc(x.author_name||'')}"></label>
@@ -80,6 +84,24 @@ function open(p,deps){
   status:t=>say(t),errorText:e=>Live.error(e),toast:t=>A.toast(t),
   askLink:async({url,text,hasText})=>{const v=await formBox(hasText?'Link':'Add a link',[...(hasText?[]:[{name:'text',label:'Words to show',value:text||''}]),{name:'url',label:'Web address (leave empty to remove the link)',value:url||'https://'}],'Save link');if(!v)return null;return {url:(v.url||'').trim().replace(/^https:\/\/$/,''),text:(v.text||'').trim()};},
   askVideo:async cur=>(await formBox('YouTube video',[{name:'url',label:'Paste the YouTube link',type:'url',value:cur||''}],'Add video'))?.url||''});
+/* ----- side polaroids ----- */
+ const sideBox=$('#pe2-side'),IC=k=>({crop:'<path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/>',l:'<path d="M15 6l-6 6 6 6"/>',r:'<path d="M9 6l6 6-6 6"/>',del:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'})[k];
+ const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC(k)}</svg>`;
+ let sideBusy=0;
+ function paintSide(){const list=ve.side();sideBox.innerHTML=`${list.length?`<div class="pe2-side-grid">${list.map((x,i)=>`<div class="pe2-pol" data-si="${i}"><div class="pe2-pol-img"><img src="${esc(x.url)}" alt=""><div class="ve-ph-bar"><button type="button" data-side="crop" title="Crop" aria-label="Crop">${ic('crop')}</button>${list.length>1?`<button type="button" data-side="l" title="Move up" aria-label="Move earlier" ${i===0?'disabled':''}>${ic('l')}</button><button type="button" data-side="r" title="Move down" aria-label="Move later" ${i===list.length-1?'disabled':''}>${ic('r')}</button>`:''}<button type="button" class="is-del" data-side="del" title="Remove" aria-label="Remove">${ic('del')}</button></div></div><input class="input pe2-pol-cap" data-side-cap="${i}" maxlength="40" placeholder="Caption" value="${esc(x.a)}"></div>`).join('')}</div>`:''}
+  ${sideBusy?`<p class="small muted">Uploading ${sideBusy} photo${sideBusy===1?'':'s'}…</p>`:''}<button type="button" class="pe2-side-add" data-side="add">${icon('plus')}${list.length?'Add more polaroids':'Add polaroids'}</button>`;}
+ sideBox.addEventListener('click',async e=>{const b=e.target.closest('[data-side]');if(!b)return;const a=b.dataset.side;if(a==='add')return $('#pe2-side-file').click();
+  const i=+b.closest('[data-si]').dataset.si,list=ve.side();
+  if(a==='del'){list.splice(i,1);A.toast('Polaroid removed');}
+  if(a==='l'&&i>0)[list[i-1],list[i]]=[list[i],list[i-1]];
+  if(a==='r'&&i<list.length-1)[list[i+1],list[i]]=[list[i],list[i+1]];
+  if(a==='crop'){try{const f=await fromUrl(list[i].url);const blob=await A.cropImage(f,{aspect:1,outW:1200,outH:1200,allowFit:true,title:'Crop polaroid'});if(!blob)return;list[i].url=Live.adImageUrl(await Live.admin.uploadAdImage(blob,'posts'));}catch(err){say(Live.error(err));return;}}
+  ve.setSide(list);paintSide();});
+ sideBox.addEventListener('input',e=>{const c=e.target.closest('[data-side-cap]');if(!c)return;const list=ve.side();list[+c.dataset.sideCap].a=c.value;ve.setSide(list);});
+ $('#pe2-side-file').addEventListener('change',async e=>{const fs=[...e.target.files].filter(f=>/^image\//.test(f.type)).slice(0,12);e.target.value='';if(!fs.length)return;sideBusy=fs.length;paintSide();
+  for(const f of fs){try{const o=await optimiseImage(f,{mode:'fill',W:1200,H:1200});const url=Live.adImageUrl(await Live.admin.uploadAdImage(o.blob,'posts'));const list=ve.side();list.push({url,a:''});ve.setSide(list);}catch(err){say(Live.error(err));}sideBusy--;paintSide();}
+  sideBox.querySelectorAll('.pe2-pol-cap')[ve.side().length-fs.length]?.focus();});
+ paintSide();
  m.querySelector('.pe2-left').addEventListener('click',e=>{const b=e.target.closest('[data-add]');if(b)ve.add(b.dataset.add);});
 
  /* ----- featured image ----- */
@@ -153,10 +175,11 @@ function open(p,deps){
   catch(err){say(/duplicate|23505/.test(String(err?.code)+err?.message)?'Another post already uses that web address.':Live.error(err));}
   finally{btns.forEach(b=>{b.disabled=false;b.classList.remove('is-loading');});m.querySelector('#pe2-publish').classList.remove('is-loading');}}
  async function close(force){if(closing)return;if(!force&&dirty&&!(await confirmBox({title:'Leave without saving?',text:'Your changes stay saved on this device, so you can restore them next time you open this post.',label:'Leave'})))return;
-  closing=true;m.remove();document.documentElement.classList.remove('crop-open');document.removeEventListener('keydown',onKey);}
+  closing=true;m.remove();document.documentElement.classList.remove('crop-open');document.removeEventListener('keydown',onKey);removeEventListener('hashchange',onHash);}
  const onKey=e=>{if(e.key==='Escape'&&!document.querySelector('.crop-modal,#admin-form,#admin-confirm,.lightbox')){const pm=m.querySelector('.pe2-pubmenu');if(!pm.hidden){pm.hidden=true;return;}close();}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();save('keep');}};
  document.addEventListener('keydown',onKey);
+ const onHash=()=>close(true);addEventListener('hashchange',onHash);
 
  m.addEventListener('click',async e=>{
   const tab=e.target.closest('[data-tab]');if(tab){m.querySelectorAll('[data-tab]').forEach(t=>{const on=t===tab;t.classList.toggle('on',on);t.setAttribute('aria-selected',String(on));});m.querySelectorAll('[data-panel]').forEach(s=>s.hidden=s.dataset.panel!==tab.dataset.tab);return;}

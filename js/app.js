@@ -393,8 +393,11 @@ function renderPost(md){
     if(b.k==='car')return `<div class="post-carousel" data-carousel aria-roledescription="carousel"><div class="pc-track">${it.map((f,i)=>`<div class="pc-slide" aria-label="Photo ${i+1} of ${n}">${f}</div>`).join('')}</div><button type="button" class="pc-arrow pc-prev" data-pc="-1" aria-label="Previous photo" disabled>‹</button><button type="button" class="pc-arrow pc-next" data-pc="1" aria-label="Next photo">›</button><div class="pc-dots">${it.map((_,i)=>`<button type="button" data-pc-dot="${i}" aria-label="Show photo ${i+1}"${i?'':' class="on"'}></button>`).join('')}</div></div>`;
     return `<div class="post-gallery n-${n>=5?'many':n}">${it.join('')}</div>`;};
   const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p${paraAlign?` class="al-${paraAlign}"`:''}>${inline(t)}</p>`);para=[];paraAlign='';}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
-  let prof=null;
+  let prof=null,side=null;const sides=[];
   String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{let line=raw.trim();let m;
+    /* side polaroids: shown beside the article (moved there by post.html), never between paragraphs */
+    if(side){if(line===':::'){sides.push(...side);side=null;}else if((m=line.match(/^!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)$/)))side.push({cap:m[1],src:m[2]});return;}
+    if(/^:::\s*side$/.test(line)){side=[];return;}
     if(prof){if(line===':::'){const imgs=prof.filter(l=>/^!\[/.test(l)&&!/\{avatar\}$/.test(l)).map(l=>inline(l.replace(/\{[\w-]+\}$/,'{carousel}')));flush();gal=imgs;flushGal();prof=null;}else if(line)prof.push(line);return;}
     if(/^:::\s*profile$/.test(line)){flush();prof=[];return;}
     if(!line){flush();return;}
@@ -411,7 +414,10 @@ function renderPost(md){
     if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{[\w-]+\})?$/.test(line)){const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
     if(list)flush();para.push(line);if(al)paraAlign=al;});
   if(prof){const imgs=prof.filter(l=>/^!\[/.test(l)&&!/\{avatar\}$/.test(l)).map(l=>inline(l.replace(/\{[\w-]+\}$/,'{carousel}')));flush();gal=imgs;flushGal();}
-  flush();return out.map(x=>typeof x==='object'?renderBlock(x):x).join('\n');
+  if(side)sides.push(...side);
+  flush();const html=out.map(x=>typeof x==='object'?renderBlock(x):x).join('\n');
+  if(!sides.length)return html;
+  return `<aside class="post-side" aria-label="Snapshots"><p class="ps-h">Snapshots <span>· tap to view</span></p><div class="ps-list">${sides.map((x,i)=>`<figure class="side-pol"><button type="button" data-side-pol="${i}" aria-label="Open photo ${i+1}${x.cap?': '+esc(x.cap):''}"><img src="${esc(x.src)}" alt="${esc(x.cap)}" decoding="async"></button>${x.cap?`<figcaption>${esc(x.cap)}</figcaption>`:''}</figure>`).join('')}</div></aside>`+html;
 }
 /* What the blog shows, set in Admin → Blog posts → Blog settings */
 const BLOG_DISPLAY_DEFAULT={cover:true,category:true,author:true,date:true,readTime:true,summary:true,layout:'grid',postAuthor:true,postDate:true,postReadTime:true,postTags:true};
@@ -718,11 +724,12 @@ addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove
   box.addEventListener('click',e=>{if(e.target.closest('.lb-close')||e.target===box||e.target.classList.contains('lb-stage'))return close();if(e.target.closest('.lb-prev'))return go(-1);if(e.target.closest('.lb-next'))return go(1);const t=e.target.closest('[data-i]');if(t){at=+t.dataset.i;show();}});
   const st=box.querySelector('.lb-stage');st.addEventListener('pointerdown',e=>{sx=e.clientX;});st.addEventListener('pointerup',e=>{if(sx!==null&&Math.abs(e.clientX-sx)>45)go(e.clientX<sx?1:-1);sx=null;});
   document.addEventListener('keydown',key);show();setTimeout(()=>box?.querySelector('.lb-close').focus(),30);}
- function items(root){return [...root.querySelectorAll('figure img')].map(im=>({src:im.currentSrc||im.src,alt:im.alt||'',cap:(()=>{const f=im.closest('figure');if(f.classList.contains('post-feature'))return [f.querySelector('figcaption b')?.textContent,f.querySelector('figcaption span:not(.pf-kicker)')?.textContent].filter(Boolean).join(' · ');return f.querySelector('figcaption')?.textContent||im.alt||'';})()}));}
+ document.addEventListener('click',e=>{const b=e.target.closest('[data-side-pol]');if(!b)return;const a=b.closest('.post-side');open([...a.querySelectorAll('.side-pol img')].map(im=>({src:im.currentSrc||im.src,alt:im.alt,cap:im.alt})),+b.dataset.sidePol);});
+ function items(root){return [...root.querySelectorAll('figure img')].filter(im=>!im.closest('.post-side')).map(im=>({src:im.currentSrc||im.src,alt:im.alt||'',cap:(()=>{const f=im.closest('figure');if(f.classList.contains('post-feature'))return [f.querySelector('figcaption b')?.textContent,f.querySelector('figcaption span:not(.pf-kicker)')?.textContent].filter(Boolean).join(' · ');return f.querySelector('figcaption')?.textContent||im.alt||'';})()}));}
  window.BimGallery={open:(items,i)=>open(items,i||0)};
  function from(target){const root=target.closest('.post-body,.article-body');if(!root)return false;const all=items(root);if(!all.length)return false;
-  const fig=target.closest('figure')?.querySelector('img');const imgs=[...root.querySelectorAll('figure img')];open(all,Math.max(0,imgs.indexOf(fig)));return true;}
- document.addEventListener('click',e=>{if(e.target.closest('a'))return;const t=e.target.closest('.post-body figure img,.article-body figure img');if(t&&from(t))e.preventDefault();});
+  const fig=target.closest('figure')?.querySelector('img');const imgs=[...root.querySelectorAll('figure img')].filter(im=>!im.closest('.post-side'));open(all,Math.max(0,imgs.indexOf(fig)));return true;}
+ document.addEventListener('click',e=>{if(e.target.closest('a'))return;const t=e.target.closest('.post-body figure img,.article-body figure img');if(t&&t.closest('.post-side'))return;if(t&&from(t))e.preventDefault();});
 })();
 /* Anonymous visit counting: no cookies, no names, nothing personal. Admin visits and bots aren't counted. */
 (function(){

@@ -57,7 +57,7 @@ const safeStart=s=>/^(#{2,3}\s|>|!!!|[-*]\s|\d+[.)]\s|-{3,}$|\*{3,}$|!\[|\{space
 const capClean=s=>tidy(s).replace(/[\[\]|]/g,' ').replace(/ {2,}/g,' ').trim();
 const alignOf=b=>b.align&&b.align!=='left'?` {:${b.align}}`:'';
 
-function parse(md){const out=[];let para=[],paraAlign='',list=null,prof=null;
+function parse(md){const out=[];let para=[],paraAlign='',list=null,prof=null,side=null;
  const flushP=()=>{if(para.length){out.push({t:'p',html:mdInline(para.join(' ')),align:paraAlign||'left'});para=[];paraAlign='';}};
  const flushL=()=>{if(list){out.push(list);list=null;}};
  const flush=()=>{flushP();flushL();};
@@ -66,6 +66,8 @@ function parse(md){const out=[];let para=[],paraAlign='',list=null,prof=null;
   if(prof){if(!line)return;if(line===':::'){if(prof.photos.length)out.push(prof);prof=null;return;}
    if((m=line.match(IMG))&&m[3]!=='avatar')prof.photos.push({url:m[2],a:m[1].split('|').map(x=>x.trim()).filter(Boolean).join(' · '),b:''});
    return;}
+  if(side){if(!line)return;if(line===':::'){out.push(side);side=null;return;}if((m=line.match(IMG)))side.photos.push({url:m[2],a:m[1],b:''});return;}
+  if(!lit&&/^:::\s*side$/.test(line)){flush();side={t:'side',photos:[]};return;}
   if(!lit&&/^:::\s*profile$/.test(line)){flush();prof={t:'photos',layout:'carousel',photos:[]};return;}
   if(!line){flush();return;}
   let al='left';if((m=line.match(/^(.*\S)\s*\{:(center|right)\}$/))){line=m[1];al=m[2];}
@@ -85,9 +87,9 @@ function parse(md){const out=[];let para=[],paraAlign='',list=null,prof=null;
     else out.push({t:'photos',layout,photos:[ph]});return;}
   }
   if(list)flushL();para.push(line.replace(/∗/g,'*'));if(al!=='left')paraAlign=al;});
- flush();if(prof&&prof.photos.length)out.push(prof);return out;}
+ flush();if(prof&&prof.photos.length)out.push(prof);if(side)out.push(side);return out;}
 
-function serialize(blocks){return blocks.map(b=>{
+function serialize(blocks,side){const sideMd=(side||[]).filter(p=>p.url).map(p=>`![${capClean(p.a)}](${p.url})`);return blocks.map(b=>{
  if(b.t==='p'){const s=htmlToMd(b.html);return s?safeStart(s)+alignOf(b):null;}
  if(b.t==='h2'||b.t==='h3'){const s=htmlToMd(b.html);return s?(b.t==='h2'?'## ':'### ')+s+alignOf(b):null;}
  if(b.t==='quote'){const s=htmlToMd(b.html);return s?'> '+s+alignOf(b):null;}
@@ -99,7 +101,7 @@ function serialize(blocks){return blocks.map(b=>{
  if(b.t==='button'){const l=capClean(b.label);return l&&LINK_OK(b.url)?`[${l}](${b.url}){${b.style==='button-outline'?'button-outline':'button'}}`+alignOf(b):null;}
  if(b.t==='photos'){const L=LAYOUTS[b.layout]||LAYOUTS.grid,tag=L.tag?`{${L.tag}}`:'';const ph=b.photos.filter(p=>p.url);
   return ph.length?ph.map(p=>{const a=capClean(p.a),bb=capClean(p.b);return `![${a}](${p.url})${tag}`;}).join('\n'):null;}
- return null;}).filter(Boolean).join('\n\n')+'\n';}
+ return null;}).filter(Boolean).concat(sideMd.length?[[':::side',...sideMd,':::'].join('\n')]:[]).join('\n\n')+'\n';}
 
 /* Things that can be added (shared by the left panel and the phone "+ Add" menu) */
 const ADD_ITEMS=[
@@ -121,9 +123,10 @@ function mount(root,ta,opts){
  const id=()=>'b'+(++uid);
  const isText=b=>b&&(TEXT_T.includes(b.t)||b.t==='ul'||b.t==='ol');
  const find=bid=>blocks.findIndex(b=>b.id===bid);
- const load=md=>{blocks=parse(md).map(b=>({...b,id:id()}));};
+ let side=[];
+ const load=md=>{const all=parse(md);side=all.filter(b=>b.t==='side').flatMap(b=>b.photos);blocks=all.filter(b=>b.t!=='side').map(b=>({...b,id:id()}));};
  const remember=()=>{const s=JSON.stringify(blocks);if(hist[hist.length-1]!==s){hist.push(s);if(hist.length>80)hist.shift();fut=[];}paintTools();};
- const sync=()=>{const md=serialize(blocks);if(ta.value!==md){ta.value=md;ta.dispatchEvent(new Event('input',{bubbles:true}));}};
+ const sync=()=>{const md=serialize(blocks,side);if(ta.value!==md){ta.value=md;ta.dispatchEvent(new Event('input',{bubbles:true}));}};
  /* after every change that isn't typing: save it and record it for undo */
  const done=()=>{sync();remember();};
 
@@ -155,9 +158,10 @@ function mount(root,ta,opts){
   const ed=`<${tag} class="ve-edit${al}" contenteditable="true" data-placeholder="${PH[b.t]}">${b.html||''}</${tag}>`;
   return b.t==='callout'?`<aside class="post-callout ve-callout${al}"><span class="pc-ic" aria-hidden="true">i</span>${ed}</aside>`:ed;}
  /* stories: photos next to each other with the same business name are one circle with several slides */
+ const ICON={rep:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h3l2-2h6l2 2h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',crop:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14"/></svg>',l:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>',r:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>'};
  function photoCards(b){const n=b.photos.length;return b.photos.map((p,i)=>`<div class="ve-ph${p.url?'':' is-loading'}" data-pi="${i}" draggable="${p.url?'true':'false'}">
-   <div class="ve-ph-img">${p.url?`<img src="${esc(p.url)}" alt="" draggable="false">`:'<span class="ve-spin" aria-label="Uploading"></span>'}</div>
-   <div class="ve-ph-tools" role="group" aria-label="Photo ${i+1}">${p.url?`<button type="button" data-ve="prep" title="Replace with another photo">Replace</button><button type="button" data-ve="pcrop" title="Crop and position">Crop</button>`:''}${n>1?`<button type="button" class="ve-ph-ic" data-ve="pleft" title="Move left" aria-label="Move left" ${i===0?'disabled':''}>‹</button><button type="button" class="ve-ph-ic" data-ve="pright" title="Move right" aria-label="Move right" ${i===n-1?'disabled':''}>›</button>`:''}${n>1?'<button type="button" class="ve-ph-ic ve-ph-x" data-ve="pdel" title="Remove photo" aria-label="Remove photo">✕</button>':'<button type="button" class="ve-ph-x ve-ph-wide" data-ve="pdel">Remove photo</button>'}</div>
+   <div class="ve-ph-img">${p.url?`<img src="${esc(p.url)}" alt="" draggable="false">`:'<span class="ve-spin" aria-label="Uploading"></span>'}
+    ${p.url?`<div class="ve-ph-bar" role="group" aria-label="Photo ${i+1} tools"><button type="button" data-ve="prep" title="Replace photo" aria-label="Replace photo">${ICON.rep}</button><button type="button" data-ve="pcrop" title="Crop and position" aria-label="Crop and position">${ICON.crop}</button>${n>1?`<i></i><button type="button" data-ve="pleft" title="Move left" aria-label="Move left" ${i===0?'disabled':''}>${ICON.l}</button><button type="button" data-ve="pright" title="Move right" aria-label="Move right" ${i===n-1?'disabled':''}>${ICON.r}</button>`:''}<i></i><button type="button" class="is-del" data-ve="pdel" title="Remove photo" aria-label="Remove photo">${ICON.del}</button></div>`:''}</div>
    <input class="ve-cap" data-cap="a" maxlength="140" placeholder="Caption (optional)" value="${esc(p.a)}"></div>`).join('');}
  function photoBlock(b){const n=b.photos.length,L=LAYOUTS[b.layout]||LAYOUTS.grid;
   return `<div class="ve-ph-head"><div class="ve-lay-pills" role="radiogroup" aria-label="How these photos show">${Object.entries(LAYOUTS).map(([k,v])=>`<button type="button" role="radio" aria-checked="${k===b.layout}" class="${k===b.layout?'on':''}" data-ve-lay="${k}">${esc(v.label)}</button>`).join('')}</div>
@@ -345,8 +349,8 @@ function mount(root,ta,opts){
   if(dst.photos.length>1&&!LAYOUTS[dst.layout].multi)dst.layout=toMulti(dst.layout);draw();done();});
 
  ta.addEventListener('ve-reload',()=>{load(ta.value);hist=[];draw();remember();});
- load(ta.value);draw();remember();{const md=serialize(blocks);if(ta.value.trim()&&ta.value!==md)ta.value=md;}
- return {add,reload(){load(ta.value);draw();},focus(){const f=blocks.find(isText);if(f)focusBlock(f.id);}};
+ load(ta.value);draw();remember();{const md=serialize(blocks,side);if(ta.value.trim()&&ta.value!==md)ta.value=md;}
+ return {add,side:()=>side.map(x=>({...x})),setSide(arr){side=arr.map(x=>({url:x.url,a:x.a||'',b:''}));sync();},reload(){load(ta.value);draw();},focus(){const f=blocks.find(isText);if(f)focusBlock(f.id);}};
 }
-window.PostVisual={mount,parse,serialize,ADD_ITEMS};
+window.PostVisual={mount,parse,serialize,ADD_ITEMS,ICON:null};
 })();
