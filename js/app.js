@@ -367,11 +367,16 @@ function requireCompany(){
    ![caption](image URL){wide|medium|small|left|right}. */
 function renderPost(md){
   const inline=t=>esc(t)
-    .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(wide|medium|small|left|right)\})?/g,(m,a,u,l)=>`<figure class="post-figure${l?' is-'+l:''}"><img src="${u}" alt="${a}" loading="lazy" decoding="async">${a&&a!=='Add a caption'?`<figcaption>${a}</figcaption>`:''}</figure>`)
+    .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(wide|medium|small|left|right|polaroid|featured)\})?/g,(m,a,u,l)=>{const cap=a&&a!=='Add a caption'?a:'';
+      if(l==='featured'){const [who,...rest]=cap.split('|').map(x=>x.trim());return `<figure class="post-feature"><div class="pf-photo"><img src="${u}" alt="${who||''}" loading="lazy" decoding="async"><span class="pf-badge">Featured</span></div>${cap?`<figcaption><span class="pf-kicker">Meet the people behind it</span><b>${who}</b>${rest.length?`<span>${rest.join(' · ')}</span>`:''}</figcaption>`:''}</figure>`;}
+      return `<figure class="post-figure${l?' is-'+l:''}"><img src="${u}" alt="${cap}" loading="lazy" decoding="async">${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;})
     .replace(/\[([^\]]+)\]\(((?:https:\/\/|mailto:)[^)\s]+|[\w-]+\.html(?:\?p=[\w-]+)?(?:#[\w-]+)?)\)/g,(m,t2,u)=>`<a href="${u}"${/^https:/.test(u)?' target="_blank" rel="noopener"':''}>${t2}</a>`)
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
   const out=[];let list=null,para=[],gal=[];
-  const flushGal=()=>{if(gal.length){out.push(gal.length>1?`<div class="post-gallery">${gal.join('')}</div>`:gal[0]);gal=[];}};
+  let side=0;
+  const flushGal=()=>{if(!gal.length)return;const pol=gal.filter(g=>/is-polaroid/.test(g));
+    if(pol.length===gal.length){const dir=(side++%2)?'left':'right';out.push(pol.length>1?`<div class="polaroid-stack is-${dir}" role="button" tabindex="0" aria-label="Open the photo gallery (${pol.length} photos)">${pol.join('')}<span class="ps-count">${pol.length} photos · tap to view</span></div>`:pol[0].replace('is-polaroid','is-polaroid is-'+dir));}
+    else out.push(gal.length>1?`<div class="post-gallery">${gal.join('')}</div>`:gal[0]);gal=[];};
   const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p>${inline(t)}</p>`);para=[];}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
   String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{const line=raw.trim();let m;
     if(!line){flush();return;}
@@ -381,7 +386,7 @@ function renderPost(md){
     if((m=line.match(/^\d+[.)]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ol'){flush();list={tag:'ol',items:[]};}list.items.push(m[1]);return;}
     if(/^(-{3,}|\*{3,})$/.test(line)){flush();out.push('<hr>');return;}
     if((m=line.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{6,20})\S*$/))){flush();out.push(`<div class="post-video"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`);return;}
-    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right)\})?$/.test(line)){const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
+    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right|polaroid|featured)\})?$/.test(line)){if(/\{featured\}$/.test(line)){flush();out.push(inline(line));return;}const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
     if(list)flush();para.push(line);});
   flush();return out.join('\n');
 }
@@ -662,6 +667,26 @@ addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove
  let q=false;const run=()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;menu();cards();});};
  if('MutationObserver' in window)new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-current']});
  addEventListener('hashchange',run);document.addEventListener('DOMContentLoaded',run);run();
+})();
+/* Photo gallery: tap any photo in an article to open all of them full screen */
+(function(){
+ let box=null,list=[],at=0,prevFocus=null,sx=null;
+ function show(){const it=list[at];box.querySelector('.lb-img').src=it.src;box.querySelector('.lb-img').alt=it.alt;box.querySelector('.lb-cap').textContent=it.cap;box.querySelector('.lb-count').textContent=list.length>1?`${at+1} / ${list.length}`:'';
+  box.querySelectorAll('.lb-nav').forEach(b=>b.hidden=list.length<2);box.querySelectorAll('.lb-thumbs button').forEach((b,i)=>{b.classList.toggle('on',i===at);if(i===at)b.scrollIntoView({block:'nearest',inline:'center'});});}
+ function go(d){at=(at+d+list.length)%list.length;show();}
+ function close(){box?.remove();box=null;document.documentElement.classList.remove('crop-open');document.removeEventListener('keydown',key);prevFocus?.focus?.();}
+ function key(e){if(e.key==='Escape')close();else if(e.key==='ArrowRight')go(1);else if(e.key==='ArrowLeft')go(-1);}
+ function open(items,i){list=items;at=i;prevFocus=document.activeElement;box=document.createElement('div');box.className='lightbox';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label','Photo gallery');
+  box.innerHTML=`<div class="lb-top"><span class="lb-count"></span><button type="button" class="lb-close" aria-label="Close gallery">${icon('close')}</button></div><div class="lb-stage"><button type="button" class="lb-nav lb-prev" aria-label="Previous photo">‹</button><img class="lb-img" alt=""><button type="button" class="lb-nav lb-next" aria-label="Next photo">›</button></div><p class="lb-cap"></p>${items.length>1?`<div class="lb-thumbs">${items.map((x,n)=>`<button type="button" data-i="${n}" aria-label="Photo ${n+1}"><img src="${esc(x.src)}" alt=""></button>`).join('')}</div>`:''}`;
+  document.body.append(box);document.documentElement.classList.add('crop-open');
+  box.addEventListener('click',e=>{if(e.target.closest('.lb-close')||e.target===box||e.target.classList.contains('lb-stage'))return close();if(e.target.closest('.lb-prev'))return go(-1);if(e.target.closest('.lb-next'))return go(1);const t=e.target.closest('[data-i]');if(t){at=+t.dataset.i;show();}});
+  const st=box.querySelector('.lb-stage');st.addEventListener('pointerdown',e=>{sx=e.clientX;});st.addEventListener('pointerup',e=>{if(sx!==null&&Math.abs(e.clientX-sx)>45)go(e.clientX<sx?1:-1);sx=null;});
+  document.addEventListener('keydown',key);show();setTimeout(()=>box?.querySelector('.lb-close').focus(),30);}
+ function items(root){return [...root.querySelectorAll('figure img')].map(im=>({src:im.currentSrc||im.src,alt:im.alt||'',cap:(()=>{const f=im.closest('figure');if(f.classList.contains('post-feature'))return [f.querySelector('figcaption b')?.textContent,f.querySelector('figcaption span:not(.pf-kicker)')?.textContent].filter(Boolean).join(' · ');return f.querySelector('figcaption')?.textContent||im.alt||'';})()}));}
+ function from(target){const root=target.closest('.post-body,.article-body');if(!root)return false;const all=items(root);if(!all.length)return false;
+  const fig=target.closest('.polaroid-stack')?target.closest('.polaroid-stack').querySelector('figure img'):target.closest('figure')?.querySelector('img');const imgs=[...root.querySelectorAll('figure img')];open(all,Math.max(0,imgs.indexOf(fig)));return true;}
+ document.addEventListener('click',e=>{if(e.target.closest('a'))return;const t=e.target.closest('.post-body figure img,.article-body figure img,.polaroid-stack');if(t&&from(t))e.preventDefault();});
+ document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList?.contains('polaroid-stack')){e.preventDefault();from(e.target);}});
 })();
 /* Company logo (or initials) and banner */
 function coLogoUrl(c){return c&&c.logoPath&&window.Live?.companyImageUrl?Live.companyImageUrl(c.logoPath):null;}

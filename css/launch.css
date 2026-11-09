@@ -1663,3 +1663,58 @@ html.crop-open,html.crop-open body{overflow:hidden}
 .crop-tools input{flex:1;accent-color:var(--ultra,#7a3cf0);height:28px}
 .crop-hint{margin:0;padding:0 22px 18px;text-align:center;font-size:.82rem;color:#8a7fa0}
 @media (max-width:640px){.crop-modal{padding:0;place-items:end stretch}.crop-panel{border-radius:22px 22px 0 0}.crop-stage{padding:16px}}
+/* ---------- blog: polaroids at the side, gallery stack, featured person ---------- */
+.post-body::after{content:"";display:table;clear:both}
+.post-body h2,.post-body h3,.post-body hr,.post-body .post-gallery,.post-body .post-feature,.post-body .post-video,.post-body .post-figure:not(.is-polaroid):not(.is-left):not(.is-right){clear:both}
+.post-figure.is-polaroid{width:min(260px,42%);margin:6px 0 22px 30px;float:right;background:#fff;padding:12px 12px 6px;border-radius:4px;box-shadow:0 18px 34px -18px rgba(40,20,80,.45),0 2px 6px rgba(40,20,80,.08);transform:rotate(2.2deg);transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s;cursor:zoom-in}
+.post-figure.is-polaroid.is-left{float:left;margin:6px 30px 22px 0;transform:rotate(-2.4deg)}
+.post-figure.is-polaroid:hover{transform:rotate(0) scale(1.03);box-shadow:0 26px 44px -20px rgba(40,20,80,.5)}
+.post-figure.is-polaroid img{aspect-ratio:1/1;object-fit:cover;border-radius:2px!important;box-shadow:none!important;width:100%}
+.post-figure.is-polaroid figcaption{font-family:"Segoe Print","Bradley Hand","Marker Felt","Comic Neue",cursive;font-size:1rem;line-height:1.3;color:#3a3150;text-align:center;margin:10px 4px 6px;min-height:1.3em}
+.polaroid-stack{position:relative;float:right;width:min(270px,44%);margin:10px 0 40px 34px;display:grid;cursor:zoom-in;outline:none;-webkit-tap-highlight-color:transparent}
+.polaroid-stack.is-left{float:left;margin:10px 34px 40px 0}
+.polaroid-stack>.post-figure.is-polaroid{grid-area:1/1;width:100%;margin:0;float:none}
+.polaroid-stack>.post-figure:nth-child(1){z-index:3;transform:rotate(-3deg)}
+.polaroid-stack>.post-figure:nth-child(2){z-index:2;transform:rotate(5deg) translate(14px,6px)}
+.polaroid-stack>.post-figure:nth-child(3){z-index:1;transform:rotate(-8deg) translate(-12px,10px)}
+.polaroid-stack>.post-figure:nth-child(n+4){display:none}
+.polaroid-stack>.post-figure:not(:first-child) figcaption{visibility:hidden}
+.polaroid-stack:hover>.post-figure:nth-child(1){transform:rotate(-1deg) translateY(-4px)}
+.polaroid-stack:hover>.post-figure:nth-child(2){transform:rotate(9deg) translate(34px,4px)}
+.polaroid-stack:hover>.post-figure:nth-child(3){transform:rotate(-12deg) translate(-32px,8px)}
+.polaroid-stack:focus-visible{box-shadow:0 0 0 3px #b48cff;border-radius:8px}
+.ps-count{position:absolute;z-index:4;left:50%;bottom:-16px;transform:translateX(-50%);white-space:nowrap;background:var(--brand-gradient);color:#fff;font-size:.78rem;font-weight:600;padding:6px 12px;border-radius:999px;box-shadow:0 10px 20px -10px rgba(122,60,240,.7)}
+@media (max-width:640px){
+ .post-figure.is-polaroid,.post-figure.is-polaroid.is-left{float:none;width:78%;margin:22px auto 26px;display:block}
+ .polaroid-stack,.polaroid-stack.is-left{float:none;width:74%;margin:24px auto 44px}
+}
+.post-feature{margin:36px 0;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);align-items:center;gap:0;background:#fff;border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:0 24px 48px -34px rgba(40,20,80,.45);cursor:zoom-in}
+.pf-photo{position:relative;height:100%}
+.pf-photo img{display:block;width:100%;height:100%;min-height:280px;object-fit:cover;border-radius:0!important;box-shadow:none!important}
+.pf-badge{position:absolute;top:14px;left:14px;background:var(--brand-gradient);color:#fff;font-size:.74rem;font-weight:700;padding:6px 12px;border-radius:999px}
+.post-feature figcaption{padding:28px 30px;display:flex;flex-direction:column;gap:6px;text-align:left}
+.pf-kicker{font-size:.78rem;font-weight:600;color:var(--ultra,#7a3cf0)}
+.post-feature figcaption b{font:700 1.45rem/1.2 var(--display,inherit);color:var(--ink)}
+.post-feature figcaption span:not(.pf-kicker){color:var(--muted);font-size:.95rem}
+@media (max-width:640px){.post-feature{grid-template-columns:1fr}.pf-photo img{min-height:0;aspect-ratio:4/3}.post-feature figcaption{padding:20px 22px}}
+.post-body .post-figure:not(.is-polaroid) img,.post-gallery img{cursor:zoom-in}
+/* full-screen gallery */
+.lightbox{position:fixed;inset:0;z-index:2100;background:rgba(12,6,24,.94);display:flex;flex-direction:column;animation:rise .2s both;color:#fff}
+.lb-top{display:flex;justify-content:space-between;align-items:center;padding:12px 16px}
+.lb-count{font-size:.9rem;opacity:.8}
+.lb-close{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;display:grid;place-items:center;cursor:pointer}.lb-close svg{width:20px;height:20px}
+.lb-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 10px;touch-action:pan-y}
+.lb-img{max-width:min(100%,1200px);max-height:100%;object-fit:contain;border-radius:6px;user-select:none;-webkit-user-drag:none}
+.lb-nav{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:2rem;line-height:1;cursor:pointer}
+.lb-nav:hover,.lb-close:hover{background:rgba(255,255,255,.22)}
+.lb-cap{margin:10px auto 0;padding:0 20px;max-width:760px;text-align:center;font-size:.95rem;opacity:.9;min-height:1.4em}
+.lb-thumbs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 18px;justify-content:safe center;scrollbar-width:none}
+.lb-thumbs button{flex:none;width:58px;height:58px;padding:0;border:2px solid transparent;border-radius:10px;overflow:hidden;background:none;cursor:pointer;opacity:.55}
+.lb-thumbs button.on{border-color:#fff;opacity:1}
+.lb-thumbs img{width:100%;height:100%;object-fit:cover}
+@media (max-width:640px){.lb-nav{position:absolute;top:50%;transform:translateY(-50%);width:40px;height:40px;font-size:1.6rem}.lb-prev{left:8px}.lb-next{right:8px}.lb-stage{position:relative;padding:0}}
+.lightbox{background:#0c0618;animation:lbIn .2s ease both}
+@keyframes lbIn{from{opacity:0}to{opacity:1}}
+@media (max-width:640px){.lb-nav{background:rgba(12,6,24,.55);backdrop-filter:blur(4px)}}
+.polaroid-stack{margin-bottom:56px}.ps-count{bottom:-34px}
+.polaroid-stack.is-left .ps-count,.polaroid-stack .ps-count{left:50%}
