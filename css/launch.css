@@ -2149,3 +2149,17 @@ html.crop-open,html.crop-open body{overflow:hidden}
 .cv-stat .up{color:#167a4a}.cv-stat .down{color:#c2334f}
 @media (max-width:900px){.cv-grid{grid-template-columns:1fr 1fr}.cv-grid>div:nth-child(n+3){grid-column:1/-1}}
 .dash-main .cv-stat b{font-size:1.8rem!important;line-height:1.1}
+/* photo tools always visible under each photo (never hidden by hover or the story circle) */
+.ve-ph-acts,.ve-ph-move{display:none!important}
+.ve-ph-tools{display:flex;flex-wrap:wrap;gap:4px}
+.ve-ph-tools button{flex:1 1 auto;min-width:0;height:30px;padding:0 10px;border:1px solid var(--line);background:#fff;border-radius:8px;font:600 .76rem var(--body,inherit);color:#4a4560;cursor:pointer;white-space:nowrap}
+.ve-ph-tools button:hover:not(:disabled){border-color:#cbb6f5;color:var(--ultra,#7a3cf0);background:#faf6ff}
+.ve-ph-tools .ve-ph-ic{flex:0 0 30px;padding:0}
+.ve-ph-tools .ve-ph-x:hover{color:#c2334f!important;border-color:#f3c0cb!important;background:#fff6f8!important}
+.ve-ph-tools button:disabled{opacity:.35;cursor:default}
+.ve-phs.lay-story .ve-ph{align-items:stretch}
+.ve-ph-tools{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}
+.ve-ph-tools>button{grid-column:span 3;width:100%;padding:0 4px}
+.ve-ph-tools>.ve-ph-ic{grid-column:span 2;flex:none}
+.ve-ph-tools>.ve-ph-wide{grid-column:1/-1}
+.ve-ph.is-loading .ve-ph-tools>button{grid-column:1/-1}
