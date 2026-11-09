@@ -6,25 +6,25 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611081926">
-<link rel="stylesheet" href="css/style.css?v=202611081926">
-<link rel="stylesheet" href="css/experience.css?v=202611081926">
-<link rel="stylesheet" href="css/messages.css?v=202611081926">
-<link rel="stylesheet" href="css/brand.css?v=202611081926">
-<link rel="stylesheet" href="css/scroll.css?v=202611081926">
-<link rel="stylesheet" href="css/tour.css?v=202611081926">
-<link rel="stylesheet" href="css/navigation.css?v=202611081926">
-<link rel="stylesheet" href="css/polish.css?v=202611081926">
-<link rel="stylesheet" href="css/refine.css?v=202611081926">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611081926">
-<link rel="stylesheet" href="css/ambient.css?v=202611081926">
-<link rel="stylesheet" href="css/launch.css?v=202611081926">
-<script src="js/navigation.js?v=202611081926" defer></script>
-<script src="js/site-polish.js?v=202611081926" defer></script>
-<script src="js/site-tour.js?v=202611081926" defer></script>
-<script src="js/launch.js?v=202611081926" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611082040">
+<link rel="stylesheet" href="css/style.css?v=202611082040">
+<link rel="stylesheet" href="css/experience.css?v=202611082040">
+<link rel="stylesheet" href="css/messages.css?v=202611082040">
+<link rel="stylesheet" href="css/brand.css?v=202611082040">
+<link rel="stylesheet" href="css/scroll.css?v=202611082040">
+<link rel="stylesheet" href="css/tour.css?v=202611082040">
+<link rel="stylesheet" href="css/navigation.css?v=202611082040">
+<link rel="stylesheet" href="css/polish.css?v=202611082040">
+<link rel="stylesheet" href="css/refine.css?v=202611082040">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611082040">
+<link rel="stylesheet" href="css/ambient.css?v=202611082040">
+<link rel="stylesheet" href="css/launch.css?v=202611082040">
+<script src="js/navigation.js?v=202611082040" defer></script>
+<script src="js/site-polish.js?v=202611082040" defer></script>
+<script src="js/site-tour.js?v=202611082040" defer></script>
+<script src="js/launch.js?v=202611082040" defer></script></head>
 <body class="">
-<script src="js/experience.js?v=202611081926"></script>
+<script src="js/experience.js?v=202611082040"></script>
 <div id="site-header"></div>
 <main id="main">
 <div class="wrap page-head">
@@ -34,7 +34,7 @@
 <div class="wrap">
   <div id="guest" class="demo-note" hidden><span data-icon="info"></span>You're not logged in. <a href="login.html">Log in</a> to see your booking requests and private conversations, or <a href="signup.html">create a free account</a>.</div>
   <section id="setup-card" class="card setup-card" hidden></section>
-  <div class="tabs" id="tabs" style="margin-bottom:24px"><button class="on" data-t="trips">Booking requests</button><button data-t="favs">Saved vehicles</button><button data-t="profile">Profile</button></div>
+  <div class="tabs" id="tabs" style="margin-bottom:24px"><button class="on" data-t="trips">Bookings</button><button data-t="favs">Saved cars</button><button data-t="profile">Profile</button></div>
   <section id="t-trips"></section>
   <div class="modal" id="pay-modal" aria-hidden="true"><div class="modal-box" role="dialog" aria-labelledby="pay-title"><div class="modal-head"><h3 id="pay-title">How to pay</h3><button class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button></div><div id="pay-body"></div></div></div>
   <section id="t-favs" hidden><div class="vgrid" id="favlist"></div></section>
@@ -55,12 +55,12 @@
 
 </main>
 <div id="site-footer"></div>
-<script src="js/data.js?v=202611081926"></script>
+<script src="js/data.js?v=202611082040"></script>
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="js/live-config.js?v=202611081926"></script>
-<script src="js/live.js?v=202611081926"></script>
-<script src="js/app.js?v=202611081926"></script>
-<script src="js/chat.js?v=202611081926"></script>
+<script src="js/live-config.js?v=202611082040"></script>
+<script src="js/live.js?v=202611082040"></script>
+<script src="js/app.js?v=202611082040"></script>
+<script src="js/chat.js?v=202611082040"></script>
 <script>
 (async function(){
 await Live.ready;if(Live.failed)return;
@@ -72,7 +72,7 @@ function setupCard(){const box=document.getElementById("setup-card");if(!Live.us
 const ST = {request:["Waiting for company","st-req"],confirmed:["Confirmed","st-ok"],onrent:["On rent","st-on"],completed:["Completed","st-done"],declined:["Declined","st-no"],cancelled:["Cancelled","st-no"]};
 function trips(){
   const list = A.store.get("myTrips",[]);
-  document.getElementById("t-trips").innerHTML = list.length ? `<div class="table-wrap"><table class="t"><thead><tr><th>Vehicle</th><th>Dates</th><th>Pickup</th><th>Estimated total</th><th>Status</th><th></th></tr></thead><tbody>${list.map(t=>{const v=A.vehicle(t.vehicle)||{name:"Vehicle"}; const s=ST[t.status]||[t.status,"st-req"];
+  document.getElementById("t-trips").innerHTML = list.length ? `<div class="table-wrap card-table"><table class="t"><thead><tr><th>Vehicle</th><th>Dates</th><th>Pickup</th><th>Estimated total</th><th>Status</th><th></th></tr></thead><tbody>${list.map(t=>{const v=A.vehicle(t.vehicle)||{name:"Vehicle"}; const s=ST[t.status]||[t.status,"st-req"];
     return `<tr><td><div class="t-veh">${A.carImg(v)}<div><b>${A.esc(v.name)}</b>${t.initialMessage?`<div class="booking-message-preview">${A.esc(t.initialMessage)}</div>`:""}<div class="small muted">${A.esc(A.company(t.company||v.company).name)}</div></div></div></td><td>${A.fmtDate(t.from)} to ${A.fmtDate(t.to)}</td><td>${A.esc(t.pickup||'')}</td><td>${A.moneyHTML(t.total)}</td><td><span class="st ${s[1]}">${s[0]}</span></td><td><div class="row" style="flex-wrap:nowrap;gap:6px"><button class="btn btn-ghost btn-sm" data-pay="${A.esc(t.id)}">How to pay</button>${t.status==="request"?`<button class="btn btn-danger btn-sm" data-cancel="${A.esc(t.id)}">Cancel</button>`:''}</div></td></tr>`;}).join("")}</tbody></table></div>`
     : `<div class="empty"><h3>No booking requests yet</h3><p class="muted" style="margin:0 auto 16px">Find a vehicle and send a request. It will show up here.</p><a class="btn btn-primary" href="vehicles.html">Find a vehicle</a></div>`;
 }

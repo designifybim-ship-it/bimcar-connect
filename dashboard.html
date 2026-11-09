@@ -6,31 +6,31 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611081926">
-<link rel="stylesheet" href="css/style.css?v=202611081926">
-<link rel="stylesheet" href="css/experience.css?v=202611081926">
-<link rel="stylesheet" href="css/messages.css?v=202611081926">
-<link rel="stylesheet" href="css/brand.css?v=202611081926">
-<link rel="stylesheet" href="css/scroll.css?v=202611081926">
-<link rel="stylesheet" href="css/tour.css?v=202611081926">
-<link rel="stylesheet" href="css/navigation.css?v=202611081926">
-<link rel="stylesheet" href="css/polish.css?v=202611081926">
-<link rel="stylesheet" href="css/refine.css?v=202611081926">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611081926">
-<link rel="stylesheet" href="css/ambient.css?v=202611081926">
-<link rel="stylesheet" href="css/launch.css?v=202611081926">
-<script src="js/navigation.js?v=202611081926" defer></script>
-<script src="js/site-polish.js?v=202611081926" defer></script>
-<script src="js/site-tour.js?v=202611081926" defer></script>
-<script src="js/launch.js?v=202611081926" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611082040">
+<link rel="stylesheet" href="css/style.css?v=202611082040">
+<link rel="stylesheet" href="css/experience.css?v=202611082040">
+<link rel="stylesheet" href="css/messages.css?v=202611082040">
+<link rel="stylesheet" href="css/brand.css?v=202611082040">
+<link rel="stylesheet" href="css/scroll.css?v=202611082040">
+<link rel="stylesheet" href="css/tour.css?v=202611082040">
+<link rel="stylesheet" href="css/navigation.css?v=202611082040">
+<link rel="stylesheet" href="css/polish.css?v=202611082040">
+<link rel="stylesheet" href="css/refine.css?v=202611082040">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611082040">
+<link rel="stylesheet" href="css/ambient.css?v=202611082040">
+<link rel="stylesheet" href="css/launch.css?v=202611082040">
+<script src="js/navigation.js?v=202611082040" defer></script>
+<script src="js/site-polish.js?v=202611082040" defer></script>
+<script src="js/site-tour.js?v=202611082040" defer></script>
+<script src="js/launch.js?v=202611082040" defer></script></head>
 <body class="">
-<script src="js/experience.js?v=202611081926"></script>
+<script src="js/experience.js?v=202611082040"></script>
 <div id="site-header"></div>
 <div class="dash"><div id="dash-side"></div>
 <main class="dash-main" id="main">
 <div id="status-note"></div>
 <div class="dash-head"><div><p class="muted" style="margin:0 0 4px" id="date"></p><h1 id="greet">Welcome</h1></div>
-  <div class="row"><a class="btn btn-ghost" href="dashboard-operations.html"><span data-icon="sun"></span>Today's pick-ups & returns</a><a class="btn btn-ghost" href="dashboard-specials.html"><span data-icon="tag"></span>Post a special</a><a class="btn btn-primary" href="dashboard-vehicles.html#new"><span data-icon="plus"></span>Add a vehicle</a></div></div>
+  <div class="row dash-quick"><a class="btn btn-ghost" href="dashboard-operations.html"><span data-icon="sun"></span>Today's pick-ups & returns</a><a class="btn btn-ghost" href="dashboard-specials.html"><span data-icon="tag"></span>Post a special</a><a class="btn btn-primary" href="dashboard-vehicles.html#new"><span data-icon="plus"></span>Add a vehicle</a></div></div>
 <div class="kpis" id="kpis">
   <a class="kpi feature" href="dashboard-bookings.html"><div class="k-label">New booking requests</div><div class="k-num" id="k-req">0</div><div class="k-delta" id="k-req-d">Waiting for your reply</div></a>
   <a class="kpi" href="dashboard-bookings.html"><div class="k-label">Upcoming pickups</div><div class="k-num" id="k-up">0</div><div class="k-delta" id="k-up-d">Confirmed rentals ahead</div></a>
@@ -44,15 +44,15 @@
 <div class="grid g3" style="margin-top:22px">
   <div class="card"><div class="row between"><h3 style="margin:0">Upcoming pickups</h3><a class="small" href="dashboard-bookings.html">All</a></div><div id="pickups"></div></div>
   <div class="card"><div class="row between"><h3 style="margin:0">Boosts</h3><a class="small" href="dashboard-boost.html">Manage</a></div><div id="design"></div></div>
-  <div class="card"><div class="row between"><h3 style="margin:0">Required: get ready to go live <a class="small" style="font-weight:500;margin-left:6px" href="getting-started.html#companies">Setup guide</a></h3><span class="small muted" id="prog-label"></span></div><div class="progress" style="margin:12px 0 16px"><i id="prog"></i></div><div class="stack checklist" id="checklist"></div></div>
+  <div class="card"><div class="row between"><h3 style="margin:0"><span id="prog-title">Get ready to go live</span> <a class="small" style="font-weight:500;margin-left:6px" href="getting-started.html#companies">Setup guide</a></h3><span class="small muted" id="prog-label"></span></div><div class="progress" style="margin:12px 0 16px"><i id="prog"></i></div><div class="stack checklist" id="checklist"></div></div>
 </div>
 </main></div>
-<script src="js/data.js?v=202611081926"></script>
+<script src="js/data.js?v=202611082040"></script>
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="js/live-config.js?v=202611081926"></script>
-<script src="js/live.js?v=202611081926"></script>
-<script src="js/app.js?v=202611081926"></script>
-<script src="js/chat.js?v=202611081926"></script>
+<script src="js/live-config.js?v=202611082040"></script>
+<script src="js/live.js?v=202611082040"></script>
+<script src="js/app.js?v=202611082040"></script>
+<script src="js/chat.js?v=202611082040"></script>
 <script>
 (async function(){
 await Live.ready;
@@ -84,15 +84,15 @@ function render(){
  document.getElementById('chart-total').textContent=total?`${total} request${total===1?'':'s'}`:'No requests yet';
  document.getElementById("bars").innerHTML=counts.map((v,i)=>`<div class="${v?'hi':'zero'}" data-v="${v} request${v===1?'':'s'} · ${A.fmtDate(days[i],{day:'numeric',month:'short'})}" style="height:${v?Math.max(8,v/mx*100):4}%;animation-delay:${i*45}ms"></div>`).join("");
  document.getElementById("bl").innerHTML=days.map((d,i)=>`<span>${i%2?'':A.parseDay(d)}</span>`).join("");
- document.getElementById("reqs").innerHTML=reqs.length?reqs.slice(0,5).map(b=>{const v=A.vehicle(b.vehicle)||{name:"Removed vehicle"};return `<div class="list-item">${when(b)}<div style="flex:1;min-width:0"><b>${A.esc(b.renter||'Renter')}</b><div class="small muted">${A.esc(v.name)}, ${A.daysBetween(b.from,b.to)} days</div></div><a class="btn btn-gold btn-sm" href="dashboard-bookings.html">Review</a></div>`;}).join(""):empty("No new requests. You're all caught up.");
+ document.getElementById("reqs").innerHTML=reqs.length?reqs.slice(0,5).map(b=>{const v=A.vehicle(b.vehicle)||{name:"Removed vehicle"};return `<div class="list-item">${when(b)}<div style="flex:1;min-width:0"><b>${A.esc(b.renter||'Renter')}</b><div class="small muted">${A.esc(v.name)}, ${((n)=>n+' '+(n===1?'day':'days'))(A.daysBetween(b.from,b.to))}</div></div><a class="btn btn-gold btn-sm" href="dashboard-bookings.html">Review</a></div>`;}).join(""):empty("No new requests. You're all caught up.");
  document.getElementById("pickups").innerHTML=upcoming.length?upcoming.slice(0,5).map(b=>{const v=A.vehicle(b.vehicle)||{name:"Removed vehicle"};return `<div class="list-item">${when(b)}<div style="min-width:0"><b>${A.esc(v.name)}</b><div class="small muted">${A.esc(b.renter||'Renter')}, ${A.esc(b.pickup||'')}</div></div>${b.status==='onrent'?'<span class="st st-on">On rent</span>':''}</div>`;}).join(""):empty("Confirmed rentals will show here.");
  const live=A.activeBoosts().filter(b=>b.company===CO);
- document.getElementById("design").innerHTML=(live.length?live.map(b=>{const v=A.vehicle(b.target);const left=Math.max(0,Math.round((new Date(b.end)-new Date(today))/864e5));return `<div class="list-item"><span class="badge badge-gold">${A.icon('bolt')}Live</span><div style="flex:1;min-width:0"><b>${A.esc(v?v.name:"Special")}</b><div class="small muted">${A.esc((DB.boostTypes.find(t=>t.id===b.type)||{}).name||'Boost')}, ${left} days left</div></div></div>`;}).join(""):'<p class="muted" style="margin:10px 0 0">No boosts running. Boosted vehicles get seen first and are labelled Featured.</p>')+`<a class="btn btn-ghost btn-sm" style="margin-top:14px" href="dashboard-boost.html">${A.icon('bolt')}Boost a vehicle</a>`;
+ document.getElementById("design").innerHTML=(live.length?live.map(b=>{const v=A.vehicle(b.target);const left=Math.max(0,Math.round((new Date(b.end)-new Date(today))/864e5));return `<div class="list-item"><span class="badge badge-gold">${A.icon('bolt')}Live</span><div style="flex:1;min-width:0"><b>${A.esc(v?v.name:"Special")}</b><div class="small muted">${A.esc((DB.boostTypes.find(t=>t.id===b.type)||{}).name||'Boost')}, ${((n)=>n+' '+(n===1?'day':'days'))(left)} left</div></div></div>`;}).join(""):'<p class="muted" style="margin:10px 0 0">No boosts running. Boosted vehicles get seen first and are labelled Featured.</p>')+`<a class="btn btn-ghost btn-sm" style="margin-top:14px" href="dashboard-boost.html">${A.icon('bolt')}Boost a vehicle</a>`;
  // Real setup checklist
  const items=A.companySetupSteps(CO).map(st=>[st.title,st.done,st.href]);
  const doneN=items.filter(i=>i[1]).length;
  document.getElementById("checklist").innerHTML=doneN===items.length?`<div class="all-set"><span class="tick" aria-hidden="true">${A.icon('check')}</span><div><b>You're all set</b><p class="small muted">Your company is live and renters can book your cars. Keep your calendar and prices up to date.</p></div></div>`:items.map(([t,d,href])=>`<a class="check-item${d?' done':''}" href="${href}"><span class="tick" aria-hidden="true">${d?A.icon('check'):''}</span><span>${t}</span><span class="sr">${d?'(done)':'(to do)'}</span></a>`).join("");
- document.getElementById('prog-label').textContent=`${doneN} of ${items.length}`;
+ document.getElementById('prog-label').textContent=`${doneN} of ${items.length}`;document.getElementById('prog-title').textContent=doneN===items.length?'Setup complete':'Get ready to go live';
  requestAnimationFrame(()=>document.getElementById("prog").style.width=(doneN/items.length*100)+"%");
  document.getElementById('status-note').innerHTML=!c.approved?`<div class="notice info dash-status">${A.icon('shield')}<p><b>Your company is awaiting approval.</b> Set up your requirements and vehicles now. Your cars go live as soon as BimCar Connect approves your company. Questions? <a href="contact.html">Contact us</a>.</p></div>`:(!showing.length?`<div class="notice warn dash-status">${A.icon('info')}<p><b>You're approved, but no cars are showing yet.</b> Add a vehicle, finish its requirements and switch on <i>Show on BimCar Connect</i>.</p></div>`:'');
  first=false;

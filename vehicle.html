@@ -6,25 +6,25 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611081926">
-<link rel="stylesheet" href="css/style.css?v=202611081926">
-<link rel="stylesheet" href="css/experience.css?v=202611081926">
-<link rel="stylesheet" href="css/messages.css?v=202611081926">
-<link rel="stylesheet" href="css/brand.css?v=202611081926">
-<link rel="stylesheet" href="css/scroll.css?v=202611081926">
-<link rel="stylesheet" href="css/tour.css?v=202611081926">
-<link rel="stylesheet" href="css/navigation.css?v=202611081926">
-<link rel="stylesheet" href="css/polish.css?v=202611081926">
-<link rel="stylesheet" href="css/refine.css?v=202611081926">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611081926">
-<link rel="stylesheet" href="css/ambient.css?v=202611081926">
-<link rel="stylesheet" href="css/launch.css?v=202611081926">
-<script src="js/navigation.js?v=202611081926" defer></script>
-<script src="js/site-polish.js?v=202611081926" defer></script>
-<script src="js/site-tour.js?v=202611081926" defer></script>
-<script src="js/launch.js?v=202611081926" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611082040">
+<link rel="stylesheet" href="css/style.css?v=202611082040">
+<link rel="stylesheet" href="css/experience.css?v=202611082040">
+<link rel="stylesheet" href="css/messages.css?v=202611082040">
+<link rel="stylesheet" href="css/brand.css?v=202611082040">
+<link rel="stylesheet" href="css/scroll.css?v=202611082040">
+<link rel="stylesheet" href="css/tour.css?v=202611082040">
+<link rel="stylesheet" href="css/navigation.css?v=202611082040">
+<link rel="stylesheet" href="css/polish.css?v=202611082040">
+<link rel="stylesheet" href="css/refine.css?v=202611082040">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611082040">
+<link rel="stylesheet" href="css/ambient.css?v=202611082040">
+<link rel="stylesheet" href="css/launch.css?v=202611082040">
+<script src="js/navigation.js?v=202611082040" defer></script>
+<script src="js/site-polish.js?v=202611082040" defer></script>
+<script src="js/site-tour.js?v=202611082040" defer></script>
+<script src="js/launch.js?v=202611082040" defer></script></head>
 <body class="">
-<script src="js/experience.js?v=202611081926"></script>
+<script src="js/experience.js?v=202611082040"></script>
 <div id="site-header"></div>
 <main id="main">
 <div class="wrap page-head" style="padding-bottom:14px">
@@ -52,12 +52,12 @@
 
 </main>
 <div id="site-footer"></div>
-<script src="js/data.js?v=202611081926"></script>
+<script src="js/data.js?v=202611082040"></script>
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="js/live-config.js?v=202611081926"></script>
-<script src="js/live.js?v=202611081926"></script>
-<script src="js/app.js?v=202611081926"></script>
-<script src="js/chat.js?v=202611081926"></script>
+<script src="js/live-config.js?v=202611082040"></script>
+<script src="js/live.js?v=202611082040"></script>
+<script src="js/app.js?v=202611082040"></script>
+<script src="js/chat.js?v=202611082040"></script>
 <script>
 (async function(){
 await Live.ready;if(Live.failed)return;
@@ -179,7 +179,7 @@ function sum(){
   document.querySelectorAll(".b-x:checked").forEach(x=>{ const e=EXTRAS.find(y=>y.id===x.value); const amt = e.per==="day"? e.price*days : e.price; total+=amt; rows+=`<div class="sum-row"><span>${e.name}</span><span>${A.moneyHTML(amt)}</span></div>`; });
   if(R.fuelPolicy==="prepaid"){total+=R.prepaidFuelFee;rows+=`<div class="sum-row"><span>Prepaid fuel per rental</span><span>${A.moneyHTML(R.prepaidFuelFee)}</span></div>`;}
   const ageValue=document.getElementById("b-age").value;
-  if(R.youngDriverFee>0 && ageValue && Number(ageValue)<R.youngDriverUntil){ const charge=R.youngDriverFee*days; total+=charge; rows+=`<div class="sum-row"><span>Young-driver charge × ${days} days</span><span>${A.moneyHTML(charge)}</span></div>`; }
+  if(R.youngDriverFee>0 && ageValue && Number(ageValue)<R.youngDriverUntil){ const charge=R.youngDriverFee*days; total+=charge; rows+=`<div class="sum-row"><span>Young-driver charge × ${days} ${days===1?'day':'days'}</span><span>${A.moneyHTML(charge)}</span></div>`; }
   if(document.getElementById("b-pick").value==="Hotel or villa delivery"){ total+=R.deliveryFee; rows+=`<div class="sum-row"><span>Delivery per rental</span><span>${A.moneyHTML(R.deliveryFee)}</span></div>`; }
   if(document.getElementById("b-after-hours")?.checked){ total+=R.afterHoursFee; rows+=`<div class="sum-row"><span>After-hours pickup / return</span><span>${A.moneyHTML(R.afterHoursFee)}</span></div>`; }
   const levy = 5*Math.min(days,7); total+=levy;
@@ -199,7 +199,7 @@ function checkEligibility(){
   if(!A.vehicleAvailable(A.vehicle(v.id)||VEH,bf.value,bt.value))messages.push("This car is unavailable for part of those dates. Choose another period.");
   const duration=A.daysBetween(bf.value,bt.value);
   if(!bf.value || !bt.value || bt.value<=bf.value) messages.push("Choose a drop-off date after pickup.");
-  else if(duration<R.minDays || (R.maxDays!==null && duration>R.maxDays)) messages.push(`Rental length must be at least ${R.minDays} days${R.maxDays?' and no more than '+R.maxDays+' days':''}.`);
+  else if(duration<R.minDays || (R.maxDays!==null && duration>R.maxDays)) messages.push(`Rental length must be at least ${R.minDays} ${R.minDays===1?'day':'days'}${R.maxDays?' and no more than '+R.maxDays+(R.maxDays===1?' day':' days'):''}.`);
   const residency=document.getElementById('b-residency').value, origin=document.getElementById('b-licence-origin').value;
   if(residency && R.residency!=="both" && residency!==R.residency) messages.push(`This company accepts ${R.residency} only.`);
   if(origin && R.licenceOrigin!=="both" && origin!==R.licenceOrigin) messages.push(`This company accepts ${R.licenceOrigin==='local'?'Barbados':'overseas'} licences only.`);

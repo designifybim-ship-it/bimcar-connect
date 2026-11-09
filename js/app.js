@@ -193,7 +193,7 @@ function requirementsBlock(id, policy, payment){
  const r=policy||rentalRequirements(id);
  if(!requirementsComplete(id,r,payment)) return '<p class="small">Complete and confirm every required rental and payment policy before publishing vehicles.</p>';
  const charge=(prefix,bbd,suffix='')=>({prefix,bbd,suffix});
- const row=t=>`<li>${icon('check')}<span>${typeof t==='string'?esc(t):esc(t.prefix)+moneyHTML(t.bbd)+esc(t.suffix)}</span></li>`;
+ const row=t=>`<li>${icon('check')}<span>${typeof t==='string'?esc(t):!Number(t.bbd)?esc(t.prefix)+(/excess/i.test(t.prefix)?'none':'no charge')+(/delivery/i.test(t.prefix)?esc(t.suffix.replace(/^ per rental\.?/,'.')):/same eligibility/.test(t.suffix)?' (same eligibility rules)':''):esc(t.prefix)+moneyHTML(t.bbd)+esc(t.suffix)}</span></li>`;
  const group=(title,rows)=>`<h4 style="margin-top:18px">${title}</h4><ul class="feature-list">${rows.map(row).join("")}</ul>`;
  const driver=[`Driver age: ${r.minAge}${r.maxAge?" to "+r.maxAge:" and older"}`,`Full licence held for ${r.licenceYears}+ years`,"Renters: "+({both:"residents and visitors",residents:"residents only",visitors:"visitors only"}[r.residency]),"Accepted licences: "+({both:"Barbados and overseas",local:"Barbados only",overseas:"overseas only"}[r.licenceOrigin]),...r.documents,r.youngDriverFee?charge('Young-driver charge: ',r.youngDriverFee,` /day below age ${r.youngDriverUntil}`):"No young-driver charge"];
  const period=[`Rental period: ${r.minDays} day minimum${r.maxDays?", "+r.maxDays+" day maximum":", no maximum"}`,r.mileage==="unlimited"?"Unlimited mileage":charge(`${r.dailyKm} km/day included; `,r.extraKmRate,' per extra km'),`Fuel: ${{"full-full":"full to full","same-same":"return at the same level",prepaid:"prepaid fuel"}[r.fuelPolicy]}`];
@@ -283,9 +283,10 @@ function tickCountdowns(){
 function companyCard(c){
   if(!requirementsComplete(c.id)) return "";
   const n = vehicles().filter(v=>v.company===c.id).length;
-  return `<article class="co-card">
-    <div class="top"><span class="company-emblem" aria-hidden="true">${icon('car')}</span><div><h3><a href="company.html#${esc(c.id)}">${esc(c.name)}</a></h3><div class="tag">${icon('pin')}${esc(c.base)}</div></div></div>
-    <div class="row"><a class="small" href="reviews.html#${esc(c.id)}">Read rental reviews</a><span class="muted small">${n} vehicles</span>${c.verified?'<span class="badge badge-reef">'+icon('shield')+'Verified</span>':''}</div>
+  const cv=coCoverUrl(c);
+  return `<article class="co-card${cv?' has-cover':''}">${cv?`<div class="co-card-cover" style="background-image:url('${esc(cv)}')"></div>`:''}
+    <div class="top">${coLogoUrl(c)?coAvatar(c,'co-card-logo'):`<span class="company-emblem" aria-hidden="true">${icon('car')}</span>`}<div><h3><a href="company.html#${esc(c.id)}">${esc(c.name)}</a></h3><div class="tag">${icon('pin')}${esc(c.base)}</div></div></div>
+    <div class="row"><a class="small" href="reviews.html#${esc(c.id)}">Read rental reviews</a><span class="muted small">${n} ${n===1?'vehicle':'vehicles'}</span>${c.verified?'<span class="badge badge-reef">'+icon('shield')+'Verified</span>':''}</div>
     <div class="pk">${c.pickups.map(p=>`<span class="badge badge-grey">${esc(p)}</span>`).join('')}</div>
   </article>`;
 }
@@ -344,7 +345,7 @@ function dashShell(){
   const u = user(); const c = (u&&u.company)?company(u.company):{name:(u&&u.name)||'Your company'};
   const status = !u?.company?'Setting up':c.approved?'Live':'Pending approval';
   return `<aside class="side" aria-label="Dashboard">
-    <div class="co-mini"><span class="co-avatar" aria-hidden="true">${esc(initials(c.name))}</span><div><b>${esc(c.name)}</b><span class="small co-status ${c.approved?'is-live':'is-pending'}">${status}</span></div></div>
+    <div class="co-mini">${coAvatar(c)}<div><b>${esc(c.name)}</b><span class="small co-status ${c.approved?'is-live':'is-pending'}">${status}</span></div></div>
     <div class="grp">Manage</div>
     <a href="#" data-inbox>${icon('chat')}<span>Messages</span><span class="nav-count" data-inbox-count></span></a>
     ${DASH.map(([h,t,i])=>`<a href="${h}" ${here===h?'aria-current="page"':''}>${icon(i)}<span>${t}</span></a>`).join("")}
@@ -657,12 +658,27 @@ addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove
  function menu(){document.querySelectorAll('.side').forEach(side=>{let btn=side.querySelector(':scope > .side-toggle');const cur=side.querySelector('a[aria-current]');const label=((cur?.querySelector('span')||cur)?.textContent||'Menu').trim();
   if(!btn){btn=document.createElement('button');btn.type='button';btn.className='side-toggle';btn.setAttribute('aria-expanded','false');btn.addEventListener('click',()=>{const o=side.classList.toggle('open');btn.setAttribute('aria-expanded',o);});side.prepend(btn);side.addEventListener('click',e=>{if(e.target.closest('a')&&mq.matches){side.classList.remove('open');btn.setAttribute('aria-expanded','false');}});}
   const html=`<span>${esc(label)}</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;if(btn.innerHTML!==html)btn.innerHTML=html;});}
- function cards(){document.querySelectorAll('.dash-main table.t').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(th=>th.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.tagName==='TD'&&!td.hasAttribute('data-label'))td.setAttribute('data-label',hs[i]||'');}));});}
+ function cards(){document.querySelectorAll('.dash-main table.t, .card-table table.t').forEach(t=>{const hs=[...t.querySelectorAll('thead th')].map(th=>th.textContent.trim());t.querySelectorAll('tbody tr').forEach(tr=>[...tr.children].forEach((td,i)=>{if(td.tagName==='TD'&&!td.hasAttribute('data-label'))td.setAttribute('data-label',hs[i]||'');}));});}
  let q=false;const run=()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;menu();cards();});};
  if('MutationObserver' in window)new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-current']});
  addEventListener('hashchange',run);document.addEventListener('DOMContentLoaded',run);run();
 })();
-window.App = {setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
+/* Company logo (or initials) and banner */
+function coLogoUrl(c){return c&&c.logoPath&&window.Live?.companyImageUrl?Live.companyImageUrl(c.logoPath):null;}
+function coCoverUrl(c){return c&&c.coverPath&&window.Live?.companyImageUrl?Live.companyImageUrl(c.coverPath):null;}
+function coAvatar(c,cls){const u=coLogoUrl(c);return u?`<span class="co-avatar has-logo ${cls||''}" aria-hidden="true"><img src="${esc(u)}" alt="" loading="lazy" decoding="async"></span>`:`<span class="co-avatar ${cls||''}" aria-hidden="true">${esc(initials(c?.name||''))}</span>`;}
+/* Resize a picked photo in the browser before upload: keeps it sharp but light */
+async function resizeImage(file,{maxW=2400,maxH=2400,fillW=0,fillH=0}={}){
+ if(!/^image\//.test(file?.type||''))throw new Error('Choose a JPG, PNG or WebP image.');if(file.size>25*1048576)throw new Error('That image is over 25 MB. Choose a smaller one.');
+ let bmp;try{bmp=await createImageBitmap(file,{imageOrientation:'from-image'});}catch{bmp=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error('This image can\'t be read. Try a JPG or PNG.'));i.src=URL.createObjectURL(file);});}
+ const iw=bmp.width,ih=bmp.height;let W,H;
+ if(fillW){W=fillW;H=fillH;const sc=Math.min(iw/fillW,ih/fillH);if(sc<1){W=Math.round(fillW*sc);H=Math.round(fillH*sc);}}
+ else{const k=Math.min(1,maxW/iw,maxH/ih);W=Math.round(iw*k);H=Math.round(ih*k);}
+ const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.imageSmoothingQuality='high';
+ if(fillW){const s=Math.max(W/iw,H/ih),w=iw*s,h=ih*s;g.drawImage(bmp,(W-w)/2,(H-h)/2,w,h);}else g.drawImage(bmp,0,0,W,H);
+ const enc=(t,q)=>new Promise(r=>c.toBlob(r,t,q));let blob=await enc('image/webp',.92);if(!blob||blob.type!=='image/webp')blob=await enc('image/png');
+ if(blob.size>5.5*1048576)blob=await enc('image/webp',.8)||blob;return blob;}
+window.App = {coAvatar, coLogoUrl, coCoverUrl, resizeImage, setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
   vehicleCard, carImg, specialCard, boosts, activeBoosts, isFeatured, partnerCard, todayISO, payInfo, payBlock, tickCountdowns, MARK, companyCard, toast, openModal, closeModal, copy, countUp, fmtDate, daysBetween, esc, go, RATE};
 function offlineNotice(){
   if(document.querySelector('.offline-notice'))return;

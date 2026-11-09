@@ -6,25 +6,25 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611081926">
-<link rel="stylesheet" href="css/style.css?v=202611081926">
-<link rel="stylesheet" href="css/experience.css?v=202611081926">
-<link rel="stylesheet" href="css/messages.css?v=202611081926">
-<link rel="stylesheet" href="css/brand.css?v=202611081926">
-<link rel="stylesheet" href="css/scroll.css?v=202611081926">
-<link rel="stylesheet" href="css/tour.css?v=202611081926">
-<link rel="stylesheet" href="css/navigation.css?v=202611081926">
-<link rel="stylesheet" href="css/polish.css?v=202611081926">
-<link rel="stylesheet" href="css/refine.css?v=202611081926">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611081926">
-<link rel="stylesheet" href="css/ambient.css?v=202611081926">
-<link rel="stylesheet" href="css/launch.css?v=202611081926">
-<script src="js/navigation.js?v=202611081926" defer></script>
-<script src="js/site-polish.js?v=202611081926" defer></script>
-<script src="js/site-tour.js?v=202611081926" defer></script>
-<script src="js/launch.js?v=202611081926" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611082040">
+<link rel="stylesheet" href="css/style.css?v=202611082040">
+<link rel="stylesheet" href="css/experience.css?v=202611082040">
+<link rel="stylesheet" href="css/messages.css?v=202611082040">
+<link rel="stylesheet" href="css/brand.css?v=202611082040">
+<link rel="stylesheet" href="css/scroll.css?v=202611082040">
+<link rel="stylesheet" href="css/tour.css?v=202611082040">
+<link rel="stylesheet" href="css/navigation.css?v=202611082040">
+<link rel="stylesheet" href="css/polish.css?v=202611082040">
+<link rel="stylesheet" href="css/refine.css?v=202611082040">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611082040">
+<link rel="stylesheet" href="css/ambient.css?v=202611082040">
+<link rel="stylesheet" href="css/launch.css?v=202611082040">
+<script src="js/navigation.js?v=202611082040" defer></script>
+<script src="js/site-polish.js?v=202611082040" defer></script>
+<script src="js/site-tour.js?v=202611082040" defer></script>
+<script src="js/launch.js?v=202611082040" defer></script></head>
 <body class="">
-<script src="js/experience.js?v=202611081926"></script>
+<script src="js/experience.js?v=202611082040"></script>
 <div id="site-header"></div>
 <div class="dash"><div id="dash-side"></div>
 <main class="dash-main" id="main">
@@ -33,12 +33,12 @@
 <div class="table-wrap"><table class="t"><thead><tr><th>Booking</th><th>Renter</th><th>Vehicle</th><th>Dates</th><th>Pickup</th><th>Total</th><th>Status</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
 
 </main></div>
-<script src="js/data.js?v=202611081926"></script>
+<script src="js/data.js?v=202611082040"></script>
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="js/live-config.js?v=202611081926"></script>
-<script src="js/live.js?v=202611081926"></script>
-<script src="js/app.js?v=202611081926"></script>
-<script src="js/chat.js?v=202611081926"></script>
+<script src="js/live-config.js?v=202611082040"></script>
+<script src="js/live.js?v=202611082040"></script>
+<script src="js/app.js?v=202611082040"></script>
+<script src="js/chat.js?v=202611082040"></script>
 <script>
 (async function(){
 await Live.ready;if(Live.failed)return;
@@ -56,7 +56,7 @@ function render(){
   document.getElementById("tabs").innerHTML = tabs.map(([k,t])=>`<button class="${F===k?'on':''}" data-f="${k}">${t}<span class="count">${k==="all"?own.length:own.filter(b=>b.status===k).length}</span></button>`).join("");
   const list = F==="all"?own:own.filter(b=>b.status===F);
   document.getElementById("rows").innerHTML = list.map(b=>{const v=A.vehicle(b.vehicle)||{name:"Removed vehicle"}; const s=ST[b.status]||[b.status,"st-req"];
-    return `<tr data-id="${A.esc(b.id)}" style="animation:rise .35s both;opacity:0;transform:translateY(6px)"><td><b title="${A.esc(b.id)}">${A.esc(String(b.id).slice(0,11))}</b>${b.sent?`<div class="small muted">${A.fmtDate(String(b.sent).slice(0,10))}</div>`:""}</td><td>${A.esc(b.renter||"Renter")}${b.initialMessage?`<div class="booking-message-preview">${A.esc(b.initialMessage)}</div>`:""}${b.contact?`<div class="small muted">via ${A.esc(b.contact)}</div>`:""}${b.requirementsAccepted?`<div class="small">Driver age: ${b.driverAge??"not supplied"}${b.licenceYears!==null&&b.licenceYears!==undefined?` · Licence: ${b.licenceYears} years`:""}</div><details style="margin-top:8px;min-width:200px"><summary class="small">Accepted rental requirements</summary>${A.requirementsBlock(v.company,b.requirementsSnapshot,b.paymentSnapshot)}<p class="small muted">Self-declared; check documents before confirming.</p></details>`:'<div class="small muted">Driver eligibility not supplied</div>'}</td><td>${A.esc(v.name)}</td><td>${A.fmtDate(b.from)} to ${A.fmtDate(b.to)}<div class="small muted">${A.daysBetween(b.from,b.to)} days</div></td><td class="small">${A.esc(b.pickup||"")}</td><td><b>${A.moneyHTML(b.total)||"—"}</b></td><td><span class="st ${s[1]}">${s[0]}</span></td>
+    return `<tr data-id="${A.esc(b.id)}" style="animation:rise .35s both;opacity:0;transform:translateY(6px)"><td><b title="${A.esc(b.id)}">${A.esc(String(b.id).slice(0,11))}</b>${b.sent?`<div class="small muted">${A.fmtDate(String(b.sent).slice(0,10))}</div>`:""}</td><td>${A.esc(b.renter||"Renter")}${b.initialMessage?`<div class="booking-message-preview">${A.esc(b.initialMessage)}</div>`:""}${b.contact?`<div class="small muted">via ${A.esc(b.contact)}</div>`:""}${b.requirementsAccepted?`<div class="small">Driver age: ${b.driverAge??"not supplied"}${b.licenceYears!==null&&b.licenceYears!==undefined?` · Licence: ${b.licenceYears} years`:""}</div><details style="margin-top:8px;min-width:200px"><summary class="small">Accepted rental requirements</summary>${A.requirementsBlock(v.company,b.requirementsSnapshot,b.paymentSnapshot)}<p class="small muted">Self-declared; check documents before confirming.</p></details>`:'<div class="small muted">Driver eligibility not supplied</div>'}</td><td>${A.esc(v.name)}</td><td>${A.fmtDate(b.from)} to ${A.fmtDate(b.to)}<div class="small muted">${((n)=>n+' '+(n===1?'day':'days'))(A.daysBetween(b.from,b.to))}</div></td><td class="small">${A.esc(b.pickup||"")}</td><td><b>${A.moneyHTML(b.total)||"—"}</b></td><td><span class="st ${s[1]}">${s[0]}</span></td>
     <td><div class="row" style="flex-wrap:nowrap;gap:6px"><button class="btn btn-ghost btn-sm" data-chat="${A.esc(b.id)}">Chat</button>${b.status==='confirmed'||b.status==='onrent'?`<a class="btn btn-ghost btn-sm" href="dashboard-operations.html?handover=${encodeURIComponent(b.id)}&kind=${b.status==='confirmed'?'pickup':'return'}#handovers" title="Record mileage, fuel and damage">Checklist</a>`:''}${(NEXT[b.status]||[]).map(([to,t,c])=>`<button class="btn ${c} btn-sm" data-to="${to}">${t}</button>`).join("")}</div></td></tr>`;}).join("")
     || `<tr><td colspan="8"><div class="empty"><h3>Nothing here</h3><p class="muted" style="margin:0 auto">Bookings in this stage will show up here.</p></div></td></tr>`;
 }

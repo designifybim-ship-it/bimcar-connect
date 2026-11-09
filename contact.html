@@ -6,25 +6,25 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611081926">
-<link rel="stylesheet" href="css/style.css?v=202611081926">
-<link rel="stylesheet" href="css/experience.css?v=202611081926">
-<link rel="stylesheet" href="css/messages.css?v=202611081926">
-<link rel="stylesheet" href="css/brand.css?v=202611081926">
-<link rel="stylesheet" href="css/scroll.css?v=202611081926">
-<link rel="stylesheet" href="css/tour.css?v=202611081926">
-<link rel="stylesheet" href="css/navigation.css?v=202611081926">
-<link rel="stylesheet" href="css/polish.css?v=202611081926">
-<link rel="stylesheet" href="css/refine.css?v=202611081926">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611081926">
-<link rel="stylesheet" href="css/ambient.css?v=202611081926">
-<link rel="stylesheet" href="css/launch.css?v=202611081926">
-<script src="js/navigation.js?v=202611081926" defer></script>
-<script src="js/site-polish.js?v=202611081926" defer></script>
-<script src="js/site-tour.js?v=202611081926" defer></script>
-<script src="js/launch.js?v=202611081926" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611082040">
+<link rel="stylesheet" href="css/style.css?v=202611082040">
+<link rel="stylesheet" href="css/experience.css?v=202611082040">
+<link rel="stylesheet" href="css/messages.css?v=202611082040">
+<link rel="stylesheet" href="css/brand.css?v=202611082040">
+<link rel="stylesheet" href="css/scroll.css?v=202611082040">
+<link rel="stylesheet" href="css/tour.css?v=202611082040">
+<link rel="stylesheet" href="css/navigation.css?v=202611082040">
+<link rel="stylesheet" href="css/polish.css?v=202611082040">
+<link rel="stylesheet" href="css/refine.css?v=202611082040">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611082040">
+<link rel="stylesheet" href="css/ambient.css?v=202611082040">
+<link rel="stylesheet" href="css/launch.css?v=202611082040">
+<script src="js/navigation.js?v=202611082040" defer></script>
+<script src="js/site-polish.js?v=202611082040" defer></script>
+<script src="js/site-tour.js?v=202611082040" defer></script>
+<script src="js/launch.js?v=202611082040" defer></script></head>
 <body class="">
-<script src="js/experience.js?v=202611081926"></script>
+<script src="js/experience.js?v=202611082040"></script>
 <div id="site-header"></div>
 <main id="main">
 <div class="wrap page-head">
@@ -43,23 +43,23 @@
     <button class="btn btn-primary" type="submit" id="csend">Send message</button>
     <p class="small muted" id="cmsg" style="margin:0" aria-live="polite"></p>
   </form>
-  <div class="stack">
-    <div class="card-flat stack small">
-      <div class="tag"><span data-icon="chat"></span>For booking questions, open Messages at the side.</div>
-      <button class="link-btn" type="button" onclick="BookingChat.inbox()">Open my booking conversations</button>
-      <div class="tag"><span data-icon="pin"></span>Bridgetown, St. Michael, Barbados</div>
-    </div>
+  <div class="card contact-side">
+    <h3 style="margin:0 0 4px">Other ways to reach us</h3>
+    <p class="small muted" style="margin:0 0 14px">Pick whichever is easiest for you.</p>
+    <div class="contact-ways" id="contact-ways"></div>
+    <div class="contact-note"><span data-icon="chat"></span><div><b>Already booking a car?</b><span class="small muted">Talk to the rental company in Messages.</span><button class="link-btn" type="button" onclick="BookingChat.inbox()">Open my booking conversations</button></div></div>
   </div>
+</div>
 </div>
 
 </main>
 <div id="site-footer"></div>
-<script src="js/data.js?v=202611081926"></script>
+<script src="js/data.js?v=202611082040"></script>
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="js/live-config.js?v=202611081926"></script>
-<script src="js/live.js?v=202611081926"></script>
-<script src="js/app.js?v=202611081926"></script>
-<script src="js/chat.js?v=202611081926"></script>
+<script src="js/live-config.js?v=202611082040"></script>
+<script src="js/live.js?v=202611082040"></script>
+<script src="js/app.js?v=202611082040"></script>
+<script src="js/chat.js?v=202611082040"></script>
 <script>
 (async function(){
 await Live.ready;
@@ -70,7 +70,8 @@ const read=()=>{const f=form.querySelectorAll('input');return {name:f[0].value.t
 try{const d=JSON.parse(sessionStorage.getItem(KEY)||'null');if(d){const f=form.querySelectorAll('input');f[0].value=d.name||'';f[1].value=d.contact||'';form.querySelector('select').value=d.topic||form.querySelector('select').value;form.querySelector('textarea').value=d.message||'';sessionStorage.removeItem(KEY);}}catch{}
 const online=!Live.failed&&!!Live.client;
 const c={email:'bimcarconnect@yahoo.com',phone:'+1 (246) 230-1679',...(Live.settings?.contact||{})};if(!String(c.email||'').trim())c.email='bimcarconnect@yahoo.com';if(!String(c.phone||'').trim())c.phone='+1 (246) 230-1679';
-if(c.email||c.phone){const box=document.createElement('div');box.className='contact-direct';if(c.email){const a=document.createElement('a');a.className='btn btn-ghost btn-sm';a.href='mailto:'+c.email;a.innerHTML=A.icon('mail');a.append(c.email);box.append(a);}if(c.phone){const a=document.createElement('a');a.className='btn btn-ghost btn-sm';a.href='tel:'+String(c.phone).replace(/[^\d+]/g,'');a.innerHTML=A.icon('phone');a.append(c.phone);box.append(a);}form.before(box);}
+{const box=document.getElementById('contact-ways');const way=(href,ic,label,sub)=>`<a class="contact-way" href="${href}" ${href.startsWith('http')?'target="_blank" rel="noopener"':''}><span class="cw-ic">${A.icon(ic)}</span><span><b>${A.esc(label)}</b><small>${A.esc(sub)}</small></span></a>`;
+ box.innerHTML=(c.email?way('mailto:'+c.email,'mail','Email',c.email):'')+(c.phone?way('tel:'+String(c.phone).replace(/[^\d+]/g,''),'phone','Phone or WhatsApp',c.phone):'')+way('https://www.instagram.com/bimcarconnect246/','instagram','Instagram','@bimcarconnect246');}
 if(!Live.user||!online){btn.textContent=DB.contactWhatsApp?'Send on WhatsApp':'Send message';msg.innerHTML=online?'Prefer the website inbox? <a href="login.html" id="contact-login">Log in</a> and we\'ll keep your message.':'';}
 document.getElementById('contact-login')?.addEventListener('click',()=>{try{sessionStorage.setItem(KEY,JSON.stringify(read()));sessionStorage.setItem('drivebim.return',location.pathname);}catch{}});
 form.addEventListener('submit',async e=>{

@@ -113,6 +113,16 @@ L.saveCompany=async(co,profile,requirements,pay)=>{
  await value(client.from('drivebim_companies').update({payload}).eq('id',co).select('id').single());
  await value(client.from('drivebim_private_pay').upsert({company_id:co,payload:{bank:bank||'',link:link||''}}));await L.refresh();
 };
+L.companyImageUrl=path=>path?config.url+'/storage/v1/object/public/drivebim-company-images/'+String(path).split('/').map(encodeURIComponent).join('/'):null;
+L.setCompanyImage=async(co,kind,blob)=>{if(!L.requireSession())throw new Error('Sign in required');const current=DB.companies.find(c=>c.id===co);if(!current)throw new Error('Company not found');
+ const key=kind==='logo'?'logoPath':'coverPath';let path=null;
+ if(blob){const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp'}[blob.type]||'jpg';path=co+'/'+kind+'-'+crypto.randomUUID()+'.'+ext;
+  try{await value(client.storage.from('drivebim-company-images').upload(path,blob,{contentType:blob.type,upsert:false,cacheControl:'31536000'}));}
+  catch(e){if(/bucket|not found|404/i.test(String(e?.message)+String(e?.statusCode)))throw new Error('Image uploads are still being switched on. Please try again soon.');throw e;}}
+ const old=current[key];const payload={...current,[key]:path};delete payload.approved;delete payload.demo;delete payload.registeredAt;delete payload.ownerId;
+ await value(client.from('drivebim_companies').update({payload}).eq('id',co).select('id').single());
+ if(old&&old!==path)client.storage.from('drivebim-company-images').remove([old]).catch(()=>{});
+ await L.refresh();return path;};
 L.requestBooking=async request=>{
  if(!L.requireSession())throw new Error('Sign in required');
  const row=await value(client.rpc('drivebim_request_booking',{vid:request.vehicle,d1:request.from,d2:request.to,details:request,first_message:request.initialMessage||'',request_id:request.id}));await L.refresh();return booking(row);
