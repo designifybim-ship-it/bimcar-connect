@@ -11,7 +11,7 @@ function open(p,deps){
  const {A,Live,optimiseImage,formBox,confirmBox,slugify,posts,onSaved}=deps,esc=A.esc,icon=A.icon;
  const x=p?{...p}:{title:'',slug:'',excerpt:'',category:'Island drives',body:'',status:'draft',published_at:TODAY(),author_name:Live.user.name||'',tags:[],seo_title:'',seo_description:''};
  x.tags=Array.isArray(x.tags)?x.tags.slice():[];
- let coverPath=x.cover_path||null,coverUrl=x.cover||null,slugTouched=!!p,dirty=false,closing=false;
+ let coverPath=x.cover_path||null,coverUrl=x.cover||null,slugTouched=!!p?.id,dirty=false,closing=false;
  const allPosts=(posts()||[]);
  const cats=[...new Set([...CATS,...allPosts.map(o=>o.category).filter(Boolean)])];
  const knownTags=[...new Set(allPosts.flatMap(o=>Array.isArray(o.tags)?o.tags:[]))];
@@ -23,7 +23,7 @@ function open(p,deps){
  m.innerHTML=`
  <header class="pe2-top">
   <button type="button" class="pe2-back" data-pe="close">${icon('arrowL')}<span>Blog posts</span></button>
-  <h2 id="pe2-h">${p?'Edit blog post':'New blog post'}</h2>
+  <h2 id="pe2-h">${p?.id?'Edit blog post':'New blog post'}</h2>
   <span class="pe2-pill" id="pe2-pill"></span>
   <div class="pe2-actions"><span class="pe2-saved" id="pe2-saved" aria-live="polite"></span>
    <button type="button" class="btn btn-ghost btn-sm" data-pe="draft">Save draft</button>
@@ -56,7 +56,7 @@ function open(p,deps){
     <label class="pe2-f">Author<input class="input" id="pe2-author" maxlength="80" value="${esc(x.author_name||'')}"></label>
     <label class="pe2-f">Publish date<input class="input" type="date" id="pe2-date" value="${esc(x.published_at||TODAY())}"></label>
     <label class="pe2-switch"><input type="checkbox" id="pe2-sched" ${x.published_at&&x.published_at>TODAY()?'checked':''}><span class="pe2-tog" aria-hidden="true"></span><span>Schedule post<small>Goes live on the publish date instead of now.</small></span></label>
-    ${p?`<button type="button" class="pe2-del link-btn" data-pe="delete">Delete this post</button>`:''}
+    ${p?.id?`<button type="button" class="pe2-del link-btn" data-pe="delete">Delete this post</button>`:''}
    </section>
    <section data-panel="seo" hidden>
     <p class="pe2-note">How this post appears in Google and when it's shared.</p>
@@ -146,7 +146,7 @@ function open(p,deps){
   const btns=m.querySelectorAll('.pe2-actions .btn');btns.forEach(b=>b.disabled=true);m.querySelector(mode==='draft'?'[data-pe=draft]':'#pe2-publish').classList.add('is-loading');
   try{const saved=await Live.admin.savePost({...v,body:body.value,status,id:p?.id,cover_path:coverPath});
    try{localStorage.removeItem(draftKey);}catch{}dirty=false;
-   await Live.admin.log(p?'Edited blog post':'Created blog post',saved.title,{status:saved.status});
+   await Live.admin.log(p?.id?'Edited blog post':'Created blog post',saved.title,{status:saved.status});
    if(saved._extrasMissing)A.toast('Saved. Tags and SEO need one more database update before they are kept: run backend/ADMIN-UPGRADE.sql in Supabase.');
    else A.toast(status==='draft'?'Draft saved':saved.published_at>TODAY()?`Scheduled for ${A.fmtDate(saved.published_at,{day:'numeric',month:'long'})}`:x.status==='published'?'Post updated':'Post published');
    close(true);onSaved?.();}
@@ -177,7 +177,7 @@ function open(p,deps){
   if(a==='delete'){if(!(await confirmBox({title:'Delete this post?',text:'It will be removed from the blog straight away. This cannot be undone.',label:'Delete post',danger:true})))return;
    try{await Live.admin.deletePost(p.id);await Live.admin.log('Deleted blog post',p.title);A.toast('Post deleted');close(true);onSaved?.();}catch(err){say(Live.error(err));}}
  });
- setTimeout(()=>{if(!p)title.focus();},60);
+ setTimeout(()=>{if(!p?.id)title.focus();},60);
  return m;
 }
 window.PostEditor={open};
