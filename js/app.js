@@ -747,6 +747,24 @@ addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove
  document.addEventListener('click',e=>{if(e.target.closest('a'))return;const t=e.target.closest('.post-body figure img,.article-body figure img,.polaroid-stack');if(t&&from(t))e.preventDefault();});
  document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.classList?.contains('polaroid-stack')){e.preventDefault();from(e.target);}});
 })();
+/* Anonymous visit counting: no cookies, no names, nothing personal. Admin visits and bots aren't counted. */
+(function(){
+ const SKIP=/^(admin|dashboard.*|account|auth-confirm|reset-password|owner-access|login|signup)$/;
+ const sourceOf=()=>{const q=new URLSearchParams(location.search).get('utm_source');if(q)return q.toLowerCase().replace(/[^a-z0-9.-]/g,'').slice(0,40);
+  let h='';try{const r=document.referrer&&new URL(document.referrer);if(r&&r.host!==location.host)h=r.hostname.replace(/^(www|m|l|lm|web)\./,'');}catch{}
+  if(!h)return '';if(/google\./.test(h))return 'google';if(/bing\.com/.test(h))return 'bing';if(/yahoo\./.test(h))return 'yahoo';if(/instagram\.com/.test(h))return 'instagram';if(/facebook\.com|fb\.com/.test(h))return 'facebook';if(/whatsapp\.com|wa\.me/.test(h))return 'whatsapp';if(/tiktok\.com/.test(h))return 'tiktok';if(/^t\.co$|twitter\.com|x\.com/.test(h))return 'x';return h.slice(0,40);};
+ const idFrom=(store,key)=>{try{let v=store.getItem(key);if(!v){v=(crypto.randomUUID?crypto.randomUUID():String(Math.random()).slice(2)+Date.now()).replace(/-/g,'').slice(0,24);store.setItem(key,v);}return v;}catch{return '';}};
+ async function count(){try{
+  if(/bot|crawl|spider|slurp|lighthouse|headless|preview/i.test(navigator.userAgent)&&!window.__countHeadless)return;
+  const page=(location.pathname.split('/').pop()||'index.html').replace(/\.html$/,'')||'index';if(!/^[a-z0-9-]{1,40}$/.test(page)||SKIP.test(page))return;
+  await window.Live?.ready;if(!window.Live||Live.failed||Live.user?.role==='admin')return;
+  const q=new URLSearchParams(location.search);const target=page==='vehicle'?q.get('id'):page==='post'?q.get('p'):page==='company'?decodeURIComponent(location.hash.slice(1)):'';
+  const small=Math.min(screen.width,screen.height),coarse=matchMedia('(pointer:coarse)').matches;
+  let local=false;try{local=Intl.DateTimeFormat().resolvedOptions().timeZone==='America/Barbados';}catch{}
+  Live.track({page,target:(target||'').slice(0,120),source:sourceOf(),device:small<600?'phone':coarse&&small<1100?'tablet':'computer',visitor:idFrom(localStorage,'bimcar.vid'),session:idFrom(sessionStorage,'bimcar.sid'),local});
+ }catch{}}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',count);else count();
+})();
 /* Company logo (or initials) and banner */
 function coLogoUrl(c){return c&&c.logoPath&&window.Live?.companyImageUrl?Live.companyImageUrl(c.logoPath):null;}
 function coCoverUrl(c){return c&&c.coverPath&&window.Live?.companyImageUrl?Live.companyImageUrl(c.coverPath):null;}

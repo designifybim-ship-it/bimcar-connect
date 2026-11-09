@@ -9,9 +9,9 @@ if(!Live.user||Live.user.role!=='admin'){location.replace(Live.user?(Live.user.c
 
 const SUPABASE_PROJECT=(DriveBimConfig.url.match(/https:\/\/([a-z0-9]+)\.supabase\.co/)||[])[1]||'';
 const SB=path=>`https://supabase.com/dashboard/project/${SUPABASE_PROJECT}/${path}`;
-const NAV_GROUPS=[['',['overview']],['People',['accounts','companies','reviews']],['Marketplace',['cars','bookings','deals']],['Marketing',['ads','clients','invoices','posts']],['Support',['reports','emails']],['System',['insights','settings','activity']]];
+const NAV_GROUPS=[['',['overview','analytics']],['People',['accounts','companies','reviews']],['Marketplace',['cars','bookings','deals']],['Marketing',['ads','clients','invoices','posts']],['Support',['reports','emails']],['System',['insights','settings','activity']]];
 const SECTIONS=[
- ['overview','Overview','home'],['accounts','Accounts','users'],['companies','Companies','shield'],['cars','Cars','car'],
+ ['overview','Overview','home'],['analytics','Analytics','chart'],['accounts','Accounts','users'],['companies','Companies','shield'],['cars','Cars','car'],
  ['bookings','Bookings','cal'],['deals','Deals & boosts','bolt'],['ads','Ads','image'],['clients','Ad clients','users'],['invoices','Invoices','doc'],['posts','Blog posts','edit'],['reviews','Reviews','star'],['reports','Reports & enquiries','info'],
  ['insights','Insights & exports','chart'],['emails','Email templates','mail'],['settings','Site settings','settings'],['activity','Activity log','list']
 ];
@@ -225,6 +225,44 @@ S.reports=async()=>{
  `<div class="tabs" style="margin-bottom:16px">${[['open','Open'],['done','Handled'],['all','All']].map(([k,t])=>`<button class="${f===k?'on':''}" data-state="rep" data-val="${k}">${t}<span class="count">${k==='open'?all.filter(r=>r.status==='new').length:k==='done'?all.filter(r=>r.status!=='new').length:all.length}</span></button>`).join('')}</div><div class="grid g2">${list.map(card).join('')||`<div style="grid-column:1/-1">${empty(f==='open'?'Inbox zero':'Nothing here','New reports and enquiries appear here.')}</div>`}</div>`;
 };
 
+/* ---------- Analytics: anonymous visit counts (drivebim_track / drivebim_admin_analytics) ---------- */
+const PAGE_NAMES={index:'Home',vehicles:'Our cars',vehicle:'Car pages',companies:'Rental companies',company:'Company pages',specials:'Deals',blog:'Island Drives blog',post:'Blog posts','blog-top-10':'Top 10 places (article)','blog-island-drives':'Three island drives (article)','blog-bars-and-bites':'Beach bars (article)',guide:'Driving in Barbados','getting-started':'Getting started','how-it-works':'How it works',faq:'FAQs',contact:'Contact',legal:'Terms and privacy',reviews:'Reviews','pickup-locations':'Pickup areas',pricing:'For rental companies',advertise:'Advertising','advertise-daily':'Advertising: daily','advertise-weekly':'Advertising: weekly','advertise-monthly':'Advertising: monthly','advertise-creative':'Advertising: creative help'};
+const SOURCE_NAMES={direct:'Typed in or bookmarked',google:'Google',bing:'Bing',yahoo:'Yahoo',instagram:'Instagram',facebook:'Facebook',whatsapp:'WhatsApp',tiktok:'TikTok',x:'X (Twitter)'};
+function lineChart(daily){const n=daily.length,small=innerWidth<640,W=small?360:720,H=small?220:200,P={l:30,r:10,t:12,b:26},mx=Math.max(4,...daily.map(d=>d.views));
+ const x=i=>P.l+(n<2?0:i*(W-P.l-P.r)/(n-1)),y=v=>H-P.b-(v/mx)*(H-P.t-P.b);
+ const path=k=>daily.map((d,i)=>`${i?'L':'M'}${x(i).toFixed(1)} ${y(d[k]).toFixed(1)}`).join(' ');
+ const ticks=[0,Math.round(mx/2),mx],step=Math.max(1,Math.ceil(n/(small?3:6)));
+ return `<svg class="an-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Visitors and page views per day"><defs><linearGradient id="an-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a3ffd" stop-opacity=".28"/><stop offset="1" stop-color="#8a3ffd" stop-opacity="0"/></linearGradient></defs>
+  ${ticks.map(t=>`<line x1="${P.l}" x2="${W-P.r}" y1="${y(t)}" y2="${y(t)}" class="an-grid"/><text x="${P.l-8}" y="${y(t)+4}" text-anchor="end" class="an-ax">${t}</text>`).join('')}
+  <path d="${path('visitors')} L${x(n-1)} ${H-P.b} L${x(0)} ${H-P.b}Z" fill="url(#an-g)"/>
+  <path d="${path('views')}" class="an-views"/><path d="${path('visitors')}" class="an-vis"/>
+  ${daily.map((d,i)=>`${i%step===0||i===n-1?`<text x="${x(i)}" y="${H-6}" text-anchor="middle" class="an-ax">${esc(A.fmtDate(d.day,{day:'numeric',month:'short'}))}</text>`:''}<rect x="${x(i)-(W/n)/2}" y="${P.t}" width="${W/n}" height="${H-P.t-P.b}" fill="transparent"><title>${esc(A.fmtDate(d.day,{weekday:'short',day:'numeric',month:'short'}))}: ${d.visitors} visitor${d.visitors===1?'':'s'}, ${d.views} page view${d.views===1?'':'s'}</title></rect>`).join('')}</svg>`;}
+function meterList(items,label,empty,total){if(!items||!items.length)return `<p class="muted small">${esc(empty)}</p>`;const mx=Math.max(...items.map(i=>i.n));
+ return `<div class="an-list">${items.slice(0,8).map(i=>{const t=label(i.k);return `<div class="an-row"><span class="an-bar" style="width:${Math.max(4,i.n/mx*100)}%"></span><span class="an-k" title="${esc(t)}">${esc(t)}</span><b>${i.n}${total?` <small>${Math.round(i.n/total*100)}%</small>`:''}</b></div>`;}).join('')}</div>`;}
+const change=(now,prev)=>{if(!prev)return now?'New this period':'No visits yet';const pct=Math.round((now-prev)/prev*100);return `${pct>=0?'▲':'▼'} ${Math.abs(pct)}% vs the period before`;};
+S.analytics=async()=>{
+ const days=+(state.an||30);await loadPosts();
+ let a=null,err=null;try{a=await Live.admin.analytics(days);}catch(e){err=e;}
+ const pills=`<div class="tabs">${[[7,'7 days'],[30,'30 days'],[90,'90 days'],[365,'12 months']].map(([k,t])=>`<button class="${days===k?'on':''}" data-state="an" data-val="${k}">${t}</button>`).join('')}</div>`;
+ const intro='How many people visit and what they look at. Counted without cookies or personal details, and your own visits as admin are not counted.';
+ if(err)return head('Analytics',intro)+notice(/drivebim_admin_analytics|PGRST202|42883/.test(String(err?.message)+err?.code)?`<b>One step switches analytics on.</b> Open the <a href="${SB('sql/new')}" target="_blank" rel="noopener">Supabase SQL Editor</a>, paste the file <code>backend/ANALYTICS.sql</code> and press Run. Visits start counting straight away.`:esc(Live.error(err)),'warn');
+ const t=a.top||{},per=a.sessions?(a.views/a.sessions).toFixed(1):'0',local=a.visitors?Math.round(a.local_visitors/a.visitors*100):0;
+ const postTitle=slug=>(posts||[]).find(p=>p.slug===slug)?.title||(window.BIMCAR_BUILTIN_POSTS||[]).find(p=>p.slug===slug)?.title||slug;
+ const carName=id=>{const v=A.vehicle(id);return v?`${v.name} · ${companyOf(v.company).name||''}`:'Removed car';};
+ const coName=id=>companyOf(id)?.name||'Removed company';
+ const devTotal=(t.devices||[]).reduce((n,i)=>n+i.n,0),srcTotal=(t.sources||[]).reduce((n,i)=>n+i.n,0);
+ return head('Analytics',intro,pills)+
+ `<div class="kpis">${kpi('Visitors',a.visitors,change(a.visitors,a.prev_visitors),true)}${kpi('Page views',a.views,change(a.views,a.prev_views))}${kpi('Pages per visit',per,'How much people look around')}${kpi('Visitors in Barbados',a.visitors?local+'%':'—',a.visitors?`${100-local}% from overseas`:'No visits yet')}</div>
+ <div class="card" style="margin-top:22px"><div class="row between"><h3 style="margin:0">Visitors per day</h3><span class="an-legend"><i class="lv"></i>Visitors <i class="lp"></i>Page views</span></div>${a.views?lineChart(a.daily||[]):'<div class="empty"><h3>No visits counted yet</h3><p class="muted">Visits start counting from today. Check back tomorrow to see your first numbers.</p></div>'}</div>
+ <div class="grid an-grid-cards" style="margin-top:22px">
+  <div class="card"><h3 style="margin-top:0">Most visited pages</h3>${meterList(t.pages,k=>PAGE_NAMES[k]||k,'No page views yet.')}</div>
+  <div class="card"><h3 style="margin-top:0">Where visitors come from</h3>${meterList(t.sources,k=>SOURCE_NAMES[k]||k,'No visits yet.',srcTotal)}</div>
+  <div class="card"><h3 style="margin-top:0">Most-read blog posts</h3>${meterList(t.posts,postTitle,'No blog post views yet.')}</div>
+  <div class="card"><h3 style="margin-top:0">Most-viewed cars</h3>${meterList(t.cars,carName,'No car page views yet.')}</div>
+  <div class="card"><h3 style="margin-top:0">Most-viewed rental companies</h3>${meterList(t.companies,coName,'No company page views yet.')}</div>
+  <div class="card"><h3 style="margin-top:0">Phone, tablet or computer</h3>${meterList(t.devices,k=>({phone:'Phone',tablet:'Tablet',computer:'Computer'})[k]||k,'No visits yet.',devTotal)}</div>
+ </div>`;
+};
 S.insights=async()=>{
  await loadUsers();
  const weeks=12,start=A.addDays(A.todayISO(),-(weeks*7-1));

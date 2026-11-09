@@ -6,25 +6,25 @@
 <link rel="icon" type="image/png" sizes="32x32" href="img/brand/favicon-32.png"><link rel="icon" type="image/png" sizes="192x192" href="img/brand/favicon-192.png"><link rel="preload" href="img/brand/mark.png" as="image"><link rel="apple-touch-icon" href="img/brand/apple-touch-icon.png"><meta name="theme-color" content="#F4169B">
 
 
-<link rel="stylesheet" href="css/fonts.css?v=202611090845">
-<link rel="stylesheet" href="css/style.css?v=202611090845">
-<link rel="stylesheet" href="css/experience.css?v=202611090845">
-<link rel="stylesheet" href="css/messages.css?v=202611090845">
-<link rel="stylesheet" href="css/brand.css?v=202611090845">
-<link rel="stylesheet" href="css/scroll.css?v=202611090845">
-<link rel="stylesheet" href="css/tour.css?v=202611090845">
-<link rel="stylesheet" href="css/navigation.css?v=202611090845">
-<link rel="stylesheet" href="css/polish.css?v=202611090845">
-<link rel="stylesheet" href="css/refine.css?v=202611090845">
-<link rel="stylesheet" href="css/icon-colours.css?v=202611090845">
-<link rel="stylesheet" href="css/ambient.css?v=202611090845">
-<link rel="stylesheet" href="css/launch.css?v=202611090845">
-<script src="js/navigation.js?v=202611090845" defer></script>
-<script src="js/site-polish.js?v=202611090845" defer></script>
-<script src="js/site-tour.js?v=202611090845" defer></script>
-<script src="js/launch.js?v=202611090845" defer></script></head>
+<link rel="stylesheet" href="css/fonts.css?v=202611090854">
+<link rel="stylesheet" href="css/style.css?v=202611090854">
+<link rel="stylesheet" href="css/experience.css?v=202611090854">
+<link rel="stylesheet" href="css/messages.css?v=202611090854">
+<link rel="stylesheet" href="css/brand.css?v=202611090854">
+<link rel="stylesheet" href="css/scroll.css?v=202611090854">
+<link rel="stylesheet" href="css/tour.css?v=202611090854">
+<link rel="stylesheet" href="css/navigation.css?v=202611090854">
+<link rel="stylesheet" href="css/polish.css?v=202611090854">
+<link rel="stylesheet" href="css/refine.css?v=202611090854">
+<link rel="stylesheet" href="css/icon-colours.css?v=202611090854">
+<link rel="stylesheet" href="css/ambient.css?v=202611090854">
+<link rel="stylesheet" href="css/launch.css?v=202611090854">
+<script src="js/navigation.js?v=202611090854" defer></script>
+<script src="js/site-polish.js?v=202611090854" defer></script>
+<script src="js/site-tour.js?v=202611090854" defer></script>
+<script src="js/launch.js?v=202611090854" defer></script></head>
 <body class="">
-<script src="js/experience.js?v=202611090845"></script>
+<script src="js/experience.js?v=202611090854"></script>
 <div id="site-header"></div>
 <div class="dash"><div id="dash-side"></div>
 <main class="dash-main" id="main">
@@ -46,17 +46,27 @@
   <div class="card"><div class="row between"><h3 style="margin:0">Boosts</h3><a class="small" href="dashboard-boost.html">Manage</a></div><div id="design"></div></div>
   <div class="card"><div class="row between"><h3 style="margin:0"><span id="prog-title">Get ready to go live</span> <a class="small" style="font-weight:500;margin-left:6px" href="getting-started.html#companies">Setup guide</a></h3><span class="small muted" id="prog-label"></span></div><div class="progress" style="margin:12px 0 16px"><i id="prog"></i></div><div class="stack checklist" id="checklist"></div></div>
 </div>
+<div class="card co-views" id="co-views" style="margin-top:22px" hidden><div class="row between"><h3 style="margin:0">People looking at your cars</h3><span class="small muted">Last 30 days</span></div><div id="co-views-body"></div></div>
 </main></div>
-<script src="js/data.js?v=202611090845"></script>
+<script src="js/data.js?v=202611090854"></script>
 <script src="vendor/supabase-2.119.0.js"></script>
-<script src="js/live-config.js?v=202611090845"></script>
-<script src="js/live.js?v=202611090845"></script>
-<script src="js/app.js?v=202611090845"></script>
-<script src="js/chat.js?v=202611090845"></script>
+<script src="js/live-config.js?v=202611090854"></script>
+<script src="js/live.js?v=202611090854"></script>
+<script src="js/app.js?v=202611090854"></script>
+<script src="js/chat.js?v=202611090854"></script>
 <script>
 (async function(){
 await Live.ready;
 const A=App, CO=A.requireCompany(); if(!CO) return;
+/* views of this company's page and cars (anonymous counts, see Analytics) */
+(async()=>{try{const a=await Live.companyAnalytics(CO,30);const box=document.getElementById('co-views'),t=a.top||{};box.hidden=false;
+ const cars=(t.cars||[]).slice(0,5),mx=Math.max(1,...cars.map(c=>c.n)),src=(t.sources||[]).slice(0,4),SRC={direct:'Typed in or bookmarked',google:'Google',instagram:'Instagram',facebook:'Facebook',whatsapp:'WhatsApp',tiktok:'TikTok'};
+ const pct=(n,p)=>!p?'':`<span class="small ${n>=p?'up':'down'}">${n>=p?'▲':'▼'} ${Math.abs(Math.round((n-p)/p*100))}%</span>`;
+ document.getElementById('co-views-body').innerHTML=a.views?`<div class="cv-grid"><div class="cv-stat"><b>${a.visitors}</b><span>${a.visitors===1?'person':'people'} visited ${pct(a.visitors,a.prev_visitors)}</span></div><div class="cv-stat"><b>${a.views}</b><span>${a.views===1?'view':'views'} of your page and cars</span></div>
+  <div><p class="small muted" style="margin:0 0 6px">Most-viewed cars</p>${cars.length?cars.map(c=>{const v=A.vehicle(c.k);return `<div class="an-row"><span class="an-bar" style="width:${Math.max(6,c.n/mx*100)}%"></span><span class="an-k">${A.esc(v?v.name:'Removed car')}</span><b>${c.n}</b></div>`;}).join(''):'<p class="small muted">No car views yet.</p>'}</div>
+  <div><p class="small muted" style="margin:0 0 6px">Where they came from</p>${src.map(x=>`<div class="an-row"><span class="an-k">${A.esc(SRC[x.k]||x.k)}</span><b>${x.n}</b></div>`).join('')}</div></div>
+  <p class="small muted" style="margin:14px 0 0">Want more people to see a car? <a href="dashboard-boost.html">Boost it</a> to show it first.</p>`:`<p class="muted small" style="margin:8px 0 0">No views counted yet. Views start counting as renters open your company page and cars.</p>`;
+}catch{}})();
 const u=A.user();
 const h=new Date().getHours();
 document.getElementById("greet").textContent=(h<12?"Good morning":h<17?"Good afternoon":"Good evening")+", "+(u.name||"there").split(" ")[0];

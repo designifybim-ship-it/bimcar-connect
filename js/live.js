@@ -154,6 +154,7 @@ L.admin={
  setBookingStatus:async(id,status)=>{await rpc('drivebim_admin_set_booking_status',{bid:id,new_status:status});await L.refresh();},
  endBoost:async id=>{await rpc('drivebim_admin_end_boost',{boost_id:id});await L.refresh();},
  cancelBoostRequest:async id=>{await rpc('drivebim_admin_cancel_boost_request',{rid:id});await L.refresh();},
+ analytics:async days=>value(client.rpc('drivebim_admin_analytics',{p_days:days})),
  saveSetting:async(key,val,isPublic)=>{await value(client.from('drivebim_settings').upsert({key,value:val,public:!!isPublic,updated_at:new Date().toISOString(),updated_by:L.user?.id||null}));L.settings={...L.settings,[key]:val};},
  privateSettings:async()=>{const rows=await value(client.from('drivebim_settings').select('key,value'));return Object.fromEntries(rows.map(r=>[r.key,r.value]));},
  clients:async()=>value(client.from('drivebim_ad_clients').select('*').order('name')),
@@ -177,6 +178,9 @@ L.admin={
 L.approveCompany=async id=>{await value(client.rpc('drivebim_approve_company',{co:id}));await L.refresh();};
 L.messages=async(id,before)=>{let query=client.from('drivebim_messages').select('*').eq('booking_id',id).order('created_at',{ascending:false}).order('id',{ascending:false}).limit(50);if(before)query=query.or('created_at.lt.'+before.created_at+',and(created_at.eq.'+before.created_at+',id.lt.'+before.id+')');return (await value(query)).reverse();};
 L.sendMessage=async(id,text,nonce)=>{const result=await client.from('drivebim_messages').insert({id:nonce,booking_id:id,body:text.trim()}).select().single();if(!result.error)return result.data;if(result.error.code==='23505'){const existing=await value(client.from('drivebim_messages').select('*').eq('id',nonce).single());if(existing.booking_id===id&&existing.sender_id===L.user.id&&existing.body===text.trim())return existing;}throw result.error;};
+/* anonymous visit counting (see drivebim_track in ADMIN-UPGRADE.sql) */
+L.track=v=>client.rpc('drivebim_track',{p_page:v.page,p_target:v.target||null,p_source:v.source||null,p_device:v.device,p_visitor:v.visitor||null,p_session:v.session||null,p_local:!!v.local}).then(()=>{},()=>{});
+L.companyAnalytics=async(co,days)=>value(client.rpc('drivebim_company_analytics',{p_company:co,p_days:days}));
 L.publicPosts=async()=>{const q=cols=>client.from('drivebim_posts').select(cols).eq('status','published').order('published_at',{ascending:false});
  let r=await q('id,slug,title,excerpt,category,cover_path,published_at,status,author_name,body,tags');if(r.error)r=await q('id,slug,title,excerpt,category,cover_path,published_at,status,author_name,body');
  return r.error?[]:r.data.map(x=>({...x,tags:Array.isArray(x.tags)?x.tags:[],cover:x.cover_path?L.adImageUrl(x.cover_path):null}));};

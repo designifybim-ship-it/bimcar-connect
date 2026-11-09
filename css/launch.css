@@ -2128,3 +2128,24 @@ html.crop-open,html.crop-open body{overflow:hidden}
 .pe2-ic svg,.ve-mi svg{width:16px;height:16px}
 .pe2-title{resize:none;overflow:hidden;min-height:0}
 @media (max-width:760px){.ve-ph-acts{left:4px;right:4px;top:4px;justify-content:flex-end;flex-wrap:wrap;gap:3px}.ve-ph-acts button{height:24px;min-width:24px;padding:0 7px;font-size:.68rem}.ve-ph-move{left:4px;bottom:4px}}
+/* analytics */
+.an-chart{width:100%;height:auto;margin-top:14px;display:block}
+.an-chart .an-grid{stroke:#eee8f5;stroke-width:1}
+.an-chart .an-ax{font-size:11px;fill:#9a90ad;font-family:var(--body,inherit)}
+.an-chart .an-vis{fill:none;stroke:#8a3ffd;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.an-chart .an-views{fill:none;stroke:#ff4d8d;stroke-width:2;stroke-dasharray:5 4;stroke-linejoin:round}
+.an-chart rect:hover{fill:rgba(138,63,253,.06)}
+.an-legend{display:flex;align-items:center;gap:6px 12px;font-size:.76rem;color:#8a7fa0}
+.an-legend i{display:inline-block;width:16px;height:3px;border-radius:3px;margin-right:4px;vertical-align:middle}
+.an-legend .lv{background:#8a3ffd}.an-legend .lp{background:repeating-linear-gradient(90deg,#ff4d8d 0 5px,transparent 5px 8px)}
+.an-grid-cards{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.an-list{display:grid;gap:6px;margin-top:6px}
+.an-row{position:relative;display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;overflow:hidden;font-size:.86rem}
+.an-bar{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#f1e9ff,#fbe8f2);border-radius:10px;z-index:0}
+.an-k{position:relative;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.an-row b{position:relative;font-size:.84rem}.an-row b small{color:#9a90ad;font-weight:500;margin-left:4px}
+.cv-grid{display:grid;grid-template-columns:auto auto minmax(0,1.4fr) minmax(0,1fr);gap:18px 28px;align-items:start;margin-top:14px}
+.cv-stat{display:flex;flex-direction:column}.cv-stat b{font:700 1.8rem/1.1 var(--display,inherit)}.cv-stat span{font-size:.8rem;color:#8a7fa0}
+.cv-stat .up{color:#167a4a}.cv-stat .down{color:#c2334f}
+@media (max-width:900px){.cv-grid{grid-template-columns:1fr 1fr}.cv-grid>div:nth-child(n+3){grid-column:1/-1}}
+.dash-main .cv-stat b{font-size:1.8rem!important;line-height:1.1}
