@@ -2163,3 +2163,22 @@ html.crop-open,html.crop-open body{overflow:hidden}
 .ve-ph-tools>.ve-ph-ic{grid-column:span 2;flex:none}
 .ve-ph-tools>.ve-ph-wide{grid-column:1/-1}
 .ve-ph.is-loading .ve-ph-tools>button{grid-column:1/-1}
+.ve-story-tag{display:flex;flex-direction:column;align-items:center;text-align:center;min-height:34px;line-height:1.25}
+.ve-story-tag b{font-size:.78rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ve-story-tag span{font-size:.7rem;color:#9a90ad}
+.ve-ph.is-slide .ve-ph-img{opacity:.92}
+.ve-ph-tools>.ve-ph-slide{color:var(--ultra,#7a3cf0);border-style:dashed}
+.ve-ph-head .ve-addph+.ve-addph{margin-left:-6px}
+/* stories row: Instagram look, scrolls sideways with arrows */
+.story-scroll{position:relative}
+.story-list{gap:18px;scroll-behavior:smooth;scroll-snap-type:x proximity;padding:4px 2px 8px}
+.story-circle{width:86px;scroll-snap-align:start}
+.story-ring{width:80px;height:80px;padding:3px;background:conic-gradient(from 200deg,#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
+.story-name{font-size:.74rem;max-width:86px;white-space:nowrap;text-overflow:ellipsis;display:block;-webkit-line-clamp:unset}
+.story-count{position:absolute;margin-top:56px;margin-left:58px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:var(--brand-gradient);color:#fff;font-size:.66rem;font-weight:700;display:grid;place-items:center;border:2px solid #fff}
+.story-arrow{position:absolute;top:30px;z-index:2;width:32px;height:32px;border-radius:50%;border:0;background:#fff;color:var(--ink);font-size:1.3rem;line-height:1;box-shadow:0 6px 16px -6px rgba(40,20,80,.45);cursor:pointer;display:grid;place-items:center}
+.story-arrow[hidden]{display:none}
+.story-arrow.is-prev{left:-8px}.story-arrow.is-next{right:-8px}
+.story-bar+.post-gallery{margin-top:-12px}
+@media (max-width:640px){.story-arrow{display:none!important}.story-ring{width:70px;height:70px}.story-circle{width:76px}}
+.story-circle{position:relative}.story-count{margin:0;top:56px;left:56px}@media (max-width:640px){.story-count{top:48px;left:48px}}

@@ -162,16 +162,20 @@ function mount(root,ta,opts){
   const tag={p:'p',h2:'h2',h3:'h3',quote:'blockquote',callout:'p'}[b.t],al=b.align&&b.align!=='left'?` al-${b.align}`:'';
   const ed=`<${tag} class="ve-edit${al}" contenteditable="true" data-placeholder="${PH[b.t]}">${b.html||''}</${tag}>`;
   return b.t==='callout'?`<aside class="post-callout ve-callout${al}"><span class="pc-ic" aria-hidden="true">i</span>${ed}</aside>`:ed;}
- function photoCards(b){const L=LAYOUTS[b.layout]||LAYOUTS.grid,n=b.photos.length;return b.photos.map((p,i)=>`<div class="ve-ph${p.url?'':' is-loading'}" data-pi="${i}" draggable="${p.url?'true':'false'}">
+ /* stories: photos next to each other with the same business name are one circle with several slides */
+ function storySlides(b){const key=p=>tidy(p.a).toLowerCase(),info=[];let start=0;b.photos.forEach((p,i)=>{if(i&&!(key(p)&&key(p)===key(b.photos[i-1])))start=i;info.push({start});});
+  return info.map((x,i)=>{let end=i;while(end+1<b.photos.length&&info[end+1].start===x.start)end++;return {slide:i-x.start+1,of:end-x.start+1,first:i===x.start};});}
+ function photoCards(b){const L=LAYOUTS[b.layout]||LAYOUTS.grid,n=b.photos.length,st=b.layout==='story'?storySlides(b):null;return b.photos.map((p,i)=>`<div class="ve-ph${p.url?'':' is-loading'}${st&&!st[i].first?' is-slide':''}" data-pi="${i}" draggable="${p.url?'true':'false'}">
+   ${st?`<div class="ve-story-tag"><b>${esc(tidy(p.a)||'No business name yet')}</b><span>${st[i].of>1?`Slide ${st[i].slide} of ${st[i].of}`:'1 slide'}</span></div>`:''}
    <div class="ve-ph-img">${p.url?`<img src="${esc(p.url)}" alt="" draggable="false">`:'<span class="ve-spin" aria-label="Uploading"></span>'}</div>
-   <div class="ve-ph-tools" role="group" aria-label="Photo ${i+1}">${p.url?`<button type="button" data-ve="prep" title="Replace with another photo">Replace</button><button type="button" data-ve="pcrop" title="Crop and position">Crop</button>`:''}${n>1?`<button type="button" class="ve-ph-ic" data-ve="pleft" title="Move left" aria-label="Move left" ${i===0?'disabled':''}>‹</button><button type="button" class="ve-ph-ic" data-ve="pright" title="Move right" aria-label="Move right" ${i===n-1?'disabled':''}>›</button>`:''}${n>1?'<button type="button" class="ve-ph-ic ve-ph-x" data-ve="pdel" title="Remove photo" aria-label="Remove photo">✕</button>':'<button type="button" class="ve-ph-x ve-ph-wide" data-ve="pdel">Remove photo</button>'}</div>
+   <div class="ve-ph-tools" role="group" aria-label="Photo ${i+1}">${p.url?`<button type="button" data-ve="prep" title="Replace with another photo">Replace</button><button type="button" data-ve="pcrop" title="Crop and position">Crop</button>`:''}${n>1?`<button type="button" class="ve-ph-ic" data-ve="pleft" title="Move left" aria-label="Move left" ${i===0?'disabled':''}>‹</button><button type="button" class="ve-ph-ic" data-ve="pright" title="Move right" aria-label="Move right" ${i===n-1?'disabled':''}>›</button>`:''}${n>1?'<button type="button" class="ve-ph-ic ve-ph-x" data-ve="pdel" title="Remove photo" aria-label="Remove photo">✕</button>':'<button type="button" class="ve-ph-x ve-ph-wide" data-ve="pdel">Remove photo</button>'}${st&&p.url?'<button type="button" class="ve-ph-wide ve-ph-slide" data-ve="pslide" title="Add more photos to this business\'s story">+ Add slide</button>':''}</div>
    ${L.two?`<input class="ve-cap" data-cap="a" maxlength="60" placeholder="${esc(L.two[0])}" value="${esc(p.a)}"><input class="ve-cap" data-cap="b" maxlength="140" placeholder="${esc(L.two[1])}" value="${esc(p.b)}">`:`<input class="ve-cap" data-cap="a" maxlength="140" placeholder="Caption (optional)" value="${esc(p.a)}">`}</div>`).join('');}
  function photoBlock(b){const n=b.photos.length,L=LAYOUTS[b.layout]||LAYOUTS.grid;
   const opt=k=>{const v=LAYOUTS[k],off=n>1&&!v.multi;return `<option value="${k}" ${k===b.layout?'selected':''} ${off?'disabled':''}>${esc(v.label)}${off?' (one photo only)':''}</option>`;};
   return `<div class="ve-ph-head"><label class="ve-lay">Layout<select data-ve-layout>
     <optgroup label="One or more photos">${['grid','polaroid','pile','story'].map(opt).join('')}</optgroup>
     <optgroup label="One photo">${['featured','wide','medium','small','left','right','polaroid-left','polaroid-right','polaroid-center'].map(opt).join('')}</optgroup></select></label>
-   <span class="ve-hint">${esc(L.hint(n))}</span>${L.multi||!n?`<button type="button" class="ve-addph" data-ve="addph">+ Add photos</button>`:''}</div>
+   <span class="ve-hint">${esc(L.hint(n))}</span>${L.multi||!n?`<button type="button" class="ve-addph" data-ve="addph">${b.layout==='story'?'+ Add another business':'+ Add photos'}</button>`:''}${b.layout==='story'?'<button type="button" class="ve-addph" data-ve="gridbelow">+ Photo grid underneath</button>':''}</div>
    <div class="ve-phs lay-${esc(b.layout)}">${photoCards(b)}</div>`;}
  function buttonBlock(b){return `<div class="ve-btn-prev al-${b.align||'left'}"><span class="btn ${b.style==='button-outline'?'btn-ghost':'btn-primary'}">${esc(b.label||'Button text')}</span></div>
   <div class="ve-btn-fields"><label>Button text<input class="input" data-bf="label" maxlength="60" value="${esc(b.label)}" placeholder="e.g. Book a table"></label><label>Link<input class="input" data-bf="url" maxlength="400" value="${esc(b.url)}" placeholder="https://"></label><label>Style<select class="input" data-bf="style"><option value="button" ${b.style!=='button-outline'?'selected':''}>Filled</option><option value="button-outline" ${b.style==='button-outline'?'selected':''}>Outline</option></select></label></div>
@@ -226,12 +230,12 @@ function mount(root,ta,opts){
   let b=target.bid?blocks[find(target.bid)]:null;
   if(!b){b={t:'photos',layout:target.layout||'grid',photos:[]};insertAfter(b,cur);}
   if(b.photos.length+files.length>1&&!LAYOUTS[b.layout].multi){b.layout=toMulti(b.layout);opts.toast?.('That layout holds one photo, so these are shown together. You can change the layout above the photos.');}
-  const slots=files.map(()=>({url:'',a:'',b:''}));b.photos.push(...slots);draw();setCur(b.id);scrollTo(b.id);
+  const slots=files.map(()=>({url:'',a:target.name||'',b:''}));if(Number.isInteger(target.at))b.photos.splice(target.at,0,...slots);else b.photos.push(...slots);draw();setCur(b.id);scrollTo(b.id);
   for(let i=0;i<files.length;i++){opts.status?.(`Uploading photo ${i+1} of ${files.length}…`);
    try{slots[i].url=await opts.upload(files[i]);}catch(e){opts.status?.(opts.errorText?opts.errorText(e):String(e.message||e));}
    if(find(b.id)>-1)redrawBlock(b);}
   b.photos=b.photos.filter(p=>p.url);opts.status?.('');draw();done();
-  const cap=doc.querySelector(`[data-id="${b.id}"] .ve-ph:nth-child(${Math.max(1,b.photos.length-files.length+1)}) .ve-cap`);if(LAYOUTS[b.layout]?.two&&cap)cap.focus();}
+  const at=Number.isInteger(target.at)?target.at:b.photos.length-files.length,cap=doc.querySelectorAll(`[data-id="${b.id}"] .ve-ph`)[Math.max(0,at)]?.querySelectorAll('.ve-cap')[target.name?1:0];if(LAYOUTS[b.layout]?.two&&cap)cap.focus();}
  async function replacePhoto(bid,pi,file){const b=blocks[find(bid)];if(!b||!b.photos[pi])return;remember();const old=b.photos[pi].url;b.photos[pi].url='';redrawBlock(b);opts.status?.('Uploading photo…');
   try{b.photos[pi].url=await opts.upload(file);}catch(e){b.photos[pi].url=old;opts.status?.(opts.errorText?opts.errorText(e):String(e.message||e));return redrawBlock(b);}
   opts.status?.('');redrawBlock(b);done();}
@@ -290,9 +294,12 @@ function mount(root,ta,opts){
  doc.addEventListener('click',e=>{const a=e.target.closest('[data-ve]');if(!a)return;const be=a.closest('.ve-b'),bid=be.dataset.id,b=blocks[find(bid)],act=a.dataset.ve;setCur(bid);
   if(act==='up')return move(bid,-1);if(act==='down')return move(bid,1);if(act==='del')return del(bid);
   if(act==='addph')return pick({bid});if(act==='vid')return video(b);
+  if(act==='gridbelow')return pick({layout:'grid'});
   const pi=+a.closest('.ve-ph')?.dataset.pi;if(Number.isNaN(pi))return;
   if(act==='prep')return pick({bid,pi,replace:true});
   if(act==='pcrop')return cropPhoto(bid,pi);
+  if(act==='pslide'){const name=b.photos[pi].a;if(!tidy(name)){opts.toast?.('Type the business name first, then add more slides to its story.');be.querySelectorAll('.ve-ph')[pi]?.querySelector('.ve-cap')?.focus();return;}
+   let end=pi;while(end+1<b.photos.length&&tidy(b.photos[end+1].a).toLowerCase()===tidy(name).toLowerCase())end++;return pick({bid,at:end+1,name});}
   remember();
   if(act==='pdel'){b.photos.splice(pi,1);opts.toast?.('Photo removed. Press ↶ to undo.');}
   if(act==='pleft'&&pi>0)[b.photos[pi-1],b.photos[pi]]=[b.photos[pi],b.photos[pi-1]];
