@@ -371,6 +371,13 @@ function tidyPhotoBlocks(md){const IM=/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(?:\{([\
  const kindOf=b=>{const ls=b.trim().split('\n').map(l=>l.trim());if(!ls[0]||!ls.every(l=>IM.test(l)))return null;const ks=[...new Set(ls.map(l=>l.match(IM)[1]||''))];return ks.length===1&&JOIN.includes(ks[0])?ks[0]:null;};
  bs.forEach(b=>{const k=kindOf(b),prev=out[out.length-1];if(k!==null&&prev&&kindOf(prev)===k)out[out.length-1]=prev.trim()+'\n'+b.trim();else out.push(b);});
  return out.join('\n\n');}
+/* Article format (written by the visual editor, read here):
+   ## Heading   ### Subheading   > quote   !!! callout box   - list   1. list   --- divider
+   **bold** *italic* ++underline++ ~~strike~~ [link](https://…)
+   a line ending in {:center} or {:right} is aligned that way
+   [Label](https://…){button} or {button-outline}   {spacer-s} {spacer} {spacer-l}
+   ![caption](https://…){layout}  photos, see the layouts below; a YouTube link on its own line embeds the video */
+const LINK_URL='(?:https:\\/\\/|mailto:)[^)\\s]+|[\\w-]+\\.html(?:\\?p=[\\w-]+)?(?:#[\\w-]+)?';
 function renderPost(md){
   const inline=t=>esc(t)
     .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?/g,(m,a,u,l)=>{const cap=a&&a!=='Add a caption'?a:'';
@@ -379,8 +386,10 @@ function renderPost(md){
       const cls=l==='pile'?' is-polaroid is-pile':/^polaroid-/.test(l||'')?' is-polaroid is-'+l.slice(9)+' is-placed':l?' is-'+l:'';
       return `<figure class="post-figure${cls}"><img src="${u}" alt="${cap}" loading="lazy" decoding="async">${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;})
     .replace(/\[([^\]]+)\]\(((?:https:\/\/|mailto:)[^)\s]+|[\w-]+\.html(?:\?p=[\w-]+)?(?:#[\w-]+)?)\)/g,(m,t2,u)=>`<a href="${u}"${/^https:/.test(u)?' target="_blank" rel="noopener"':''}>${t2}</a>`)
-    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
-  const out=[];let list=null,para=[],gal=[];
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
+    .replace(/\+\+([^+]+)\+\+/g,'<u>$1</u>').replace(/~~([^~]+)~~/g,'<s>$1</s>');
+  const BTN=new RegExp('^\\[([^\\]]+)\\]\\(('+LINK_URL+')\\)\\{(button|button-outline)\\}$');
+  const out=[];let paraAlign='';let list=null,para=[],gal=[];
   let side=0;
   const kindOf=g=>g.includes('data-story-slide')?'story':g.includes('is-pile')?'pile':g.includes('is-placed')?null:g.includes('is-polaroid')?'polaroid':/<figure class="post-figure">/.test(g)?'gallery':null;
   /* photos of the same kind separated only by blank lines join into one block (one story bar, one row, one grid) */
@@ -391,22 +400,32 @@ function renderPost(md){
     if(b.k==='pile'){const dir=beside?((side++%2)?'left':'right'):'center';return `<div class="polaroid-stack is-${dir}" role="button" tabindex="0" aria-label="Open the photo gallery (${n} photos)">${it.join('')}<span class="ps-count">${n===1?'Tap to view':n+' photos · tap to view'}</span></div>`;}
     if(b.k==='polaroid'){if(n>1)return `<div class="polaroid-row n-${Math.min(n,4)}">${it.join('')}</div>`;const dir=beside?((side++%2)?'left':'right'):'center';return it[0].replace('is-polaroid','is-polaroid is-'+dir);}
     return n>1?`<div class="post-gallery n-${n>=5?'many':n}">${it.join('')}</div>`:it[0];};
-  const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p>${inline(t)}</p>`);para=[];}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
-  String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{const line=raw.trim();let m;
+  const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p${paraAlign?` class="al-${paraAlign}"`:''}>${inline(t)}</p>`);para=[];paraAlign='';}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
+  String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{let line=raw.trim();let m;
     if(!line){flush();return;}
-    if((m=line.match(/^(#{2,3})\s+(.+)/))){flush();out.push(`<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`);return;}
-    if((m=line.match(/^>\s?(.*)/))){flush();out.push(`<blockquote>${inline(m[1])}</blockquote>`);return;}
+    let al='';if((m=line.match(/^(.*\S)\s*\{:(center|right)\}$/))){line=m[1];al=m[2];}const ac=al?` class="al-${al}"`:'';
+    if((m=line.match(/^(#{2,3})\s+(.+)/))){flush();out.push(`<h${m[1].length}${ac}>${inline(m[2])}</h${m[1].length}>`);return;}
+    if((m=line.match(/^!!!\s?(.*)/))){flush();out.push(`<aside class="post-callout${al?' al-'+al:''}"><span class="pc-ic" aria-hidden="true">i</span><p>${inline(m[1])}</p></aside>`);return;}
+    if((m=line.match(/^>\s?(.*)/))){flush();out.push(`<blockquote${ac}>${inline(m[1])}</blockquote>`);return;}
+    if((m=line.match(BTN))){flush();out.push(`<p class="post-btn al-${al||'left'}"><a class="btn ${m[3]==='button'?'btn-primary':'btn-ghost'}" href="${esc(m[2])}"${/^https:/.test(m[2])?' target="_blank" rel="noopener"':''}>${esc(m[1])}</a></p>`);return;}
+    if((m=line.match(/^\{spacer(-s|-l)?\}$/))){flush();out.push(`<div class="post-spacer${m[1]||''}" aria-hidden="true"></div>`);return;}
     if((m=line.match(/^[-*]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ul'){flush();list={tag:'ul',items:[]};}list.items.push(m[1]);return;}
     if((m=line.match(/^\d+[.)]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ol'){flush();list={tag:'ol',items:[]};}list.items.push(m[1]);return;}
     if(/^(-{3,}|\*{3,})$/.test(line)){flush();out.push('<hr>');return;}
     if((m=line.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{6,20})\S*$/))){flush();out.push(`<div class="post-video"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`);return;}
     if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?$/.test(line)){if(/\{featured\}$/.test(line)){flush();out.push(inline(line));return;}const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
-    if(list)flush();para.push(line);});
+    if(list)flush();para.push(line);if(al)paraAlign=al;});
   flush();return out.map((x,i)=>typeof x==='object'?renderBlock(x,typeof out[i+1]==='string'&&/^<p>/.test(out[i+1])):x).join('\n');
 }
+/* What the blog shows, set in Admin → Blog posts → Blog settings */
+const BLOG_DISPLAY_DEFAULT={cover:true,category:true,author:true,date:true,readTime:true,summary:true,layout:'grid',postAuthor:true,postDate:true,postReadTime:true,postTags:true};
+function blogDisplay(){return {...BLOG_DISPLAY_DEFAULT,...(window.Live?.settings?.blog_display||{})};}
+function readMinutes(body){const w=(String(body||'').replace(/!\[[^\]]*\]\([^)]*\)(\{[\w-]+\})?/g,'').replace(/\[([^\]]*)\]\([^)]*\)/g,'$1').match(/[A-Za-z0-9’']+/g)||[]).length;return w>40?Math.max(1,Math.round(w/220)):0;}
 function postCard(p){
-  const href=`post.html?p=${encodeURIComponent(p.slug)}`;
-  return `<article class="journal-card post-card"><a class="journal-cover post-cover" href="${href}" aria-label="Read: ${esc(p.title)}">${p.cover?`<img src="${esc(p.cover)}" alt="" loading="lazy">`:`<span>ISLAND DRIVES</span><strong>${esc(p.title)}</strong>`}</a><div class="journal-card-copy"><span class="journal-category">${esc(p.category||'Island Drives')}</span><h3><a href="${href}">${esc(p.title)}</a></h3>${p.excerpt?`<p>${esc(p.excerpt)}</p>`:''}<a class="arrow-link" href="${href}">Read more →</a></div></article>`;
+  const S=blogDisplay(),href=`post.html?p=${encodeURIComponent(p.slug)}`,mins=readMinutes(p.body);
+  const meta=[S.author&&p.author_name&&esc(p.author_name),S.date&&p.published_at&&esc(fmtDate(p.published_at,{day:'numeric',month:'short',year:'numeric'})),S.readTime&&mins&&`${mins} min read`].filter(Boolean);
+  const cover=S.cover?`<a class="journal-cover post-cover" href="${href}" aria-label="Read: ${esc(p.title)}" tabindex="-1">${p.cover?`<img src="${esc(p.cover)}" alt="" loading="lazy">`:`<span>ISLAND DRIVES</span><strong>${esc(p.title)}</strong>`}</a>`:'';
+  return `<article class="journal-card post-card${S.cover?'':' no-cover'}">${cover}<div class="journal-card-copy">${S.category?`<span class="journal-category">${esc(p.category||'Island Drives')}</span>`:''}<h3><a href="${href}">${esc(p.title)}</a></h3>${meta.length?`<p class="post-card-meta">${meta.map(x=>`<span>${x}</span>`).join('')}</p>`:''}${S.summary&&p.excerpt?`<p>${esc(p.excerpt)}</p>`:''}<a class="arrow-link" href="${href}">Read more →</a></div></article>`;
 }
 /* Sponsored ads managed in Admin → Ads. Any element with data-ad-spot="home|guide|confirm" is filled automatically. */
 function renderAdSpots(){
@@ -734,7 +753,7 @@ function coCoverUrl(c){return c&&c.coverPath&&window.Live?.companyImageUrl?Live.
 function coAvatar(c,cls){const u=coLogoUrl(c);return u?`<span class="co-avatar has-logo ${cls||''}" aria-hidden="true"><img src="${esc(u)}" alt="" loading="lazy" decoding="async"></span>`:`<span class="co-avatar ${cls||''}" aria-hidden="true">${esc(initials(c?.name||''))}</span>`;}
 /* Resize a picked photo in the browser before upload: keeps it sharp but light */
 /* Instagram-style crop: drag to move, pinch / scroll / slider to zoom, then save at an exact size */
-function cropImage(file,{aspect=1,outW=1080,outH=1080,round=false,title='Adjust photo'}={}){
+function cropImage(file,{aspect=1,outW=1080,outH=1080,round=false,title='Adjust photo',allowFit=false}={}){
  return new Promise((resolve,reject)=>{
   if(!file||!/^image\//.test(file.type)){reject(new Error('Choose a JPG, PNG or WebP image.'));return;}
   const url=URL.createObjectURL(file),img=new Image();
@@ -743,16 +762,17 @@ function cropImage(file,{aspect=1,outW=1080,outH=1080,round=false,title='Adjust 
    const prev=document.activeElement;
    const m=document.createElement('div');m.className='crop-modal';m.setAttribute('role','dialog');m.setAttribute('aria-modal','true');m.setAttribute('aria-label',title);
    m.innerHTML=`<div class="crop-panel"><div class="crop-head"><button type="button" class="crop-x" data-c="cancel">Cancel</button><b>${esc(title)}</b><button type="button" class="crop-done" data-c="save">Save</button></div>
-    <div class="crop-stage"><div class="crop-frame${round?' is-round':''}" style="aspect-ratio:${aspect}" tabindex="0" aria-label="Drag to move the photo. Use plus and minus to zoom."><img alt="" draggable="false"><div class="crop-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div></div>
+    <div class="crop-stage"><div class="crop-frame${round?' is-round':''}${allowFit?' can-fit':''}" style="aspect-ratio:${aspect}" tabindex="0" aria-label="Drag to move the photo. Use plus and minus to zoom."><img alt="" draggable="false"><div class="crop-grid" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div></div>
     <div class="crop-tools"><span aria-hidden="true">${icon('image')}</span><input type="range" min="1" max="4" step="0.01" value="1" aria-label="Zoom"><span class="crop-big" aria-hidden="true">${icon('image')}</span></div>
-    <p class="crop-hint">Drag to move · pinch, scroll or use the slider to zoom</p></div>`;
+    <p class="crop-hint">Drag to move · pinch, scroll or use the slider to zoom${allowFit?' · slide all the way left to fit the whole photo':''}</p></div>`;
    document.body.append(m);document.documentElement.classList.add('crop-open');
    const frame=m.querySelector('.crop-frame'),pic=m.querySelector('img'),zoom=m.querySelector('input[type=range]');pic.src=url;
-   const w=img.naturalWidth,h=img.naturalHeight;let W=0,H=0,base=1,z=1,x=0,y=0;
-   const clamp=()=>{const s=base*z;x=Math.min(0,Math.max(W-w*s,x));y=Math.min(0,Math.max(H-h*s,y));};
+   const w=img.naturalWidth,h=img.naturalHeight;let W=0,H=0,base=1,z=1,x=0,y=0,minZ=1;
+   /* if the photo is smaller than the frame on one side (zoomed out to fit), keep it centred on that side */
+   const clamp=()=>{const s=base*z,iw=w*s,ih=h*s;x=iw<=W?(W-iw)/2:Math.min(0,Math.max(W-iw,x));y=ih<=H?(H-ih)/2:Math.min(0,Math.max(H-ih,y));};
    const paint=()=>{const s=base*z;pic.style.width=w*s+'px';pic.style.height=h*s+'px';pic.style.transform=`translate(${x}px,${y}px)`;};
-   const measure=(keep)=>{const r=frame.getBoundingClientRect();const cx=keep&&W?(W/2-x)/(base*z):w/2,cy=keep&&H?(H/2-y)/(base*z):h/2;W=r.width;H=r.height;base=Math.max(W/w,H/h);x=W/2-cx*base*z;y=H/2-cy*base*z;clamp();paint();};
-   const zoomTo=(nz,px=W/2,py=H/2)=>{nz=Math.min(4,Math.max(1,nz));const s0=base*z,s1=base*nz;x=px-(px-x)*s1/s0;y=py-(py-y)*s1/s0;z=nz;zoom.value=z;clamp();paint();};
+   const measure=(keep)=>{const r=frame.getBoundingClientRect();const cx=keep&&W?(W/2-x)/(base*z):w/2,cy=keep&&H?(H/2-y)/(base*z):h/2;W=r.width;H=r.height;base=Math.max(W/w,H/h);minZ=allowFit?Math.min(W/w,H/h)/base:1;zoom.min=String(Math.min(1,minZ));x=W/2-cx*base*z;y=H/2-cy*base*z;clamp();paint();};
+   const zoomTo=(nz,px=W/2,py=H/2)=>{nz=Math.min(4,Math.max(minZ,nz));const s0=base*z,s1=base*nz;x=px-(px-x)*s1/s0;y=py-(py-y)*s1/s0;z=nz;zoom.value=z;clamp();paint();};
    requestAnimationFrame(()=>measure(false));const ro=window.ResizeObserver?new ResizeObserver(()=>measure(true)):null;ro?.observe(frame);
    const pts=new Map();let last=null,pinch=null;
    frame.addEventListener('pointerdown',e=>{frame.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});frame.classList.add('is-moving');if(pts.size===2){const [a,b]=[...pts.values()];pinch={d:Math.hypot(a.x-b.x,a.y-b.y),z};}else last={x:e.clientX,y:e.clientY};});
@@ -784,7 +804,7 @@ async function resizeImage(file,{maxW=2400,maxH=2400,fillW=0,fillH=0}={}){
  if(fillW){const s=Math.max(W/iw,H/ih),w=iw*s,h=ih*s;g.drawImage(bmp,(W-w)/2,(H-h)/2,w,h);}else g.drawImage(bmp,0,0,W,H);
  const enc=(t,q)=>new Promise(r=>c.toBlob(r,t,q));let blob=await enc('image/webp',.92);if(!blob||blob.type!=='image/webp')blob=await enc('image/png');
  if(blob.size>5.5*1048576)blob=await enc('image/webp',.8)||blob;return blob;}
-window.App = {tidyPhotoBlocks, coAvatar, coLogoUrl, coCoverUrl, resizeImage, cropImage, setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
+window.App = {blogDisplay, readMinutes, tidyPhotoBlocks, coAvatar, coLogoUrl, coCoverUrl, resizeImage, cropImage, setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
   vehicleCard, carImg, specialCard, boosts, activeBoosts, isFeatured, partnerCard, todayISO, payInfo, payBlock, tickCountdowns, MARK, companyCard, toast, openModal, closeModal, copy, countUp, fmtDate, daysBetween, esc, go, RATE};
 function offlineNotice(){
   if(document.querySelector('.offline-notice'))return;

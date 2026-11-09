@@ -569,155 +569,34 @@ S.posts=async()=>{
  await loadPosts(true);
  if(!ready())return head('Blog posts','Write and publish Island Drives articles.')+upgradeNotice();
  const f=state.pf||'all',list=posts.filter(p=>f==='all'||postStatus(p)===f);
- return head('Blog posts','Write Island Drives articles. Published posts appear on the blog straight away.',`<a class="btn btn-ghost" href="blog.html" target="_blank" rel="noopener">${icon('eye')}View blog</a><button class="btn btn-primary" data-post-new>${icon('plus')}New post</button>`)+
+ return head('Blog posts','Write Island Drives articles. Published posts appear on the blog straight away.',`<button class="btn btn-ghost" data-blog-settings>${icon('settings')}Blog settings</button><a class="btn btn-ghost" href="blog.html" target="_blank" rel="noopener">${icon('eye')}View blog</a><button class="btn btn-primary" data-post-new>${icon('plus')}New post</button>`)+
  (()=>{const miss=(window.BIMCAR_BUILTIN_POSTS||[]).filter(b=>!posts.some(p=>p.slug===b.slug));return miss.length?`<div class="notice info pe-import" style="margin-bottom:18px">${icon('edit')}<div style="flex:1"><b>${miss.length} original Island Drives article${miss.length===1?' is':'s are'} not in your editor yet.</b><p style="margin:2px 0 0">${miss.map(b=>esc(b.title)).join(' · ')}. Import them once to edit them, add photos and manage them here. Their web links keep working.</p></div><button class="btn btn-primary btn-sm" data-import-builtin>Import ${miss.length===1?'it':'them'}</button></div>`:'';})()+
  `<div class="tabs" style="margin-bottom:16px">${[['all','All'],['published','Published'],['scheduled','Scheduled'],['draft','Drafts']].map(([k,t])=>`<button class="${f===k?'on':''}" data-state="pf" data-val="${k}">${t}<span class="count">${k==='all'?posts.length:posts.filter(p=>postStatus(p)===k).length}</span></button>`).join('')}</div>
  <div class="grid g3">${list.map(p=>{const s=POST_LABEL[postStatus(p)];return `<article class="card ad-admin-card" data-post="${esc(p.id)}"><div class="ad-thumb post-thumb">${p.cover?`<img src="${esc(p.cover)}" alt="">`:`<span class="post-thumb-ph">${icon('image')}<b>No cover yet</b><small>Add one when you edit</small></span>`}<span class="st ${s[1]}">${s[0]}</span></div><span class="journal-category" style="display:block;margin-top:12px">${esc(p.category||'Island Drives')}</span><h3 style="margin:4px 0">${esc(p.title)}</h3><p class="small muted" style="margin:0 0 14px">${p.published_at?d(p.published_at):'Not published'} · ${Math.max(1,Math.round((p.body||'').split(/\s+/).length/200))} min read</p><div class="post-acts"><button class="btn btn-primary btn-sm" data-post-act="edit">${icon('edit')}Edit</button><a class="pa-ic" href="post.html?p=${encodeURIComponent(p.slug)}" target="_blank" rel="noopener" title="${postStatus(p)==='published'?'View on the site':'Preview'}" aria-label="${postStatus(p)==='published'?'View on the site':'Preview'}">${icon('eye')}</a>${p.status==='published'?`<button class="pa-ic" data-post-act="unpublish" title="Unpublish (back to draft)" aria-label="Unpublish">${icon('undo')}</button>`:`<button class="pa-ic pa-go" data-post-act="publish" title="Publish now" aria-label="Publish">${icon('check')}</button>`}<button class="pa-ic pa-del" data-post-act="delete" title="Delete post" aria-label="Delete post">${icon('trash')}</button></div></article>`;}).join('')||`<div style="grid-column:1/-1">${empty('No posts yet','Write your first Island Drives article: a favourite drive, a beach stop or a local food spot.')}</div>`}</div>
  <p class="small muted" style="margin-top:18px">Your three original articles (Top 10 places, Three island drives, Beach bars) are built into the site and always show on the blog.</p>`;
 };
-async function postEditor(p){
- const x=p?{...p}:{title:'',slug:'',excerpt:'',category:'Island drives',body:'',status:'draft',published_at:A.todayISO(),author_name:Live.user.name||''};
- let cover=null,coverSrc=x.cover||null,slugTouched=!!p;
- document.getElementById('post-editor')?.remove();
- const m=document.createElement('div');m.className='modal';m.id='post-editor';m.setAttribute('aria-hidden','true');
- m.innerHTML=`<div class="modal-box post-editor" role="dialog" aria-labelledby="pe-t"><div class="modal-head"><h3 id="pe-t">${p?'Edit post':'New blog post'}</h3><button class="icon-btn" data-pe="close" aria-label="Close">${icon('close')}</button></div>
- <form id="pe-form" class="post-editor-grid">
-  <div class="stack">
-   <label class="f">Title<input class="input" name="title" required maxlength="160" value="${esc(x.title)}" placeholder="e.g. A Sunday drive up the east coast"></label>
-   <div class="form-grid"><label class="f">Category<input class="input" name="category" maxlength="60" value="${esc(x.category||'')}" list="pe-cats"><datalist id="pe-cats"><option>Island drives</option><option>Places &amp; viewpoints</option><option>Food &amp; bar stops</option><option>Driving tips</option><option>News</option></datalist></label><label class="f">Web address<span class="hint">post.html?p=…</span><input class="input" name="slug" maxlength="80" value="${esc(x.slug)}" pattern="[a-z0-9]+(-[a-z0-9]+)*"></label></div>
-   <label class="f">Summary<span class="hint">Shown on the blog card and under the title (up to 300 characters)</span><textarea class="input" name="excerpt" maxlength="300" rows="2">${esc(x.excerpt||'')}</textarea></label>
-   <div><span class="f" style="font-weight:600">Article</span>
-    <div class="pe-toolbar" role="toolbar" aria-label="Formatting"><button type="button" data-fmt="h2" title="Heading">H2</button><button type="button" data-fmt="h3" title="Subheading">H3</button><button type="button" data-fmt="bold" title="Bold"><b>B</b></button><button type="button" data-fmt="italic" title="Italic"><i>I</i></button><button type="button" data-fmt="link" title="Link">${icon('link')}</button><button type="button" data-fmt="ul" title="Bullet list">${icon('list')}</button><button type="button" data-fmt="quote" title="Quote">“ ”</button><button type="button" data-fmt="ol" title="Numbered list">1.</button><button type="button" data-fmt="hr" title="Divider line">―</button><button type="button" data-fmt="video" title="YouTube video">${icon('play')}</button><select class="pe-layout sr" id="pe-layout" title="Layout for the next photos you add" aria-label="Photo layout"><option value="">Photo: full width</option><option value="wide">Photo: extra wide</option><option value="medium">Photo: medium</option><option value="small">Photo: small</option><option value="left">Photo: left, text beside</option><option value="right">Photo: right, text beside</option><option value="polaroid">Photo: polaroid row</option><option value="polaroid-left">Photo: polaroid left</option><option value="polaroid-center">Photo: polaroid centred</option><option value="polaroid-right">Photo: polaroid right</option><option value="pile">Photo: photo pile (opens gallery)</option><option value="featured">Photo: featured person / owner</option><option value="story">Photo: business story</option></select><div class="pe-add"><button type="button" class="pe-img-btn" id="pe-add-btn" aria-expanded="false" aria-controls="pe-add-menu">${icon('image')}<span>Add photos</span></button><div class="pe-add-menu" id="pe-add-menu" hidden>${[['polaroid','Polaroid row','2 to 4 prints side by side, neatly spaced'],['polaroid-right','Polaroid beside text','One print on the right, words wrap around it'],['polaroid-left','Polaroid beside text (left)','One print on the left'],['polaroid-center','Polaroid centred','One print in the middle of the page'],['pile','Photo pile','A stack of prints that opens a gallery'],['featured','Featured person','An owner or local, with their name and business'],['story','Business story (paid feature)','Instagram-style story circle. Caption: Business | news'],['','Normal photo or gallery','Full width, or a grid if you pick several']].map(([v,t,d])=>`<button type="button" data-add-lay="${v}"><b>${t}</b><span>${d}</span></button>`).join('')}</div><input type="file" accept="image/*" multiple class="sr" id="pe-inline-img"></div></div>
-    <textarea class="input pe-body" name="body" rows="20" maxlength="60000" placeholder="Start writing… Use the buttons above for headings, bold text, links and lists.">${esc(window.PostVisual?(x.body?PostVisual.serialize(PostVisual.parse(A.tidyPhotoBlocks(x.body))):''):A.tidyPhotoBlocks(x.body||''))}</textarea>
-    <div class="pe-photos" id="pe-photos" hidden></div><div class="pe-foot small muted"><span id="pe-count">0 words</span><span>Tip: use <b>Add photos</b> to upload polaroids, a photo pile, a featured person or a gallery. You can also drag or paste photos into the text.</span><span id="pe-saved"></span></div></div>
-  </div>
-  <div class="stack">
-   <label class="dropzone ad-drop" id="pe-drop"><input type="file" accept="image/*" id="pe-file" class="sr"><span>${icon('upload')}</span><b>Cover image</b><span class="small muted">Any photo, including transparent PNGs. Kept sharp and sized for fast loading automatically.</span></label>
-   <div class="pe-cover-opts"><div class="pills" role="radiogroup" aria-label="Cover fit"><button type="button" data-cmode="contain" class="on">Show whole image</button><button type="button" data-cmode="fill">Fill and crop</button></div><div class="pills" id="pe-cfocus" role="radiogroup" aria-label="Crop position" hidden><button type="button" data-cfocus="top">Top</button><button type="button" data-cfocus="center" class="on">Centre</button><button type="button" data-cfocus="bottom">Bottom</button></div></div>
-   <div class="pe-cover-cur" id="pe-cover-cur" ${coverSrc?'':'hidden'}><img id="pe-cover-thumb" src="${esc(coverSrc||'')}" alt="Current cover photo"><button type="button" class="btn btn-ghost btn-sm" id="pe-cover-del">${icon('close')}Remove cover photo</button></div><p class="small muted" id="pe-size">${coverSrc?'This is the current cover. Upload a new one above to replace it.':'No cover yet. Without one, the blog card shows a coloured title card.'}</p>
-   <div class="form-grid"><label class="f">Status<select class="input" name="status"><option value="draft" ${x.status!=='published'?'selected':''}>Draft (only you can see it)</option><option value="published" ${x.status==='published'?'selected':''}>Published</option></select></label><label class="f">Publish date<span class="hint">A future date schedules it</span><input class="input" type="date" name="published_at" value="${esc(x.published_at||A.todayISO())}"></label></div>
-   <label class="f">Author<input class="input" name="author_name" maxlength="80" value="${esc(x.author_name||'')}"></label>
-   <div class="small muted">Preview</div><div class="pe-preview" id="pe-preview"></div>
-   <p class="form-msg" id="pe-msg" role="alert"></p>
-   <div class="row" style="justify-content:flex-end"><button type="button" class="btn btn-ghost" data-pe="close">Cancel</button><button class="btn btn-primary" type="submit" id="pe-save">${p?'Save post':'Save post'}</button></div>
-  </div>
- </form></div>`;
+/* The full-page editor lives in js/post-editor.js (writing canvas: js/post-visual.js) */
+function postEditor(p){return PostEditor.open(p,{A,Live,optimiseImage,formBox,confirmBox,slugify,posts:()=>posts||[],onSaved:()=>draw()});}
+/* Blog settings: what the blog list and posts show */
+async function blogSettings(){const S=A.blogDisplay();
+ document.getElementById('blog-settings')?.remove();
+ const m=document.createElement('div');m.className='modal';m.id='blog-settings';m.setAttribute('aria-hidden','true');
+ const sw=(k,label,sub)=>`<label class="pe2-switch"><input type="checkbox" name="${k}" ${S[k]?'checked':''}><span class="pe2-tog" aria-hidden="true"></span><span>${label}${sub?`<small>${sub}</small>`:''}</span></label>`;
+ m.innerHTML=`<div class="modal-box bs-box" role="dialog" aria-labelledby="bs-t"><div class="modal-head"><h3 id="bs-t">Blog settings</h3><button class="icon-btn" data-bs="close" aria-label="Close">${icon('close')}</button></div>
+  <form id="bs-form"><div class="bs-cols"><div><h4>Blog cards show</h4>${sw('cover','Cover photo')}${sw('category','Category label')}${sw('author','Writer name')}${sw('date','Publish date')}${sw('readTime','Reading time')}${sw('summary','Summary')}</div>
+  <div><h4>Layout</h4><div class="bs-lay">${[['grid','Grid','Three cards per row'],['list','List','Photo on the left, words on the right'],['featured','Big first post','Newest post large, the rest in a grid']].map(([k,t,d])=>`<label class="bs-opt"><input type="radio" name="layout" value="${k}" ${S.layout===k?'checked':''}><span class="bs-pic bs-${k}" aria-hidden="true"><i></i><i></i><i></i></span><b>${t}</b><small>${d}</small></label>`).join('')}</div>
+  <h4>Inside a post</h4>${sw('postAuthor','Writer name')}${sw('postDate','Publish date')}${sw('postReadTime','Reading time')}${sw('postTags','Tags at the bottom')}</div></div>
+  <p class="small muted">View, like and comment counts aren't shown because the site doesn't count those yet.</p>
+  <div class="row" style="justify-content:flex-end;margin-top:14px"><button type="button" class="btn btn-ghost" data-bs="close">Cancel</button><button class="btn btn-primary" type="submit">Save settings</button></div></form></div>`;
  document.body.appendChild(m);
- const form=m.querySelector('form'),body=form.elements.body,prev=m.querySelector('#pe-preview'),msg=m.querySelector('#pe-msg');
- /* Full-screen writing layout: write on the left, settings on the right, preview as a tab */
- m.classList.add('pe-full');
- {const [mainCol,side]=form.querySelectorAll(':scope > .stack'),catGrid=mainCol.querySelector(':scope > .form-grid'),saveRow=side.querySelector(':scope > .row:last-child'),art=body.closest('div'),pvLabel=prev.previousElementSibling;
-  mainCol.classList.add('pe-main');side.classList.add('pe-side');
-  side.prepend(msg);side.prepend(saveRow);saveRow.classList.add('pe-save-row');
-  const h=document.createElement('div');h.className='pe-side-h';h.textContent='Post settings';saveRow.after(msg);msg.after(h);
-  side.appendChild(catGrid);catGrid.classList.add('pe-cat');
-  if(pvLabel&&pvLabel.classList.contains('small'))pvLabel.remove();
-  art.classList.add('pe-art');art.insertAdjacentHTML('afterbegin','<div class="pills pe-mode" role="tablist"><button type="button" data-pemode="write" class="on">Edit</button><button type="button" data-pemode="preview">Preview</button></div><button type="button" class="btn btn-ghost btn-sm pv-addbtn" data-pv-add>Add photos or a gallery</button>');
-  art.appendChild(prev);}
- const basePreview=()=>{const v=Object.fromEntries(new FormData(form));prev.innerHTML=`${coverSrc?`<img class="pe-cover" src="${esc(coverSrc)}" alt="">`:''}<span class="journal-category">${esc(v.category||'Island Drives')}</span><h2>${esc(v.title||'Your title')}</h2>${v.excerpt?`<p class="lede">${esc(v.excerpt)}</p>`:''}<div class="post-body">${A.renderPost(v.body)}</div>`;};
- /* Preview tab: drag blocks into place, resize photos and build galleries right on the page */
- const IMGL=/^!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{([\w-]+)\})?$/;
- const blocks=()=>body.value.replace(/\r/g,'').split(/\n\s*\n/).map(b=>b.trim()).filter(Boolean);
- const setBlocks=bs=>{body.value=bs.join('\n\n')+'\n';body.dispatchEvent(new Event('input',{bubbles:true}));};
- const isArrange=()=>m.querySelector('.pe-art')?.classList.contains('is-preview');
- function arrange(){basePreview();const holder=prev.querySelector('.post-body');if(!holder)return;const bs=blocks();
-  holder.innerHTML=bs.map((b,i)=>{const lines=b.split('\n'),imgs=lines.every(l=>IMGL.test(l.trim()));const kind=imgs?(lines.length>1?'gallery':'photo'):(/^#{2,3}\s/.test(b)?'heading':'text');
-   const lay=imgs&&lines.length===1?(lines[0].trim().match(IMGL)[3]||''):'';
-   const tools=kind==='photo'?`<div class="pv-tools">${[['','Full'],['wide','Wide'],['medium','Medium'],['small','Small'],['left','Left'],['right','Right'],['polaroid','Polaroid row'],['polaroid-left','Polaroid left'],['polaroid-center','Polaroid centre'],['polaroid-right','Polaroid right'],['pile','Photo pile'],['featured','Featured person'],['story','Business story']].map(([k,t])=>`<button type="button" data-pv="lay:${k}" class="${lay===k?'on':''}">${t}</button>`).join('')}${IMGL.test((bs[i+1]||'').split('\n')[0].trim())?'<button type="button" data-pv="join">Make gallery with next</button>':''}</div>`:kind==='gallery'?`<div class="pv-tools"><span>Gallery of ${lines.length}</span><button type="button" data-pv="split">Split into single photos</button>${IMGL.test((bs[i+1]||'').split('\n')[0].trim())?'<button type="button" data-pv="join">Add next photo</button>':''}</div>`:'';
-   return `<div class="pv-blk pv-${kind}" draggable="true" data-blk="${i}"><div class="pv-bar"><span class="pv-grip" title="Drag to move">⠿</span><button type="button" data-pv="up" title="Move up" ${i===0?'disabled':''}>↑</button><button type="button" data-pv="down" title="Move down" ${i===bs.length-1?'disabled':''}>↓</button><button type="button" data-pv="del" title="Delete this block">✕</button></div>${A.renderPost(b)}${tools}</div>`;}).join('')||'<p class="muted">Write something first, then arrange it here.</p>';}
- const preview=()=>basePreview();
- let dragFrom=null;
- prev.addEventListener('dragstart',e=>{const b=e.target.closest?.('.pv-blk');if(!b)return;dragFrom=+b.dataset.blk;b.classList.add('dragging');e.dataTransfer.effectAllowed='move';try{e.dataTransfer.setData('text/plain','x');}catch{}});
- prev.addEventListener('dragend',e=>{prev.querySelectorAll('.pv-blk').forEach(b=>b.classList.remove('dragging','drop-before','drop-after'));});
- prev.addEventListener('dragover',e=>{const b=e.target.closest?.('.pv-blk');if(dragFrom===null||!b)return;e.preventDefault();const r=b.getBoundingClientRect(),after=e.clientY>r.top+r.height/2;prev.querySelectorAll('.pv-blk').forEach(x=>x.classList.remove('drop-before','drop-after'));b.classList.add(after?'drop-after':'drop-before');});
- prev.addEventListener('drop',e=>{const b=e.target.closest?.('.pv-blk');if(dragFrom===null||!b)return;e.preventDefault();const r=b.getBoundingClientRect(),after=e.clientY>r.top+r.height/2;let to=+b.dataset.blk+(after?1:0);const bs=blocks(),[x]=bs.splice(dragFrom,1);if(to>dragFrom)to--;bs.splice(to,0,x);dragFrom=null;setBlocks(bs);arrange();});
- prev.addEventListener('click',e=>{const a=e.target.closest('[data-pv]');if(!a)return;const i=+a.closest('.pv-blk').dataset.blk,bs=blocks(),act=a.dataset.pv;
-  if(act==='up'&&i>0)[bs[i-1],bs[i]]=[bs[i],bs[i-1]];
-  else if(act==='down'&&i<bs.length-1)[bs[i+1],bs[i]]=[bs[i],bs[i+1]];
-  else if(act==='del'){if(!confirm('Delete this block from the article?'))return;bs.splice(i,1);}
-  else if(act==='join'){bs[i]=bs[i]+'\n'+bs[i+1].split('\n').map(l=>l.trim().replace(/\{\w+\}$/,'')).join('\n');bs.splice(i+1,1);}
-  else if(act==='split'){bs.splice(i,1,...bs[i].split('\n').map(l=>l.trim()));}
-  else if(act.startsWith('lay:')){const mm=bs[i].trim().match(IMGL);if(mm){const k=act.slice(4);bs[i]=`![${mm[1]}](${mm[2]})${k?`{${k}}`:''}`;}}
-  setBlocks(bs);arrange();});
- const wrap=(before,after,placeholder)=>{const s0=body.selectionStart,s1=body.selectionEnd,sel=body.value.slice(s0,s1)||placeholder;body.setRangeText(before+sel+after,s0,s1,'end');body.focus();if(!body.value.slice(s0,s1))body.setSelectionRange(s0+before.length,s0+before.length+sel.length);preview();};
- const linePrefix=prefix=>{const s0=body.selectionStart,start=body.value.lastIndexOf('\n',s0-1)+1;body.setRangeText(prefix,start,start,'end');body.focus();preview();};
- m.addEventListener('click',async e=>{
-  if(e.target.closest('[data-pe=close]')||e.target===m){A.closeModal(m);setTimeout(()=>m.remove(),300);return;}
-  if(e.target.closest('[data-pv-add]')){body.setSelectionRange(body.value.length,body.value.length);m.querySelector('#pe-inline-img').click();return;}
-  const pm=e.target.closest('[data-pemode]');if(pm){const pv=pm.dataset.pemode==='preview';m.querySelectorAll('[data-pemode]').forEach(b=>b.classList.toggle('on',b===pm));m.querySelector('.pe-art').classList.toggle('is-preview',pv);preview();return;}
-  const cm=e.target.closest('[data-cmode]');if(cm){cMode=cm.dataset.cmode;cm.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===cm));m.querySelector('#pe-cfocus').hidden=cMode!=='fill';if(coverFile)setCover();return;}
-  const cf=e.target.closest('[data-cfocus]');if(cf){cFocus=cf.dataset.cfocus;cf.parentElement.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b===cf));if(coverFile)setCover();return;}
-  const ph=e.target.closest('[data-ph]');if(ph){photoAction(+ph.closest('[data-phi]').dataset.phi,ph.dataset.ph);return;}
-  const f=e.target.closest('[data-fmt]')?.dataset.fmt;if(!f)return;
-  if(f==='h2')linePrefix('## ');if(f==='h3')linePrefix('### ');if(f==='bold')wrap('**','**','bold text');if(f==='italic')wrap('*','*','italic text');if(f==='ul')linePrefix('- ');if(f==='quote')linePrefix('> ');if(f==='ol')linePrefix('1. ');if(f==='hr')wrap('\n\n---\n\n','','');if(f==='video'){const url=(await formBox('Add a YouTube video',[{name:'url',label:'YouTube link',type:'url',value:'https://www.youtube.com/watch?v='}],'Add video'))?.url;if(url&&/(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)[\w-]{6,}/.test(url))wrap('\n\n'+url.trim()+'\n\n','','');else if(url)A.toast('Paste a YouTube link, for example https://www.youtube.com/watch?v=…');}
-  if(f==='link'){const url=(await formBox('Add a link',[{name:'url',label:'Link address',type:'url',value:'https://'}],'Add link'))?.url;if(url&&/^(https:\/\/|mailto:|[\w-]+\.html)/.test(url))wrap('[',`](${url})`,'link text');}
- });
- let coverFile=null,cMode='contain',cFocus='center',coverRemoved=false;
- const paintCover=()=>{const c=m.querySelector('#pe-cover-cur');c.hidden=!coverSrc;if(coverSrc)m.querySelector('#pe-cover-thumb').src=coverSrc;};
- m.querySelector('#pe-cover-del').addEventListener('click',()=>{cover=null;coverSrc=null;coverFile=null;coverRemoved=true;m.querySelector('#pe-file').value='';m.querySelector('#pe-size').textContent='Cover removed. Save the post to keep this change. The blog card will show a coloured title card.';paintCover();preview();});
- async function setCover(file){coverFile=file||coverFile;file=coverFile;if(!file)return;const sz=m.querySelector('#pe-size');sz.textContent='Optimising…';try{cover=await optimiseImage(file,{mode:cMode==='contain'?'natural':cMode,focus:cFocus});coverSrc=cover.url;coverRemoved=false;paintCover();sz.innerHTML=`<b>Optimised:</b> ${esc(cover.from)} · ${kb(cover.before)} → ${cover.to} · ${kb(cover.after)}`;}catch(err){cover=null;sz.textContent=err.message;}preview();}
- m.querySelector('#pe-file').addEventListener('change',e=>e.target.files[0]&&setCover(e.target.files[0]));
- const drop=m.querySelector('#pe-drop');['dragover','dragenter'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,()=>drop.classList.remove('over')));drop.addEventListener('drop',e=>{e.preventDefault();e.dataTransfer.files[0]&&setCover(e.dataTransfer.files[0]);});
- async function addPhotos(files){files=[...files].filter(f=>/^image\//.test(f.type)).slice(0,12);if(!files.length)return;const urls=[];
-  for(let i=0;i<files.length;i++){msg.textContent=`Uploading photo ${i+1} of ${files.length}…`;try{const o=await optimiseImage(files[i],{mode:'natural'});const path=await Live.admin.uploadAdImage(o.blob,'posts');urls.push(Live.adImageUrl(path));}catch(err){msg.textContent=Live.error(err);return;}}
-  msg.textContent='';const lay=m.querySelector('#pe-layout')?.value||'',mk=lay&&(files.length===1||/polaroid|pile|featured|story/.test(lay))?`{${lay}}`:'';const md='\n\n'+urls.map((u,i)=>`![${files.length>1?'':'Add a caption'}](${u})${mk}`).join('\n')+'\n\n';const ta=form.elements.body,at=ta.selectionStart??ta.value.length;ta.value=A.tidyPhotoBlocks(ta.value.slice(0,at)+md+ta.value.slice(at)).replace(/\n{3,}/g,'\n\n');ta.dispatchEvent(new Event('input',{bubbles:true}));A.toast(lay==='story'?'Story added. Type the business name and news under "Photos in this article" (Business | News). Stories next to each other share one row.':lay==='featured'?'Added. Type their name and business under "Photos in this article" (Name | Business).':files.length>1?`${files.length} photos added. Photos next to each other join one ${/polaroid/.test(lay)?'row':lay==='pile'?'pile':'grid'}.`:'Photo added. Add a caption under "Photos in this article".');}
- m.querySelector('#pe-inline-img').addEventListener('change',e=>{addPhotos(e.target.files);e.target.value='';});
- {const ab=m.querySelector('#pe-add-btn'),menu=m.querySelector('#pe-add-menu'),tog=o=>{menu.hidden=!o;ab.setAttribute('aria-expanded',o);};
-  ab.addEventListener('click',e=>{e.stopPropagation();tog(menu.hidden);});
-  menu.addEventListener('click',e=>{const b=e.target.closest('[data-add-lay]');if(!b)return;const sel=m.querySelector('#pe-layout');if(sel)sel.value=b.dataset.addLay;tog(false);m.querySelector('#pe-inline-img').click();});
-  document.addEventListener('click',e=>{if(!e.target.closest('.pe-add'))tog(false);});
-  m.addEventListener('keydown',e=>{if(e.key==='Escape'&&!menu.hidden){e.stopPropagation();tog(false);ab.focus();}},true);}
- body.addEventListener('paste',e=>{const fs=[...(e.clipboardData?.files||[])].filter(f=>/^image\//.test(f.type));if(fs.length){e.preventDefault();addPhotos(fs);}});
- body.addEventListener('keydown',e=>{if(!(e.ctrlKey||e.metaKey))return;const k=e.key.toLowerCase();if(k==='b'){e.preventDefault();wrap('**','**','bold text');}else if(k==='i'){e.preventDefault();wrap('*','*','italic text');}else if(k==='k'){e.preventDefault();m.querySelector('[data-fmt=link]').click();}});
- const draftKey='bimcar.postdraft.'+(p?.id||'new'),countEl=m.querySelector('#pe-count'),savedEl=m.querySelector('#pe-saved');
- const count=()=>{const w=(body.value.replace(/!\[[^\]]*\]\([^)]*\)(\{\w+\})?/g,'').match(/[A-Za-z0-9’']+/g)||[]).length;countEl.textContent=`${w} word${w===1?'':'s'} · ${Math.max(1,Math.round(w/220))} min read`;};
- let draftT;form.addEventListener('input',()=>{count();clearTimeout(draftT);draftT=setTimeout(()=>{try{localStorage.setItem(draftKey,JSON.stringify({...Object.fromEntries(new FormData(form)),at:Date.now()}));savedEl.textContent='Draft saved on this device';}catch{}},600);});
- try{const dr=JSON.parse(localStorage.getItem(draftKey)||'null');if(dr&&dr.body&&dr.body!==body.value&&Date.now()-dr.at<14*864e5){const bar=document.createElement('div');bar.className='pe-restore';bar.innerHTML='<span>You have unsaved changes from earlier.</span><button type="button" class="btn btn-ghost btn-sm">Restore them</button>';bar.querySelector('button').addEventListener('click',()=>{['title','slug','excerpt','category','body','author_name'].forEach(k=>{if(form.elements[k]&&dr[k]!==undefined)form.elements[k].value=dr[k];});bar.remove();body.dispatchEvent(new Event('ve-reload'));preview();count();});form.prepend(bar);}}catch{}
- count();
- /* Photos in this article: resize, move, caption or remove each one */
- const IMG_RE=/^!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{([\w-]+)\})?$/;
- const LAYOUTS=[['','Full'],['wide','Wide'],['medium','Medium'],['small','Small'],['left','Left'],['right','Right'],['polaroid','Polaroid row'],['polaroid-left','Polaroid left'],['polaroid-center','Polaroid centre'],['polaroid-right','Polaroid right'],['pile','Photo pile'],['featured','Featured person'],['story','Business story']];
- function photoLines(){return body.value.split('\n').map((l,i)=>({i,m:l.trim().match(IMG_RE)})).filter(x=>x.m);}
- function renderPhotos(){const box=m.querySelector('#pe-photos'),ph=photoLines();box.hidden=!ph.length;if(!ph.length){box.innerHTML='';return;}
-  box.innerHTML=`<div class="pe-photos-head"><b>Photos in this article</b><span class="small muted">Change the size or position, add a caption, or move a photo up or down.</span></div>`+ph.map((x,n)=>{const [,cap,url,lay]=x.m;return `<div class="pe-ph" data-phi="${x.i}"><img src="${esc(url)}" alt=""><div class="pe-ph-body"><input class="input pe-cap" value="${esc(cap==='Add a caption'?'':cap)}" placeholder="${lay==='featured'?'Name | Business or role, e.g. Marcia Best | Owner, Oistins Fish Fry':lay==='story'?'Business | News, e.g. Oistins Fish Fry | New Friday menu from 6pm':'Caption (optional)'}" data-cap="${x.i}"><div class="pe-ph-lays">${LAYOUTS.map(([k,t])=>`<button type="button" data-ph="lay:${k}" class="${(lay||'')===k?'on':''}">${t}</button>`).join('')}</div></div><div class="pe-ph-acts"><button type="button" data-ph="up" title="Move up" ${n===0?'disabled':''}>↑</button><button type="button" data-ph="down" title="Move down" ${n===ph.length-1?'disabled':''}>↓</button><button type="button" data-ph="del" title="Remove photo">✕</button></div></div>`;}).join('');}
- function setLine(i,txt){const L=body.value.split('\n');L[i]=txt;body.value=L.join('\n');body.dispatchEvent(new Event('input',{bubbles:true}));}
- function photoAction(i,act){const L=body.value.split('\n'),mm=(L[i]||'').trim().match(IMG_RE);if(!mm)return;const [,cap,url,lay]=mm;
-  if(act.startsWith('lay:')){const k=act.slice(4);setLine(i,`![${cap}](${url})${k?`{${k}}`:''}`);}
-  else if(act==='del'){L.splice(i,1);body.value=L.join('\n').replace(/\n{3,}/g,'\n\n');body.dispatchEvent(new Event('input',{bubbles:true}));}
-  else{const ph=photoLines(),n=ph.findIndex(x=>x.i===i),o=ph[act==='up'?n-1:n+1];if(!o)return;const a=L[i];L[i]=L[o.i];L[o.i]=a;body.value=L.join('\n');body.dispatchEvent(new Event('input',{bubbles:true}));}
-  renderPhotos();preview();}
- m.querySelector('#pe-photos').addEventListener('input',e=>{const c=e.target.closest('[data-cap]');if(!c)return;const i=+c.dataset.cap,L=body.value.split('\n'),mm=(L[i]||'').trim().match(IMG_RE);if(!mm)return;L[i]=`![${c.value.replace(/[\[\]]/g,'')}](${mm[2]})${mm[3]?`{${mm[3]}}`:''}`;body.value=L.join('\n');preview();});
- body.addEventListener('input',()=>{clearTimeout(body._phT);body._phT=setTimeout(()=>{if(!m.querySelector('#pe-photos').contains(document.activeElement))renderPhotos();},250);});
-  renderPhotos();
- /* Visual editor: write the article as it looks. The plain text box stays hidden underneath and is what gets saved. */
- const veHost=document.createElement('div');body.before(veHost);
- const ve=window.PostVisual.mount(veHost,body,{
-  upload:async f=>{const o=await optimiseImage(f,{mode:'natural'});const path=await Live.admin.uploadAdImage(o.blob,'posts');return Live.adImageUrl(path);},
-  status:t=>{msg.textContent=t;},errorText:e=>Live.error(e),toast:t=>A.toast(t),
-  askLink:async({url,text,hasText})=>{const v=await formBox(hasText?'Link':'Add a link',[...(hasText?[]:[{name:'text',label:'Words to show',value:text||''}]),{name:'url',label:'Web address (leave empty to remove the link)',type:'text',value:url||'https://'}],'Save link');if(!v)return null;return {url:(v.url||'').trim().replace(/^https:\/\/$/,''),text:(v.text||'').trim()};},
-  askVideo:async cur=>(await formBox('YouTube video',[{name:'url',label:'Paste the YouTube link',type:'url',value:cur||''}],'Add video'))?.url||''
- });
- m.classList.add('pe-visual');
-
- const bodyTa=form.elements.body;['dragover','dragenter'].forEach(ev=>bodyTa.addEventListener(ev,e=>{if([...(e.dataTransfer?.items||[])].some(i=>i.kind==='file')){e.preventDefault();bodyTa.classList.add('drop-over');}}));['dragleave','drop'].forEach(ev=>bodyTa.addEventListener(ev,()=>bodyTa.classList.remove('drop-over')));bodyTa.addEventListener('drop',e=>{if(e.dataTransfer?.files?.length){e.preventDefault();addPhotos(e.dataTransfer.files);}});
- form.addEventListener('input',e=>{if(e.target.name==='title'&&!slugTouched)form.elements.slug.value=slugify(e.target.value);if(e.target.name==='slug')slugTouched=true;preview();});
- form.addEventListener('submit',async e=>{
-  e.preventDefault();msg.textContent='';const v=Object.fromEntries(new FormData(form));
-  v.slug=slugify(v.slug||v.title);if(!v.title.trim()){msg.textContent='Add a title.';return;}
-  if((posts||[]).some(o=>o.slug===v.slug&&o.id!==p?.id)){msg.textContent='Another post already uses that web address. Change it slightly.';return;}
-  if(v.status==='published'&&v.body.trim().length<40){msg.textContent='Write a little more before publishing (at least a couple of sentences).';return;}
-  const btn=m.querySelector('#pe-save');btn.disabled=true;btn.classList.add('is-loading');
-  try{let cover_path;if(cover)cover_path=await Live.admin.uploadAdImage(cover.blob,'posts');
-   const saved=await Live.admin.savePost({...v,id:p?.id,excerpt:v.excerpt.trim(),category:v.category.trim(),author_name:v.author_name.trim(),...(cover_path?{cover_path}:coverRemoved?{cover_path:null}:{})});
-   try{localStorage.removeItem(draftKey);}catch{}
-   await Live.admin.log(p?'Edited blog post':'Created blog post',saved.title,{status:saved.status});
-   A.closeModal(m);setTimeout(()=>m.remove(),300);A.toast(saved.status==='published'?(postStatus(saved)==='scheduled'?'Post scheduled':'Post published'):'Draft saved');draw();
-  }catch(err){msg.textContent=/duplicate|23505/.test(String(err?.code)+err?.message)?'Another post already uses that web address.':Live.error(err);}finally{btn.disabled=false;btn.classList.remove('is-loading');}
- });
- preview();A.openModal('post-editor');setTimeout(()=>form.elements.title.focus(),200);
-}
+ const done=()=>{A.closeModal(m);setTimeout(()=>m.remove(),300);};
+ m.addEventListener('click',e=>{if(e.target.closest('[data-bs=close]')||e.target===m)done();});
+ m.querySelector('form').addEventListener('submit',e=>{e.preventDefault();const f=e.target,v={layout:f.elements.layout.value};['cover','category','author','date','readTime','summary','postAuthor','postDate','postReadTime','postTags'].forEach(k=>v[k]=f.elements[k].checked);
+  const btn=f.querySelector('[type=submit]');run(btn,async()=>{await Live.admin.saveSetting('blog_display',v,true);Live.settings.blog_display=v;await Live.admin.log('Updated blog settings','');done();},'Blog settings saved');});
+ A.openModal('blog-settings');}
 root.addEventListener('click',async e=>{
  if(e.target.closest('[data-post-new]'))return postEditor(null);
+ if(e.target.closest('[data-blog-settings]'))return blogSettings();
  if(e.target.closest('[data-import-builtin]')){const b=e.target.closest('button');return run(b,async()=>{for(const x of (window.BIMCAR_BUILTIN_POSTS||[]).filter(x=>!posts.some(p=>p.slug===x.slug)))await Live.admin.savePost({slug:x.slug,title:x.title,excerpt:x.excerpt,category:x.category,body:x.body,author_name:'BimCar Connect',status:'published',published_at:x.published_at});await Live.admin.log('Imported original blog articles','',{});},'Articles imported. You can edit them now.');}
  const b=e.target.closest('[data-post-act]');if(!b)return;const id=b.closest('[data-post]').dataset.post,p=posts.find(x=>x.id===id);if(!p)return;const act=b.dataset.postAct;
  if(act==='edit')return postEditor(p);
