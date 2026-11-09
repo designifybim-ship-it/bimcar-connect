@@ -367,15 +367,21 @@ function requireCompany(){
    ![caption](image URL){wide|medium|small|left|right}. */
 function renderPost(md){
   const inline=t=>esc(t)
-    .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(wide|medium|small|left|right|polaroid|featured)\})?/g,(m,a,u,l)=>{const cap=a&&a!=='Add a caption'?a:'';
+    .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?/g,(m,a,u,l)=>{const cap=a&&a!=='Add a caption'?a:'';
+      if(l==='story'){const [who,...rest]=cap.split('|').map(x=>x.trim());return `<i data-story-slide data-src="${u}" data-who="${who||'Local business'}" data-text="${rest.join(' · ')}"></i>`;}
       if(l==='featured'){const [who,...rest]=cap.split('|').map(x=>x.trim());return `<figure class="post-feature"><div class="pf-photo"><img src="${u}" alt="${who||''}" loading="lazy" decoding="async"><span class="pf-badge">Featured</span></div>${cap?`<figcaption><span class="pf-kicker">Meet the people behind it</span><b>${who}</b>${rest.length?`<span>${rest.join(' · ')}</span>`:''}</figcaption>`:''}</figure>`;}
-      return `<figure class="post-figure${l?' is-'+l:''}"><img src="${u}" alt="${cap}" loading="lazy" decoding="async">${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;})
+      const cls=l==='pile'?' is-polaroid is-pile':/^polaroid-/.test(l||'')?' is-polaroid is-'+l.slice(9)+' is-placed':l?' is-'+l:'';
+      return `<figure class="post-figure${cls}"><img src="${u}" alt="${cap}" loading="lazy" decoding="async">${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;})
     .replace(/\[([^\]]+)\]\(((?:https:\/\/|mailto:)[^)\s]+|[\w-]+\.html(?:\?p=[\w-]+)?(?:#[\w-]+)?)\)/g,(m,t2,u)=>`<a href="${u}"${/^https:/.test(u)?' target="_blank" rel="noopener"':''}>${t2}</a>`)
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
   const out=[];let list=null,para=[],gal=[];
   let side=0;
-  const flushGal=()=>{if(!gal.length)return;const pol=gal.filter(g=>/is-polaroid/.test(g));
-    if(pol.length===gal.length){const dir=(side++%2)?'left':'right';out.push(pol.length>1?`<div class="polaroid-stack is-${dir}" role="button" tabindex="0" aria-label="Open the photo gallery (${pol.length} photos)">${pol.join('')}<span class="ps-count">${pol.length} photos · tap to view</span></div>`:pol[0].replace('is-polaroid','is-polaroid is-'+dir));}
+  const flushGal=()=>{if(!gal.length)return;const all=c=>gal.every(g=>g.includes(c));
+    if(all('data-story-slide')){const groups=[];gal.forEach(g=>{const who=(g.match(/data-who="([^"]*)"/)||[])[1];const last=groups[groups.length-1];if(last&&last.who===who)last.slides.push(g);else groups.push({who,slides:[g]});});
+      out.push(`<div class="story-bar" data-stories><div class="story-bar-head"><b>Stories</b><span class="story-paid">Featured businesses · paid feature</span></div><div class="story-list">${groups.map((g,n)=>{const src=(g.slides[0].match(/data-src="([^"]*)"/)||[])[1];return `<button type="button" class="story-circle" data-story="${n}" aria-label="Watch ${g.who}'s story (${g.slides.length} ${g.slides.length===1?'update':'updates'})"><span class="story-ring"><img src="${src}" alt="" loading="lazy"></span><span class="story-name">${g.who}</span></button>`;}).join('')}</div><div hidden>${groups.map(g=>`<div data-story-group data-who="${g.who}">${g.slides.join('')}</div>`).join('')}</div></div>`);gal=[];return;}
+    if(all('is-pile')){const dir=(side++%2)?'left':'right';out.push(`<div class="polaroid-stack is-${dir}" role="button" tabindex="0" aria-label="Open the photo gallery (${gal.length} photos)">${gal.join('')}<span class="ps-count">${gal.length===1?'Tap to view':gal.length+' photos · tap to view'}</span></div>`);}
+    else if(all('is-polaroid')&&!gal.some(g=>g.includes('is-placed'))){if(gal.length>1)out.push(`<div class="polaroid-row n-${Math.min(gal.length,4)}">${gal.join('')}</div>`);else{const dir=(side++%2)?'left':'right';out.push(gal[0].replace('is-polaroid','is-polaroid is-'+dir));}}
+    else if(gal.some(g=>g.includes('is-placed')||g.includes('is-polaroid')))gal.forEach(g=>out.push(g));
     else out.push(gal.length>1?`<div class="post-gallery">${gal.join('')}</div>`:gal[0]);gal=[];};
   const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p>${inline(t)}</p>`);para=[];}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
   String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{const line=raw.trim();let m;
@@ -386,7 +392,7 @@ function renderPost(md){
     if((m=line.match(/^\d+[.)]\s+(.+)/))){if(para.length)flush();if(!list||list.tag!=='ol'){flush();list={tag:'ol',items:[]};}list.items.push(m[1]);return;}
     if(/^(-{3,}|\*{3,})$/.test(line)){flush();out.push('<hr>');return;}
     if((m=line.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{6,20})\S*$/))){flush();out.push(`<div class="post-video"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`);return;}
-    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right|polaroid|featured)\})?$/.test(line)){if(/\{featured\}$/.test(line)){flush();out.push(inline(line));return;}const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
+    if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?$/.test(line)){if(/\{featured\}$/.test(line)){flush();out.push(inline(line));return;}const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
     if(list)flush();para.push(line);});
   flush();return out.join('\n');
 }
@@ -667,6 +673,32 @@ addEventListener("pageshow", e=>{ if(e.persisted) document.body.classList.remove
  let q=false;const run=()=>{if(q)return;q=true;requestAnimationFrame(()=>{q=false;menu();cards();});};
  if('MutationObserver' in window)new MutationObserver(run).observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:['aria-current']});
  addEventListener('hashchange',run);document.addEventListener('DOMContentLoaded',run);run();
+})();
+/* Instagram-style business stories inside articles */
+(function(){
+ let box=null,groups=[],gi=0,si=0,timer=null,start=0,elapsed=0,paused=false,prevFocus=null;const DUR=5000;
+ function data(bar){return [...bar.querySelectorAll('[data-story-group]')].map(g=>({who:g.dataset.who,slides:[...g.querySelectorAll('[data-story-slide]')].map(x=>({src:x.dataset.src,text:x.dataset.text}))}));}
+ function render(){const g=groups[gi],sl=g.slides[si];box.querySelector('.st-bars').innerHTML=g.slides.map((_,n)=>`<i><b style="width:${n<si?100:0}%"></b></i>`).join('');
+  box.querySelector('.st-who').textContent=g.who;box.querySelector('.st-av').src=g.slides[0].src;const im=box.querySelector('.st-img');im.src=sl.src;im.alt=g.who;
+  const t=box.querySelector('.st-text');t.textContent=sl.text||'';t.hidden=!sl.text;elapsed=0;start=performance.now();}
+ function tick(now){if(!box)return;if(!paused){const p=Math.min(1,(elapsed+(now-start))/DUR);const bar=box.querySelectorAll('.st-bars b')[si];if(bar)bar.style.width=p*100+'%';if(p>=1){next();}}timer=requestAnimationFrame(tick);}
+ function next(){const g=groups[gi];if(si<g.slides.length-1)si++;else if(gi<groups.length-1){gi++;si=0;}else return close();render();}
+ function prev(){if(si>0)si--;else if(gi>0){gi--;si=groups[gi].slides.length-1;}render();}
+ function pause(v){if(v&&!paused){elapsed+=performance.now()-start;}else if(!v&&paused){start=performance.now();}paused=v;box?.classList.toggle('is-paused',v);}
+ function close(){cancelAnimationFrame(timer);box?.remove();box=null;document.documentElement.classList.remove('crop-open');document.removeEventListener('keydown',key);prevFocus?.focus?.();}
+ function key(e){if(e.key==='Escape')close();else if(e.key==='ArrowRight')next();else if(e.key==='ArrowLeft')prev();else if(e.key===' '){e.preventDefault();pause(!paused);}}
+ function open(bar,n){groups=data(bar);if(!groups.length)return;gi=n;si=0;paused=false;prevFocus=document.activeElement;
+  box=document.createElement('div');box.className='story-view';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label','Business story');
+  box.innerHTML=`<div class="st-frame"><div class="st-bars"></div><div class="st-top"><img class="st-av" alt=""><div><b class="st-who"></b><span class="st-tag">Featured · paid feature</span></div><button type="button" class="st-pause" aria-label="Pause or play"></button><button type="button" class="st-close" aria-label="Close story">${icon('close')}</button></div><img class="st-img" alt=""><p class="st-text"></p><button type="button" class="st-hit st-l" aria-label="Previous"></button><button type="button" class="st-hit st-r" aria-label="Next"></button></div>`;
+  document.body.append(box);document.documentElement.classList.add('crop-open');
+  const fr=box.querySelector('.st-frame');let downAt=0,y0=null;
+  fr.addEventListener('pointerdown',e=>{if(e.target.closest('.st-close,.st-pause'))return;downAt=Date.now();y0=e.clientY;pause(true);});
+  fr.addEventListener('pointerup',e=>{if(e.target.closest('.st-close,.st-pause'))return;const held=Date.now()-downAt>280;pause(false);if(y0!==null&&e.clientY-y0>90){close();return;}if(held)return;if(e.target.closest('.st-l'))prev();else if(e.target.closest('.st-r'))next();});
+  fr.addEventListener('pointerleave',()=>{if(paused&&downAt)pause(false);});
+  box.querySelector('.st-close').addEventListener('click',close);box.querySelector('.st-pause').addEventListener('click',()=>pause(!paused));
+  box.addEventListener('click',e=>{if(e.target===box)close();});
+  document.addEventListener('keydown',key);render();timer=requestAnimationFrame(tick);setTimeout(()=>box?.querySelector('.st-close').focus(),30);}
+ document.addEventListener('click',e=>{const c=e.target.closest('[data-story]');if(!c)return;const bar=c.closest('[data-stories]');if(bar)open(bar,+c.dataset.story);});
 })();
 /* Photo gallery: tap any photo in an article to open all of them full screen */
 (function(){
