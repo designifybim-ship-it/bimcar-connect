@@ -1827,3 +1827,20 @@ html.crop-open,html.crop-open body{overflow:hidden}
 @media (max-width:900px){.story-promo{grid-template-columns:1fr;padding:28px 22px;gap:30px}}
 .story-name{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:.72rem}
 .sp-circles i{position:relative;box-shadow:none;padding:0}.sp-circles i::after{content:"";position:absolute;inset:3px;border-radius:50%;background:linear-gradient(135deg,#ffe3ef,#e9e1ff);border:2px solid #fff}
+.post-gallery.n-3,.post-gallery.n-many{grid-template-columns:repeat(3,minmax(0,1fr))}
+.post-gallery img{aspect-ratio:4/3;object-fit:cover;height:100%}
+.post-gallery figure{margin:0!important}
+@media (max-width:640px){.post-gallery.n-3,.post-gallery.n-many{grid-template-columns:repeat(2,minmax(0,1fr))}.post-gallery.n-3>:first-child{grid-column:1/-1}}
+/* photo grid: even tiles, captions on the photo */
+.post-gallery{gap:10px}
+.post-gallery .post-figure{position:relative;border-radius:16px;overflow:hidden}
+.post-gallery .post-figure img{display:block;width:100%;aspect-ratio:4/3!important;height:auto!important;object-fit:cover;border-radius:0!important;box-shadow:none!important;transition:transform .35s}
+.post-gallery .post-figure:hover img{transform:scale(1.04)}
+.post-gallery .post-figure figcaption{position:absolute;left:0;right:0;bottom:0;margin:0;padding:22px 12px 9px;text-align:left;color:#fff;font-size:.8rem;background:linear-gradient(180deg,transparent,rgba(0,0,0,.6))}
+.post-gallery.n-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.post-gallery.n-3,.post-gallery.n-many{grid-template-columns:repeat(3,minmax(0,1fr))}
+.post-gallery.n-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+.post-gallery.n-3 .post-figure:first-child,.post-gallery.n-many .post-figure:first-child,.post-gallery.n-4 .post-figure:first-child{grid-column:auto}
+.post-gallery.n-3 .post-figure:first-child img,.post-gallery.n-many .post-figure:first-child img{aspect-ratio:4/3!important}
+@media (max-width:640px){.post-gallery,.post-gallery.n-many{grid-template-columns:repeat(2,minmax(0,1fr))!important}.post-gallery.n-3 .post-figure:first-child{grid-column:1/-1}.post-gallery.n-3 .post-figure:first-child img{aspect-ratio:16/9!important}}
+.polaroid-stack.is-center{float:none;clear:both;margin:30px auto 56px;width:min(290px,70%)}

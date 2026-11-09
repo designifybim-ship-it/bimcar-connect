@@ -365,10 +365,16 @@ function requireCompany(){
 /* Blog post formatting: a small, safe subset of Markdown.
    ## Heading, ### Subheading, **bold**, *italic*, [link](https://…), - list, 1. list, > quote, ---, YouTube link on its own line,
    ![caption](image URL){wide|medium|small|left|right}. */
+/* Join photo blocks of the same kind that are only separated by blank lines (one story row, one pile, one polaroid row, one grid) */
+function tidyPhotoBlocks(md){const IM=/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(?:\{([\w-]+)\})?$/,JOIN=['','polaroid','pile','story'];
+ const bs=String(md||'').replace(/\r/g,'').split(/\n\s*\n/),out=[];
+ const kindOf=b=>{const ls=b.trim().split('\n').map(l=>l.trim());if(!ls[0]||!ls.every(l=>IM.test(l)))return null;const ks=[...new Set(ls.map(l=>l.match(IM)[1]||''))];return ks.length===1&&JOIN.includes(ks[0])?ks[0]:null;};
+ bs.forEach(b=>{const k=kindOf(b),prev=out[out.length-1];if(k!==null&&prev&&kindOf(prev)===k)out[out.length-1]=prev.trim()+'\n'+b.trim();else out.push(b);});
+ return out.join('\n\n');}
 function renderPost(md){
   const inline=t=>esc(t)
     .replace(/!\[([^\]]*)\]\((https:\/\/[^)\s]+)\)(?:\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?/g,(m,a,u,l)=>{const cap=a&&a!=='Add a caption'?a:'';
-      if(l==='story'){const [who,...rest]=cap.split('|').map(x=>x.trim());return `<i data-story-slide data-src="${u}" data-who="${who||'Local business'}" data-text="${rest.join(' · ')}"></i>`;}
+      if(l==='story'){const [who,...rest]=cap.split('|').map(x=>x.trim());return `<i data-story-slide data-src="${u}" data-who="${who||''}" data-text="${rest.join(' · ')}"></i>`;}
       if(l==='featured'){const [who,...rest]=cap.split('|').map(x=>x.trim());return `<figure class="post-feature"><div class="pf-photo"><img src="${u}" alt="${who||''}" loading="lazy" decoding="async"><span class="pf-badge">Featured</span></div>${cap?`<figcaption><span class="pf-kicker">Meet the people behind it</span><b>${who}</b>${rest.length?`<span>${rest.join(' · ')}</span>`:''}</figcaption>`:''}</figure>`;}
       const cls=l==='pile'?' is-polaroid is-pile':/^polaroid-/.test(l||'')?' is-polaroid is-'+l.slice(9)+' is-placed':l?' is-'+l:'';
       return `<figure class="post-figure${cls}"><img src="${u}" alt="${cap}" loading="lazy" decoding="async">${cap?`<figcaption>${cap}</figcaption>`:''}</figure>`;})
@@ -376,13 +382,15 @@ function renderPost(md){
     .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
   const out=[];let list=null,para=[],gal=[];
   let side=0;
-  const flushGal=()=>{if(!gal.length)return;const all=c=>gal.every(g=>g.includes(c));
-    if(all('data-story-slide')){const groups=[];gal.forEach(g=>{const who=(g.match(/data-who="([^"]*)"/)||[])[1];const last=groups[groups.length-1];if(last&&last.who===who)last.slides.push(g);else groups.push({who,slides:[g]});});
-      out.push(`<div class="story-bar" data-stories><div class="story-bar-head"><b>Stories</b><span class="story-paid">Featured businesses · paid feature</span></div><div class="story-list">${groups.map((g,n)=>{const src=(g.slides[0].match(/data-src="([^"]*)"/)||[])[1];return `<button type="button" class="story-circle" data-story="${n}" aria-label="Watch ${g.who}'s story (${g.slides.length} ${g.slides.length===1?'update':'updates'})"><span class="story-ring"><img src="${src}" alt="" loading="lazy"></span><span class="story-name">${g.who}</span></button>`;}).join('')}</div><div hidden>${groups.map(g=>`<div data-story-group data-who="${g.who}">${g.slides.join('')}</div>`).join('')}</div></div>`);gal=[];return;}
-    if(all('is-pile')){const dir=(side++%2)?'left':'right';out.push(`<div class="polaroid-stack is-${dir}" role="button" tabindex="0" aria-label="Open the photo gallery (${gal.length} photos)">${gal.join('')}<span class="ps-count">${gal.length===1?'Tap to view':gal.length+' photos · tap to view'}</span></div>`);}
-    else if(all('is-polaroid')&&!gal.some(g=>g.includes('is-placed'))){if(gal.length>1)out.push(`<div class="polaroid-row n-${Math.min(gal.length,4)}">${gal.join('')}</div>`);else{const dir=(side++%2)?'left':'right';out.push(gal[0].replace('is-polaroid','is-polaroid is-'+dir));}}
-    else if(gal.some(g=>g.includes('is-placed')||g.includes('is-polaroid')))gal.forEach(g=>out.push(g));
-    else out.push(gal.length>1?`<div class="post-gallery">${gal.join('')}</div>`:gal[0]);gal=[];};
+  const kindOf=g=>g.includes('data-story-slide')?'story':g.includes('is-pile')?'pile':g.includes('is-placed')?null:g.includes('is-polaroid')?'polaroid':/<figure class="post-figure">/.test(g)?'gallery':null;
+  /* photos of the same kind separated only by blank lines join into one block (one story bar, one row, one grid) */
+  const flushGal=()=>{if(!gal.length)return;const plainRun=gal.length>1&&gal.every(g=>/^<figure class="post-figure/.test(g)&&!g.includes('is-polaroid'));gal.forEach(g=>{const k=plainRun?'gallery':kindOf(g),last=out[out.length-1];if(!k){out.push(g);return;}if(last&&typeof last==='object'&&last.k===k)last.items.push(g);else out.push({k,items:[g]});});gal=[];};
+  const renderBlock=(b,beside)=>{const it=b.items,n=it.length;
+    if(b.k==='story'){const groups=[];it.forEach(g=>{const who=(g.match(/data-who="([^"]*)"/)||[])[1];const last=groups[groups.length-1];if(who&&last&&last.who===who)last.slides.push(g);else groups.push({who:who||'Featured',slides:[g]});});
+      return `<div class="story-bar" data-stories><div class="story-bar-head"><b>Stories</b><span class="story-paid">Featured businesses · paid feature</span></div><div class="story-list">${groups.map((g,x)=>{const src=(g.slides[0].match(/data-src="([^"]*)"/)||[])[1];return `<button type="button" class="story-circle" data-story="${x}" aria-label="Watch ${g.who}'s story (${g.slides.length} ${g.slides.length===1?'update':'updates'})"><span class="story-ring"><img src="${src}" alt="" loading="lazy"></span><span class="story-name">${g.who}</span></button>`;}).join('')}</div><div hidden>${groups.map(g=>`<div data-story-group data-who="${g.who}">${g.slides.join('')}</div>`).join('')}</div></div>`;}
+    if(b.k==='pile'){const dir=beside?((side++%2)?'left':'right'):'center';return `<div class="polaroid-stack is-${dir}" role="button" tabindex="0" aria-label="Open the photo gallery (${n} photos)">${it.join('')}<span class="ps-count">${n===1?'Tap to view':n+' photos · tap to view'}</span></div>`;}
+    if(b.k==='polaroid'){if(n>1)return `<div class="polaroid-row n-${Math.min(n,4)}">${it.join('')}</div>`;const dir=beside?((side++%2)?'left':'right'):'center';return it[0].replace('is-polaroid','is-polaroid is-'+dir);}
+    return n>1?`<div class="post-gallery n-${n>=5?'many':n}">${it.join('')}</div>`:it[0];};
   const flush=()=>{flushGal();if(para.length){const t=para.join(' ');out.push(/^<figure/.test(inline(t))?inline(t):`<p>${inline(t)}</p>`);para=[];}if(list){out.push(`<${list.tag}>${list.items.map(i=>`<li>${inline(i)}</li>`).join('')}</${list.tag}>`);list=null;}};
   String(md||'').replace(/\r/g,'').split('\n').forEach(raw=>{const line=raw.trim();let m;
     if(!line){flush();return;}
@@ -394,7 +402,7 @@ function renderPost(md){
     if((m=line.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([\w-]{6,20})\S*$/))){flush();out.push(`<div class="post-video"><iframe src="https://www.youtube-nocookie.com/embed/${m[1]}" title="Video" loading="lazy" allow="accelerometer; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>`);return;}
     if(/^!\[[^\]]*\]\(https:\/\/[^)\s]+\)(\{(wide|medium|small|left|right|polaroid|polaroid-left|polaroid-right|polaroid-center|pile|featured|story)\})?$/.test(line)){if(/\{featured\}$/.test(line)){flush();out.push(inline(line));return;}const g=gal;gal=[];flush();gal=g;gal.push(inline(line));return;}
     if(list)flush();para.push(line);});
-  flush();return out.join('\n');
+  flush();return out.map((x,i)=>typeof x==='object'?renderBlock(x,typeof out[i+1]==='string'&&/^<p>/.test(out[i+1])):x).join('\n');
 }
 function postCard(p){
   const href=`post.html?p=${encodeURIComponent(p.slug)}`;
@@ -776,7 +784,7 @@ async function resizeImage(file,{maxW=2400,maxH=2400,fillW=0,fillH=0}={}){
  if(fillW){const s=Math.max(W/iw,H/ih),w=iw*s,h=ih*s;g.drawImage(bmp,(W-w)/2,(H-h)/2,w,h);}else g.drawImage(bmp,0,0,W,H);
  const enc=(t,q)=>new Promise(r=>c.toBlob(r,t,q));let blob=await enc('image/webp',.92);if(!blob||blob.type!=='image/webp')blob=await enc('image/png');
  if(blob.size>5.5*1048576)blob=await enc('image/webp',.8)||blob;return blob;}
-window.App = {coAvatar, coLogoUrl, coCoverUrl, resizeImage, cropImage, setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
+window.App = {tidyPhotoBlocks, coAvatar, coLogoUrl, coCoverUrl, resizeImage, cropImage, setupSteps, renterSetupSteps, companySetupSteps, setupList, setupBanner, driverAge:age, adLimit, renderPost, postCard, renderAdSpots, allVehicles, announcement, carPhotos, photoImg, requireCompany, initials, parseDay, vehicleRequirements, vehiclePayment, vehiclePolicyComplete, availabilityRanges, dateRangeValid, vehicleAvailable, blockedDates, policyFields, policyFieldActive, requirementsComplete, publishedVehicles, meetsRequirements, rentalRequirements, requirementsBlock, initDatePickers, calGrid, fmtLong, addDays, isoOf, store, icon, logo, ph, money, moneyHTML, bindMoney, setCurrency, refreshCurrency, cur, vehicles, saveVehicles, specials, saveSpecials, company, vehicle, specialFor, salePrice, user, favs, stars,
   vehicleCard, carImg, specialCard, boosts, activeBoosts, isFeatured, partnerCard, todayISO, payInfo, payBlock, tickCountdowns, MARK, companyCard, toast, openModal, closeModal, copy, countUp, fmtDate, daysBetween, esc, go, RATE};
 function offlineNotice(){
   if(document.querySelector('.offline-notice'))return;
